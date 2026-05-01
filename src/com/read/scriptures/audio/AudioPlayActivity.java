@@ -384,7 +384,16 @@ public class AudioPlayActivity extends BaseActivity {
         } else {
             iv_play.setImageResource(R.drawable.icon_play);
         }
-        tv_speed.setText(musicPlayerManager.getSpeed() == 1.0f ? "正常" : musicPlayerManager.getSpeed() + "");
+        
+        // 修复：添加空指针检查
+        try {
+            float speed = musicPlayerManager.getSpeed();
+            tv_speed.setText(speed == 1.0f ? "正常" : speed + "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            tv_speed.setText("正常");
+        }
+        
         Log.w("TTT","musicPlayerManager.getPlayerState():"+musicPlayerManager.getPlayerState());
     }
 
@@ -415,7 +424,16 @@ public class AudioPlayActivity extends BaseActivity {
         tv_total_time.setText(SecToTime.getTimeString(String.valueOf(maxDuration / 1000)));
         customSeekBar.getConfigBuilder().max(maxDuration / 1000).build();
         customSeekBar.setProgress(currentDuration / 1000);
-        refreshUI(singeBean);
+        
+        // 修复：只有当singeBean不为null时才刷新UI
+        if (singeBean != null) {
+            refreshUI(singeBean);
+        } else {
+            // 如果没有音频数据，显示提示信息
+            showToast("暂无可播放的音频");
+            finish();
+            return;
+        }
 
         musicPlayerManager.addOnPlayerEventListener(playerEventListener);
         musicPlayerManager.addPlayInfoListener(musicPlayerInfoListener);
@@ -629,28 +647,35 @@ public class AudioPlayActivity extends BaseActivity {
 
     private void refreshUI(BaseAudioInfo rowsBean) {
         if (rowsBean == null) {
+            Log.w("AudioPlay", "refreshUI: rowsBean is null");
             return;
         }
         if (isFinishing() || isDestroyed()) {
             return;
         }
-        tv_book.setText(rowsBean.cate1_name + "-" + rowsBean.cate2_name);
-        tv_title.setText(rowsBean.cate3_name);
-        if (tv_chapter_detail != null) {
-            tv_chapter_detail.setText(rowsBean.chapter);
-        }
-        if (tv_chapter_detail1 != null) {
-            tv_chapter_detail1.setText(rowsBean.chapter);
-        }
-        bookContent = rowsBean.content;
-        iv_like.setImageResource(rowsBean.collect == 1 ? R.drawable.icon_collected : R.drawable.icon_collect);
-        //封面
-        loadImage1(rowsBean.image, rowsBean.audio_cover);
-        ///歌词
-        loadLrc(String.valueOf(rowsBean.id), rowsBean.audio_lyric);
-        tv_author.setText(rowsBean.author);
+        
+        try {
+            tv_book.setText(rowsBean.cate1_name != null ? rowsBean.cate1_name : "");
+            tv_title.setText(rowsBean.cate3_name != null ? rowsBean.cate3_name : "");
+            if (tv_chapter_detail != null) {
+                tv_chapter_detail.setText(rowsBean.chapter != null ? rowsBean.chapter : "");
+            }
+            if (tv_chapter_detail1 != null) {
+                tv_chapter_detail1.setText(rowsBean.chapter != null ? rowsBean.chapter : "");
+            }
+            bookContent = rowsBean.content != null ? rowsBean.content : "";
+            iv_like.setImageResource(rowsBean.collect == 1 ? R.drawable.icon_collected : R.drawable.icon_collect);
+            //封面
+            loadImage1(rowsBean.image, rowsBean.audio_cover);
+            ///歌词
+            loadLrc(String.valueOf(rowsBean.id), rowsBean.audio_lyric);
+            tv_author.setText(rowsBean.author != null ? rowsBean.author : "");
 
-        loadAudioBg(rowsBean.image, rowsBean.audio_cover);
+            loadAudioBg(rowsBean.image, rowsBean.audio_cover);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("AudioPlay", "refreshUI error: " + e.getMessage());
+        }
     }
 
 
@@ -958,7 +983,28 @@ public class AudioPlayActivity extends BaseActivity {
                 cancelByUser = false;
                 animateView(view);
                 if (musicClickControler.canTrigger()) {
-                    musicPlayerManager.playOrPause();
+                    try {
+                        // 修复：添加空指针检查和异常处理
+                        if (musicPlayerManager == null) {
+                            showToast("播放器未初始化");
+                            return;
+                        }
+                        
+                        BaseAudioInfo currentMusic = musicPlayerManager.getCurrentPlayerMusic();
+                        if (currentMusic == null && singeBean != null) {
+                            // 如果播放器没有当前音乐，但有传入的音频数据，先设置播放列表
+                            ArrayList<BaseAudioInfo> playList = new ArrayList<>();
+                            playList.add(singeBean);
+                            musicPlayerManager.setBookAllAudio(playList);
+                            musicPlayerManager.setPlayIndex(0);
+                        }
+                        
+                        musicPlayerManager.playOrPause();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e("AudioPlay", "播放失败: " + e.getMessage());
+                        showToast("播放失败，请重试");
+                    }
                 }
                 break;
             case R.id.iv_next://下一首

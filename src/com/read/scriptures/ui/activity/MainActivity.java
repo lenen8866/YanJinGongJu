@@ -50,8 +50,6 @@ import androidx.viewpager.widget.ViewPager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.sdk.app.PayTask;
-import com.binioter.guideview.Guide;
-import com.binioter.guideview.GuideBuilder;
 import com.github.dfqin.grantor.PermissionListener;
 import com.github.dfqin.grantor.PermissionsUtil;
 import com.google.gson.Gson;
@@ -127,7 +125,6 @@ import com.read.scriptures.util.PayUtil;
 import com.read.scriptures.util.PicassoUtils;
 import com.read.scriptures.util.PreferencesUtils;
 import com.read.scriptures.util.SharedPreferencesUtils;
-import com.read.scriptures.util.SimpleComponent;
 import com.read.scriptures.util.StatusBarUtils;
 import com.read.scriptures.util.StringUtil;
 import com.read.scriptures.util.SystemUtils;
@@ -209,7 +206,7 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
     public MusicPlayerManager musicPlayerManager;
     private AudioPlayingView fl_view;
     private View touch_view;
-    private FrameLayout fl_service;
+
     private View view_unread;
 
     private View include_notice;
@@ -225,8 +222,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
 
     private int screenWidth;
     private int screenHeight;
-    private int viewWidth;
-    private int viewHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -660,9 +655,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
                 tv_notice_title.setText(dataDTO0.title);
                 tv_notice_content.setText(dataDTO0.content);
             } else {
-                if (!guideViewIsShow()) {
-                    return;
-                }
                 int system_dialog_view_show = PreferencesUtils.getInt(MainActivity.this, "system_dialog_view_show");
                 if (system_dialog_view_show == dataDTO0.id) {
                     return;
@@ -1251,10 +1243,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
         });
     }
 
-    private int mLastX;
-    private int mLastY;
-    private boolean isLongClick = false;
-
     protected void initActionBar() {
         mUUid = AccountManager.getInstance().getUserInfo().getUsername();
         tvVersionName = findViewById(R.id.tv_version_name);
@@ -1278,7 +1266,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
                 });
 
         touch_view = findViewById(R.id.touch_view);
-        fl_service = findViewById(R.id.fl_service);
         view_unread = findViewById(R.id.view_unread);
         touch_view.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -1287,82 +1274,9 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
                 return false;
             }
         });
-        boolean isServiceOpen = PreferencesUtils.getBoolean(MainActivity.this, "service_is_open", true);
-        fl_service.setVisibility(isServiceOpen ? View.VISIBLE : View.GONE);
-
-        if (fl_service.getVisibility() == View.VISIBLE) {
-            setLocation();
-        }
-
-        fl_service.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String url = "https://book.sdacn.cn/addons/kefu/index/mobile?fixed_csr=0&token=" + AccountManager.getInstance().getUserInfo().getToken();
-                WebViewActivity.launchAct(MainActivity.this, "联系客服", url);
-            }
-        });
 
         screenWidth = DensityUtil.getScreenWidth(this);
         screenHeight = DensityUtil.getScreenHeight(this);
-        fl_service.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int x = (int) event.getRawX();
-                int y = (int) event.getRawY();
-                int offsetX = 0;
-                int offsetY = 0;
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mLastX = x;
-                        mLastY = y;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        if (!isLongClick) {
-                            return false;
-                        }
-
-                        offsetX = x - mLastX;
-                        offsetY = y - mLastY;
-
-                        float resultX = v.getX() + offsetX;
-                        if (resultX < 0 || resultX > screenWidth - viewWidth) {
-                            return false;
-                        }
-
-                        float resultY = v.getY() + offsetY;
-                        if (resultY < 80 || resultY > screenHeight - viewHeight) {
-                            return false;
-                        }
-                        v.setX(resultX);
-                        v.setY(resultY);
-                        //重新设置初始坐标
-                        mLastX = x;
-                        mLastY = y;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        isLongClick = false;
-                        touch_view.setBackgroundColor(Color.TRANSPARENT);
-                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start();
-                        PreferencesUtils.putInt(MainActivity.this, "service_position_x", (int) v.getX());
-                        PreferencesUtils.putInt(MainActivity.this, "service_position_y", (int) v.getY());
-                        break;
-                }
-                //如果是拖拽则消耗事件，否则正常传递即可。
-                return false;
-            }
-        });
-
-        fl_service.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                isLongClick = true;
-                touch_view.setBackgroundColor(Color.parseColor("#77000000"));
-                v.animate().scaleX(1.5f).scaleY(1.5f).setDuration(100).start();
-                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                vibrator.vibrate(200);
-                return true;
-            }
-        });
 
         iv_left = (ImageView) findViewById(R.id.btn_img_left);
         iv_left.setOnClickListener(new OnClickListener() {
@@ -1424,22 +1338,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
                 startActivity(intent);
             }
         });
-    }
-
-    private void setLocation() {
-        int x = PreferencesUtils.getInt(MainActivity.this, "service_position_x", -1);
-        int y = PreferencesUtils.getInt(MainActivity.this, "service_position_y", -1);
-        if (x != -1 && y != -1) {
-            fl_service.post(new Runnable() {
-                @Override
-                public void run() {
-                    viewWidth = fl_service.getWidth();
-                    viewHeight = fl_service.getHeight();
-                    fl_service.setX(x);
-                    fl_service.setY(y);
-                }
-            });
-        }
     }
 
     public static final String PAY_TYPE_ALIPAY = "alipay";
@@ -1837,15 +1735,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
             public void onPageScrollStateChanged(int i) {
             }
         });
-
-        if (!guideViewIsShow()) {
-            fl_service.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showGuideView();
-                }
-            }, 1000);
-        }
     }
 
     private void showPopWindow() {
@@ -1894,34 +1783,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
 
     }
 
-    //是否已经显示引导
-    private boolean guideViewIsShow() {
-        return PreferencesUtils.getBoolean(this, "is_guide_show", false);
-    }
-
-    public void showGuideView() {
-        PreferencesUtils.putBoolean(this, "is_guide_show", true);
-        GuideBuilder builder = new GuideBuilder();
-        builder.setTargetView(fl_service)
-                .setAlpha(100)
-                .setHighTargetCorner(20)
-                .setHighTargetPadding(5);
-        builder.setOnVisibilityChangedListener(new GuideBuilder.OnVisibilityChangedListener() {
-            @Override
-            public void onShown() {
-            }
-
-            @Override
-            public void onDismiss() {
-
-            }
-        });
-
-        builder.addComponent(new SimpleComponent());
-        Guide guide = builder.createGuide();
-        guide.show(MainActivity.this);
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -1937,11 +1798,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
             return;
         }
         getUnreadMsg();
-        boolean isServiceOpen = PreferencesUtils.getBoolean(MainActivity.this, "service_is_open", true);
-        fl_service.setVisibility(isServiceOpen ? View.VISIBLE : View.GONE);
-        if (fl_service.getVisibility() == View.VISIBLE) {
-            setLocation();
-        }
     }
 
     private void getUnreadMsg() {
@@ -2264,13 +2120,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
                     fl_view.stopAnimation();
                 }
                 break;
-            case "service_is_open":
-                fl_service.setVisibility(View.VISIBLE);
-                setLocation();
-                break;
-            case "service_is_hide":
-                fl_service.setVisibility(View.GONE);
-                break;
             case "audio_chapter_url_error":
                 fl_view.hideLoading();
                 break;
@@ -2293,9 +2142,6 @@ public class MainActivity extends BaseActivity implements HomeFragment.FragmentI
     }
 
     public void checkUserInfo() {
-        if (!guideViewIsShow()) {
-            return;
-        }
         //判断是否登录，登录了刷新用户信息
         AccountManager.getInstance().refreshUserInfo(new AccountManager.IAccountManagerListener() {
             @Override

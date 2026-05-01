@@ -22,7 +22,6 @@ import com.read.scriptures.R;
 import com.read.scriptures.config.SystemConfig;
 import com.read.scriptures.control.BaiduSpeechManager;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.manager.alispeech.AliSpeechManager;
 import com.read.scriptures.ui.activity.ChapterReaderActivity;
 import com.read.scriptures.util.CharUtils;
 import com.read.scriptures.util.LogUtil;
@@ -56,7 +55,6 @@ public class FloatView extends androidx.appcompat.widget.AppCompatImageView {//i
 
     private Disposable mAutoScrollDownDisposable;
     private Disposable mAutoScrollTopDisposable;
-    private AliSpeechManager aliSpeechManager;
     private Context mContext;
     private RelativeLayout mParentView;
 
@@ -191,9 +189,6 @@ public class FloatView extends androidx.appcompat.widget.AppCompatImageView {//i
         this.baiduSpeechManager = baiduSpeechManager;
     }
 
-    public void setAliSpeechManager(final AliSpeechManager aliSpeechManager) {
-        this.aliSpeechManager = aliSpeechManager;
-    }
 
     public FloatView(Context context) {
         this(context, null);
@@ -345,8 +340,6 @@ public class FloatView extends androidx.appcompat.widget.AppCompatImageView {//i
                             mXunFeiSpeechManager.pauseSpeaking();
                         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                             baiduSpeechManager.pause();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                            aliSpeechManager.pause();
                         }
                     }
                     updateViewPosition();
@@ -378,8 +371,6 @@ public class FloatView extends androidx.appcompat.widget.AppCompatImageView {//i
                             mXunFeiSpeechManager.resumeSpeaking();
                         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                             baiduSpeechManager.resume();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                            aliSpeechManager.resume();
                         }
                     }
                     return true;
@@ -398,16 +389,12 @@ public class FloatView extends androidx.appcompat.widget.AppCompatImageView {//i
                     } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         baiduSpeechManager.stop();
                         baiduSpeechManager.speak(select);
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        aliSpeechManager.newSpeak(select);
                     }
                 } else {
                     if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
                         mXunFeiSpeechManager.resumeSpeaking();
                     } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         baiduSpeechManager.resume();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        aliSpeechManager.resume();
                     }
                 }
                 break;

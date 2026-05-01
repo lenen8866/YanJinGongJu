@@ -68,7 +68,6 @@ import com.read.scriptures.db.SpiritualityDatabaseHepler;
 import com.read.scriptures.event.LoginOutEvent;
 import com.read.scriptures.event.PlayEvent;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.manager.alispeech.AliSpeechManager;
 import com.read.scriptures.model.Bookmark;
 import com.read.scriptures.model.Spirituality;
 import com.read.scriptures.net.NetObserver;
@@ -470,8 +469,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                         mXunFeiSpeechManager.stopSpeaking();
                     } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         baiduSpeechManager.stop();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        mAliSpeechManager.stopOnOtherThread();
                     }
                     if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                         HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -1128,27 +1125,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                         initBaiduSpeech();
                         initNotificationBar();
                     }
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-//                    initBaiduFloatView();
-                    if (!mSpeechModel) {
-                        mainHandler = new Handler() {
-                            /*
-                             * @param msg
-                             */
-                            @Override
-                            public void handleMessage(Message msg) {
-                                super.handleMessage(msg);
-                                handle(msg);
-                            }
-
-                        };
-                        mSpeechModel = true;
-                        if (floatView != null) {
-                            floatView.show();
-                        }
-                        initAliSpeechManager();
-                        initNotificationBar();
-                    }
                 }
 
 //            } else {
@@ -1221,21 +1197,19 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
             return;
         }
         longClick = true;
-        if (mSettingOptionDialog == null) {
-            initMenuDialog();
-        } else {
-//            if (HuDongApplication.getInstance().getReadModel() == SystemConfig.READ_MODEL_NORMAL) {
-//                mTitles.set(0, "夜间模式");
-//            } else {
-//                mTitles.set(0, "普通模式");
-//            }
-//            if (HuDongApplication.getInstance().getTextModel() == SystemConfig.TEXT_MODEL_FANTI) {
-//                mPictures[6] = R.drawable.ic_menu_option_7_2;
-//            } else {
-//                mPictures[6] = R.drawable.ic_menu_option_7;
-//            }
-            mChapterReadMenuGvAdapter.notifyDataSetChanged();
-            mSettingOptionDialog.show();
+        try {
+            if (mSettingOptionDialog == null) {
+                initMenuDialog();
+            } else {
+                mChapterReadMenuGvAdapter.notifyDataSetChanged();
+            }
+            if (mSettingOptionDialog != null) {
+                mSettingOptionDialog.show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            longClick = false;
+            showToast("操作失败，请重试");
         }
     }
 
@@ -1280,9 +1254,8 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
     private void showSpeechPopupWindow() {
         if (mSpeechPopupWindow == null) {
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         }
         mSpeechPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
 
@@ -1387,15 +1360,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
             }
         }
 
-        if (mAliSpeechManager != null){
-            mAliSpeechManager.destory();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            }else{
-                mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-            }
-        }
-
         if (floatView != null) {
             floatView.hide();
             floatView = null;
@@ -1421,7 +1385,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
     ////////////////////////////////////////////////////////
     private XunFeiSpeechManager mXunFeiSpeechManager;
-    private AliSpeechManager mAliSpeechManager;
 
     @SuppressLint("UseSparseArrays")
     private final HashMap<Integer, List<String>> mSpeechTextMap = new HashMap<Integer,
@@ -1438,19 +1401,16 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         if (mXunFeiSpeechManager == null) {
             showProgressDialog("加载中……");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
@@ -1490,24 +1450,63 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         }
 
         String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
+        if (TextUtils.isEmpty(remarkTxt)) {
+            showToastMsg("无法获取朗读内容");
+            return;
+        }
         refreshChapterRemark(true, remarkTxt);
         remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
         SystemConfig.readContent = remarkTxt;
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+        
+        // 修复：添加朗读引擎的空指针检查
+        try {
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                if (mXunFeiSpeechManager == null) {
+                    showToast("讯飞语音未初始化");
+                    return;
+                }
+                mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                if (baiduSpeechManager == null) {
+                    showToast("百度语音未初始化");
+                    return;
+                }
 //            baiduSpeechManager.batchSpeak(remarkTxt);
-            String txt = remarkTxt.replaceAll("行", "行(xing2)");
-            baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-            String txt = remarkTxt;
-            mAliSpeechManager.speak(txt);
+                String txt = remarkTxt.replaceAll("行", "行(xing2)");
+                baiduSpeechManager.speak(txt);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("SpiritualitySpeech", "startSpeech error: " + e.getMessage());
+            showToast("朗读失败：" + e.getMessage());
         }
     }
 
     private String getSpeechContent(final int index, final int position) {
-        final String remarkTxt = mSpeechTextMap.get(index).get(position);
-        return remarkTxt;
+        try {
+            if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) {
+                Log.e("SpiritualitySpeech", "mSpeechTextMap is null or empty");
+                return "";
+            }
+            
+            List<String> textList = mSpeechTextMap.get(index);
+            if (textList == null || textList.isEmpty()) {
+                Log.e("SpiritualitySpeech", "textList is null or empty for index: " + index);
+                return "";
+            }
+            
+            if (position < 0 || position >= textList.size()) {
+                Log.e("SpiritualitySpeech", "position out of range: " + position + ", size: " + textList.size());
+                return "";
+            }
+            
+            final String remarkTxt = textList.get(position);
+            return remarkTxt != null ? remarkTxt : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("SpiritualitySpeech", "getSpeechContent error: " + e.getMessage());
+            return "";
+        }
     }
 
     /**
@@ -1664,8 +1663,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                 HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -1708,8 +1705,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                     mXunFeiSpeechManager.stopSpeaking();
                 } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     baiduSpeechManager.stop();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    mAliSpeechManager.stopOnOtherThread();
                 }
                 if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                     HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -2586,47 +2581,16 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         if (baiduSpeechManager == null) {
             showProgressDialog("加载中。。。。");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
-        } else {
-            startSpeech();
-        }
-    }
-
-    private void initAliSpeechManager() {
-        mSpeechPosition = 0;
-        mSpeechIndex = 0;
-        ListView listView = mLinXiuReadSlidingAdapter.getCurrentListView();
-        int firstView = listView.getFirstVisiblePosition();
-        mSpeechIndex = firstView;
-        // 初始化合成对象
-        if (mAliSpeechManager == null) {
-            showProgressDialog("加载中。。。。");
-            baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mAliSpeechManager = new AliSpeechManager(this,mainHandler);
-            mXunFeiSpeechManager.setTtsListener(mTtsListener);
-            if (floatView != null) {
-                floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
-                floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
-            }
-            mXunFeiSpeechManager.init(mTtsInitListener);
-            //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
-            mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
@@ -2640,8 +2604,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
 
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
@@ -2668,13 +2630,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 SystemConstants.SPEECH_TYPE = 0;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()){
-                    mAliSpeechManager.stopOnOtherThread();
-                    SystemConstants.SPEECH_TYPE = 0;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-                }
             }
         } else {
             mXunFeiSpeechManager.setEngineType("1");
@@ -2688,13 +2643,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 SystemConstants.SPEECH_TYPE = 1;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()){
-                    mAliSpeechManager.resetSpeaking();
-                    SystemConstants.SPEECH_TYPE = 1;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-                }
             }
 
         }
@@ -2722,7 +2670,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                     mXunFeiSpeechManager = null;
                     baiduSpeechManager.release();
                     baiduSpeechManager = null;
-                    mAliSpeechManager = null;
                     if (floatView != null) {
                         floatView.hide();
                     }
@@ -2734,13 +2681,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                             mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
                         }
                     }
-                }
-                msg.what = PRINT;
-                break;
-            case INIT_ALI_SUCCESS:
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    dismissProgressDialog();
-                    startSpeech();
                 }
                 msg.what = PRINT;
                 break;
@@ -2771,9 +2711,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                     if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         String txt = result3.replaceAll("行", "行(xing2)");
                         baiduSpeechManager.speak(txt);
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        String txt = result3;
-                        mAliSpeechManager.speak(txt);
                     }
                 }
                 break;
@@ -2816,9 +2753,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     String txt = result3.replaceAll("行", "行(xing2)");
                     baiduSpeechManager.speak(txt);
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    String txt = result3;
-                    mAliSpeechManager.speak(txt);
                 }
                 break;
             default:
@@ -2838,9 +2772,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         if (action.isAvailable()){
             if (mSpeechPopupWindow != null){
                 mSpeechPopupWindow.netAvailable();
-            }
-            if (mAliSpeechManager != null){
-                mAliSpeechManager.initialize();
             }
         }
 

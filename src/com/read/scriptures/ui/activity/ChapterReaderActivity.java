@@ -88,7 +88,6 @@ import com.read.scriptures.event.PlayEvent;
 import com.read.scriptures.event.RefreshChapterListEvent;
 import com.read.scriptures.listener.MainHandlerConstant;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.manager.alispeech.AliSpeechManager;
 import com.read.scriptures.model.Bookmark;
 import com.read.scriptures.model.Category;
 import com.read.scriptures.model.Chapter;
@@ -633,8 +632,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                             mXunFeiSpeechManager.stopSpeaking();
                         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                             baiduSpeechManager.stop();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                            mAliSpeechManager.stopOnOtherThread();
                         }
                         mSpeechIndex = 0;
                         mSpeechPosition = 0;
@@ -1386,22 +1383,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     initBaiduSpeech();
                     initNotificationBar();
                 }
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (!mSpeechModel) {
-                    mainHandler = new Handler() {
-                        @Override
-                        public void handleMessage(Message msg) {
-                            super.handleMessage(msg);
-                            handle(msg);
-                        }
-                    };
-                    mSpeechModel = true;
-                    if (floatView != null) {
-                        floatView.show();
-                    }
-                    initAliSpeechManager();
-                    initNotificationBar();
-                }
             }
         } else {
             CommonUtil.showActivateDialog(ATHIS, UserInfo.VIP_NORMAL);
@@ -1596,9 +1577,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
      */
     private void showSpeechPopupWindow() {
         if (mSpeechPopupWindow == null) {
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         }
         mSpeechPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
 
@@ -1713,15 +1693,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             }
         }
 
-        if (mAliSpeechManager != null) {
-            mAliSpeechManager.destory();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            } else {
-                mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-            }
-        }
-
         if (floatView != null) {
             floatView.hide();
             floatView = null;
@@ -1772,8 +1743,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     ////////////////////////////////////////////////////////
     private XunFeiSpeechManager mXunFeiSpeechManager;
 
-    private AliSpeechManager mAliSpeechManager;
-
     private final HashMap<Integer, List<String>> mSpeechTextMap = new HashMap<Integer, List<String>>();
 
     // 缓冲进度
@@ -1806,18 +1775,15 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             showProgressDialog("加载中。。。。");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
@@ -1843,88 +1809,140 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
     };
 
-    //开始朗读 =======================================================================================================================================
+        //开始朗读 =======================================================================================================================================
     private void startSpeech() {
-        mSpeechTextMap.clear();
-        mSpeechTxtNums = 0;
-        final ChapterReadAdapter adapter = mChapterReadSlidingAdapter.getCurrentChapterReadAdapter();
-        final List<String> contentNodes = adapter.getList();
-        for (int i = 0; i < contentNodes.size(); i++) {
-            List<String> splits = new ArrayList<>();
-            String[] ssss = MTextUtil.takeOutSymbol(contentNodes.get(i)).split("。");
-            splits.addAll(Arrays.asList(ssss));
-            String[] news = new String[splits.size()];
-            int position = 0;
-            for (String s : splits) {
-                String head = CharUtils.match("[\\u4e00-\\u9fa5]+\\d+:\\d+", s);
-                if (!TextUtils.isEmpty(head) && position == 0) {//如果有head
-                    char c = head.charAt(0);
-                    if (s.indexOf(c) == 0) {//说明是第一个
-                        s = s.replace(head, "");//去掉head
-                    }
-                }
-                news[position] = s;//s.replace("<b>", "").replace("</b>", "");
-                position++;
-            }
-
-            mSpeechTxtNums += news.length;
-            mSpeechTextMap.put(i, Arrays.asList(news));
-        }
-
-        if ((mSpeechTextMap == null) || (mSpeechTextMap.size() == 0)) {
-            showToastMsg("暂无章节内容");
-            return;
-        }
-
-        String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
-        boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
-        if (!isSpeakTitle && (remarkTxt.contains("<b") || remarkTxt.contains("<h"))) {
-            //不读标题
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                mTtsListener.onCompleted(null);
-            } else {
-                mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-            }
-            return;
-        }
-        remarkTxt = remarkTxt.replace("<b>", "").replace("</b>", "");
-        refreshChapterRemark(true, remarkTxt);
-        remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
-        SystemConfig.readContent = remarkTxt;
-        if (!NetworkUtils.isNetAvailable(getApplicationContext()) && SystemConfig.Speech_Model != SystemConfig.SPEECH_MODEL_BAIDU) {
-            if (mSpeechPopupWindow != null) {
-                mSpeechPopupWindow.netUnAvailable();
+        try {
+            mSpeechTextMap.clear();
+            mSpeechTxtNums = 0;
+            final ChapterReadAdapter adapter = mChapterReadSlidingAdapter.getCurrentListView() != null ? 
+                mChapterReadSlidingAdapter.getCurrentChapterReadAdapter() : null;
+            
+            if (adapter == null) {
+                showToastMsg("页面未准备好，请稍后重试");
                 return;
-            } else {
-                SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_BAIDU;
-                SharedUtil.putInt(SystemConfig.SP_SPEACH_MODEL_KEY, SystemConfig.Speech_Model);
             }
-        }
+            
+            final List<String> contentNodes = adapter.getList();
+            if (contentNodes == null || contentNodes.isEmpty()) {
+                showToastMsg("暂无章节内容");
+                return;
+            }
+            
+            for (int i = 0; i < contentNodes.size(); i++) {
+                List<String> splits = new ArrayList<>();
+                String[] ssss = MTextUtil.takeOutSymbol(contentNodes.get(i)).split("。");
+                splits.addAll(Arrays.asList(ssss));
+                String[] news = new String[splits.size()];
+                int position = 0;
+                for (String s : splits) {
+                    String head = CharUtils.match("[\\u4e00-\\u9fa5]+\\d+:\\d+", s);
+                    if (!TextUtils.isEmpty(head) && position == 0) {//如果有head
+                        char c = head.charAt(0);
+                        if (s.indexOf(c) == 0) {//说明是第一个
+                            s = s.replace(head, "");//去掉head
+                        }
+                    }
+                    news[position] = s;//s.replace("<b>", "").replace("</b>", "");
+                    position++;
+                }
 
-        String p = "(?<=\\[)(.*?)(?=])";
-        Pattern P = Pattern.compile(p);
-        Matcher matcher = P.matcher(remarkTxt);
-        if (matcher.find()) {
-            String group = matcher.group();
-            if (group.length() < 10) {
-                remarkTxt = remarkTxt.replaceAll(p, "");
+                mSpeechTxtNums += news.length;
+                mSpeechTextMap.put(i, Arrays.asList(news));
             }
+
+            if ((mSpeechTextMap == null) || (mSpeechTextMap.size() == 0)) {
+                showToastMsg("暂无章节内容");
+                return;
+            }
+
+            String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
+            if (TextUtils.isEmpty(remarkTxt)) {
+                showToastMsg("无法获取朗读内容");
+                return;
+            }
+            
+            boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
+            if (!isSpeakTitle && (remarkTxt.contains("<b") || remarkTxt.contains("<h"))) {
+                //不读标题
+                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                    mTtsListener.onCompleted(null);
+                } else {
+                    mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
+                }
+                return;
+            }
+            remarkTxt = remarkTxt.replace("<b>", "").replace("</b>", "");
+            refreshChapterRemark(true, remarkTxt);
+            remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
+            SystemConfig.readContent = remarkTxt;
+            if (!NetworkUtils.isNetAvailable(getApplicationContext()) && SystemConfig.Speech_Model != SystemConfig.SPEECH_MODEL_BAIDU) {
+                if (mSpeechPopupWindow != null) {
+                    mSpeechPopupWindow.netUnAvailable();
+                    return;
+                } else {
+                    SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_BAIDU;
+                    SharedUtil.putInt(SystemConfig.SP_SPEACH_MODEL_KEY, SystemConfig.Speech_Model);
+                }
+            }
+
+            String p = "(?<=\\[)(.*?)(?=])";
+            Pattern P = Pattern.compile(p);
+            Matcher matcher = P.matcher(remarkTxt);
+            if (matcher.find()) {
+                String group = matcher.group();
+                if (group.length() < 10) {
+                    remarkTxt = remarkTxt.replaceAll(p, "");
+                }
+            }
+            
+            // 修复：添加朗读引擎的空指针检查和异常处理
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                if (mXunFeiSpeechManager == null) {
+                    showToast("讯飞语音未初始化，请重试");
+                    return;
+                }
+                mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                if (baiduSpeechManager == null) {
+                    showToast("百度语音未初始化，请重试");
+                    return;
+                }
+                String txt = remarkTxt.replaceAll("行", "行(xing2)");
+                baiduSpeechManager.speak(txt);
+            }
+            mSlidingLayout.setIsPagingEnabled(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("Speech", "startSpeech error: " + e.getMessage());
+            showToast("朗读启动失败：" + e.getMessage());
         }
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-            String txt = remarkTxt.replaceAll("行", "行(xing2)");
-            baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-            String txt = remarkTxt;
-            mAliSpeechManager.speak(txt);
-        }
-        mSlidingLayout.setIsPagingEnabled(true);
     }
 
     private String getSpeechContent(final int index, final int position) {
-        String remarkTxt = mSpeechTextMap.get(index).get(position);
-        return remarkTxt;
+        try {
+            if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) {
+                Log.e("Speech", "mSpeechTextMap is null or empty");
+                return "";
+            }
+            
+            List<String> textList = mSpeechTextMap.get(index);
+            if (textList == null || textList.isEmpty()) {
+                Log.e("Speech", "textList is null or empty for index: " + index);
+                return "";
+            }
+            
+            if (position < 0 || position >= textList.size()) {
+                Log.e("Speech", "position out of range: " + position + ", size: " + textList.size());
+                return "";
+            }
+            
+            String remarkTxt = textList.get(position);
+            return remarkTxt != null ? remarkTxt : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("Speech", "getSpeechContent error: " + e.getMessage());
+            return "";
+        }
     }
 
     @Override
@@ -2006,8 +2024,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                             mXunFeiSpeechManager.stopSpeaking();
                         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                             baiduSpeechManager.stop();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                            mAliSpeechManager.stopOnOtherThread();
                         }
                         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                             HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -2189,9 +2205,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
             String txt = result3.replaceAll("行", "行(xing2)");
             baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-            String txt = result3;
-            mAliSpeechManager.speak(txt);
         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
             mXunFeiSpeechManager.startSpeaking(result3, mTtsListener);
         }
@@ -2273,8 +2286,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                         mXunFeiSpeechManager.stopSpeaking();
                     } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         baiduSpeechManager.stop();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        mAliSpeechManager.stopOnOtherThread();
                     }
                     if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                         HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -2333,8 +2344,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     mXunFeiSpeechManager.stopSpeaking();
                 } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     baiduSpeechManager.stop();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    mAliSpeechManager.stopOnOtherThread();
                 }
                 if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                     HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -3427,8 +3436,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
             //取消通知栏
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
@@ -3459,13 +3466,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 SystemConstants.SPEECH_TYPE = 0;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()) {
-                    mAliSpeechManager.stopOnOtherThread();
-                    SystemConstants.SPEECH_TYPE = 0;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-                }
             }
 
         } else {
@@ -3480,13 +3480,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 SystemConstants.SPEECH_TYPE = 1;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()) {
-                    mAliSpeechManager.resetSpeaking();
-                    SystemConstants.SPEECH_TYPE = 1;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-                }
             }
         }
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
@@ -3513,8 +3506,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     mXunFeiSpeechManager.stopSpeaking();
                 } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     baiduSpeechManager.stop();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    mAliSpeechManager.stopOnOtherThread();
                 }
                 if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                     HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -3551,8 +3542,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
             mSpeechIndex = 0;
             mSpeechPosition = 0;
@@ -3652,8 +3641,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 //            baiduSpeechManager.batchSpeak(remarkTxt);
             String txt = remarkTxt.replaceAll("行", "行(xing2)");
             baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-            mAliSpeechManager.speak(remarkTxt);
         }
         mSlidingLayout.setIsPagingEnabled(true);
 
@@ -3680,55 +3667,21 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             showProgressDialog("加载中。。。。");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
 
     }
 
-
-    private void initAliSpeechManager() {
-        mSpeechPosition = 0;
-        mSpeechIndex = 0;
-        mSpeechTxtNumIndex = 0;
-        ListView listView = mChapterReadSlidingAdapter.getCurrentListView();
-        int firstView = listView.getFirstVisiblePosition();
-        mSpeechIndex = firstView;
-
-        // 初始化合成对象
-        if (mAliSpeechManager == null) {
-            showProgressDialog("加载中。。。。");
-            baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager.setTtsListener(mTtsListener);
-            if (floatView != null) {
-                floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
-                floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
-            }
-            mXunFeiSpeechManager.init(mTtsInitListener);
-            //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
-            mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
-        } else {
-            startSpeech();
-        }
-
-    }
 
     protected void handle(Message msg) {
         switch (msg.what) {
@@ -3747,7 +3700,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     mXunFeiSpeechManager = null;
                     baiduSpeechManager.release();
                     baiduSpeechManager = null;
-                    mAliSpeechManager = null;
                     if (floatView != null) {
                         floatView.hide();
                     }
@@ -3759,13 +3711,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                             mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
                         }
                     }
-                }
-                msg.what = PRINT;
-                break;
-            case INIT_ALI_SUCCESS:
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    dismissProgressDialog();
-                    startSpeech();
                 }
                 msg.what = PRINT;
                 break;
@@ -3794,8 +3739,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         String txt = result3.replaceAll("行", "行(xing2)");
                         baiduSpeechManager.speak(txt);
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        mAliSpeechManager.speak(result3);
                     }
                     Log.e("BAIDUSPEECHENGERTEST", "UI_ERROR_TEXT_SPEECH:" + "重载成功");
                 }
@@ -3821,9 +3764,6 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         if (action.isAvailable()) {
             if (mSpeechPopupWindow != null) {
                 mSpeechPopupWindow.netAvailable();
-            }
-            if (mAliSpeechManager != null) {
-                mAliSpeechManager.initialize();
             }
         }
 

@@ -69,7 +69,6 @@ import com.read.scriptures.control.BaiduSpeechManager;
 import com.read.scriptures.event.LoginOutEvent;
 import com.read.scriptures.event.PlayEvent;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.manager.alispeech.AliSpeechManager;
 import com.read.scriptures.model.Baike;
 import com.read.scriptures.net.NetObserver;
 import com.read.scriptures.service.NotifacationService;
@@ -208,8 +207,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
     private PlayBroadcastReceiver playBroadcastReceiver = null;
 
     BaiduSpeechManager baiduSpeechManager;
-
-    AliSpeechManager mAliSpeechManager;
 
     protected Handler mainHandler;
     /**
@@ -993,27 +990,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                         initBaiduSpeech();
                         initNotificationBar();
                     }
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-//                    initBaiduFloatView();
-                    if (!mSpeechModel) {
-                        mainHandler = new Handler() {
-                            /*
-                             * @param msg
-                             */
-                            @Override
-                            public void handleMessage(Message msg) {
-                                super.handleMessage(msg);
-                                handle(msg);
-                            }
-
-                        };
-                        mSpeechModel = true;
-                        if (floatView != null) {
-                            floatView.show();
-                        }
-                        initAliSpeechManager();
-                        initNotificationBar();
-                    }
                 }
 
 //            } else {
@@ -1136,9 +1112,8 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
 
     private void showSpeechPopupWindow() {
         if (mSpeechPopupWindow == null) {
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         }
         mSpeechPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
 
@@ -1239,15 +1214,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
             }
         }
 
-        if (mAliSpeechManager != null) {
-            mAliSpeechManager.destory();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            }else{
-                mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-            }
-        }
-
         if (floatView != null) {
             floatView.hide();
             floatView = null;
@@ -1290,19 +1256,16 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
         if (mXunFeiSpeechManager == null) {
             showProgressDialog("加载中……");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
@@ -1342,24 +1305,63 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
         }
 
         String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
+        if (TextUtils.isEmpty(remarkTxt)) {
+            showToastMsg("无法获取朗读内容");
+            return;
+        }
         refreshChapterRemark(true, remarkTxt);
         remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
         SystemConfig.readContent = remarkTxt;
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+        
+        // 修复：添加朗读引擎的空指针检查
+        try {
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                if (mXunFeiSpeechManager == null) {
+                    showToast("讯飞语音未初始化");
+                    return;
+                }
+                mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                if (baiduSpeechManager == null) {
+                    showToast("百度语音未初始化");
+                    return;
+                }
 //            baiduSpeechManager.batchSpeak(remarkTxt);
-            String txt = remarkTxt.replaceAll("行", "行(xing2)");
-            baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-            String txt = remarkTxt;
-            mAliSpeechManager.speak(txt);
+                String txt = remarkTxt.replaceAll("行", "行(xing2)");
+                baiduSpeechManager.speak(txt);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("BaikeSpeech", "startSpeech error: " + e.getMessage());
+            showToast("朗读失败：" + e.getMessage());
         }
     }
 
     private String getSpeechContent(final int index, final int position) {
-        final String remarkTxt = mSpeechTextMap.get(index).get(position);
-        return remarkTxt;
+        try {
+            if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) {
+                Log.e("BaikeSpeech", "mSpeechTextMap is null or empty");
+                return "";
+            }
+            
+            List<String> textList = mSpeechTextMap.get(index);
+            if (textList == null || textList.isEmpty()) {
+                Log.e("BaikeSpeech", "textList is null or empty for index: " + index);
+                return "";
+            }
+            
+            if (position < 0 || position >= textList.size()) {
+                Log.e("BaikeSpeech", "position out of range: " + position + ", size: " + textList.size());
+                return "";
+            }
+            
+            final String remarkTxt = textList.get(position);
+            return remarkTxt != null ? remarkTxt : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("BaikeSpeech", "getSpeechContent error: " + e.getMessage());
+            return "";
+        }
     }
 
     /**
@@ -1509,8 +1511,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                 HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -1534,8 +1534,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                     mXunFeiSpeechManager.stopSpeaking();
                 } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     baiduSpeechManager.stop();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    mAliSpeechManager.stopOnOtherThread();
                 }
                 if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
                     HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
@@ -2391,8 +2389,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                 mXunFeiSpeechManager.stopSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                mAliSpeechManager.stopOnOtherThread();
             }
             HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
             if (floatView != null) {
@@ -2414,13 +2410,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                 SystemConstants.SPEECH_TYPE = 0;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()) {
-                    mAliSpeechManager.stopOnOtherThread();
-                    SystemConstants.SPEECH_TYPE = 0;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_play);
-                }
             }
 
         } else {
@@ -2435,13 +2424,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                 SystemConstants.SPEECH_TYPE = 1;
                 mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
                 contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                if (mAliSpeechManager.isExecuteFinish()) {
-                    mAliSpeechManager.resetSpeaking();
-                    SystemConstants.SPEECH_TYPE = 1;
-                    mSpeechPopupWindow.setButton(SystemConstants.SPEECH_TYPE);
-                    contentView.setImageViewResource(R.id.tv_stop, R.drawable.ic_stop);
-                }
             }
 
         }
@@ -2462,51 +2444,20 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
         if (baiduSpeechManager == null) {
             showProgressDialog("加载中。。。。");
             baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             if (floatView != null) {
                 floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
                 floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
             }
             mXunFeiSpeechManager.init(mTtsInitListener);
             //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
+            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
             mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             startSpeech();
         }
 
-    }
-
-    private void initAliSpeechManager() {
-        mSpeechPosition = 0;
-        mSpeechIndex = 0;
-        ListView listView = mBaikeReadSlidingAdapter.getCurrentListView();
-        int firstView = listView.getFirstVisiblePosition();
-        mSpeechIndex = firstView;
-        // 初始化合成对象
-        if (mAliSpeechManager == null) {
-            showProgressDialog("加载中。。。。");
-            baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager.setTtsListener(mTtsListener);
-            if (floatView != null) {
-                floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
-                floatView.setBaiduSpeechManager(baiduSpeechManager);
-                floatView.setAliSpeechManager(mAliSpeechManager);
-            }
-            mXunFeiSpeechManager.init(mTtsInitListener);
-            //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, mAliSpeechManager, this);
-            mSpeechPopupWindow.setOnClickListener(this);
-            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
-        } else {
-            startSpeech();
-        }
     }
 
     protected void handle(Message msg) {
@@ -2526,7 +2477,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                     mXunFeiSpeechManager = null;
                     baiduSpeechManager.release();
                     baiduSpeechManager = null;
-                    mAliSpeechManager = null;
                     if (floatView != null) {
                         floatView.hide();
                     }
@@ -2538,13 +2488,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                             mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
                         }
                     }
-                }
-                msg.what = PRINT;
-                break;
-            case INIT_ALI_SUCCESS:
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    dismissProgressDialog();
-                    startSpeech();
                 }
                 msg.what = PRINT;
                 break;
@@ -2575,8 +2518,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                     if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                         String txt = result3.replaceAll("行", "行(xing2)");
                         baiduSpeechManager.speak(txt);
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                        mAliSpeechManager.speak(remarkTxt);
                     }
 
                 }
@@ -2620,8 +2561,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
                 if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                     String txt = result3.replaceAll("行", "行(xing2)");
                     baiduSpeechManager.speak(txt);
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-                    mAliSpeechManager.speak(remarkTxt);
                 }
                 break;
             default:
@@ -2641,9 +2580,6 @@ public class BaikeActivity extends BaseActivity implements OnClickListener,
         if (action.isAvailable()) {
             if (mSpeechPopupWindow != null) {
                 mSpeechPopupWindow.netAvailable();
-            }
-            if (mAliSpeechManager != null) {
-                mAliSpeechManager.initialize();
             }
         }
 

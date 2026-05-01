@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StatFs;
@@ -80,13 +79,19 @@ public class WelcomeActivity extends BaseActivity {
     private ImageView ivImage;
     private CircleTextProgressbar circleCountDown;
     private List<ShouYeBean> welcomeBeanList = new ArrayList();
-
     private CustomView videoView;
+    private int videoDuration = 0;
+
+    // 并行状态标志：视频播放和 DB 加载同时进行，两者都完成才跳转
+    private volatile boolean isVideoFinished = false;
+    private volatile boolean isDBReady = false;
 
     // FIX: Handler 改为静态内部类 + WeakReference，避免内存泄漏
     private static class WelcomeHandler extends Handler {
         private final java.lang.ref.WeakReference<WelcomeActivity> mRef;
-        WelcomeHandler(WelcomeActivity activity) { mRef = new java.lang.ref.WeakReference<>(activity); }
+        WelcomeHandler(WelcomeActivity activity) {
+            mRef = new java.lang.ref.WeakReference<>(activity);
+        }
         @Override
         public void handleMessage(Message msg) {
             WelcomeActivity act = mRef.get();
@@ -109,23 +114,20 @@ public class WelcomeActivity extends BaseActivity {
     private final WelcomeHandler handler = new WelcomeHandler(this);
     private InitVideoBean initVideoBean;
 
-    // FIX: 原方法请求了 WRITE/READ_EXTERNAL_STORAGE
-    // Android 10+ 应用专属目录无需这两个权限；Android 13+ 上这两个权限已被系统拒绝且不会弹框
-    // 现只保留必要的网络权限请求，直接进行资源初始化
+    // FIX: 移除 WRITE/READ_EXTERNAL_STORAGE，Android 10+ 应用专属目录无需这两个权限
     private void requestPermissions() {
         PermissionsUtil.requestPermission(getApplication(), new PermissionListener() {
-                    @Override
-                    public void permissionGranted(@NonNull String[] permissions) {
-                        initResource();
-                    }
-                    @Override
-                    public void permissionDenied(@NonNull String[] permissions) {
-                        // FIX: 网络权限异常时不强制退出，继续初始化
-                        initResource();
-                    }
-                },
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.ACCESS_NETWORK_STATE);
+            @Override
+            public void permissionGranted(@NonNull String[] permissions) {
+                initResource();
+            }
+            @Override
+            public void permissionDenied(@NonNull String[] permissions) {
+                initResource();
+            }
+        },
+        Manifest.permission.ACCESS_WIFI_STATE,
+        Manifest.permission.ACCESS_NETWORK_STATE);
     }
 
     private void initResource() {
@@ -139,12 +141,12 @@ public class WelcomeActivity extends BaseActivity {
         HuDongApplication.getInstance().setShowVersion(isShowVersion);
         HuDongApplication.getInstance().setDebug(isDebug);
         DatabaseManager.initDB();
+
         circleCountDown.setCountdownProgressListener(1, new CircleTextProgressbar.OnCountdownProgressListener() {
             @Override
             public void onProgress(int what, int progress, long progressTime) {
                 if (progress <= 0) {
                     circleCountDown.setText("跳过");
-                    //倒计时结束
                     if (!skip) {
                         initData();
                     }
@@ -152,9 +154,9 @@ public class WelcomeActivity extends BaseActivity {
                     long time = recLen - progressTime / 1000;
                     circleCountDown.setText(time + "");
                 }
-
             }
         });
+
         circleCountDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,20 +169,23 @@ public class WelcomeActivity extends BaseActivity {
                 }
             }
         });
+
         if (!PreferenceConfig.getVersionCode(this).equals(SystemUtils.getVersionName(this))) {
-            //第一次启动
+            // 第一次启动，从服务器获取视频配置
             NetUtil.get(ZConfig.SERVICE_URL + "/api/v1/systems/first", null, new NetUtil.CallBack() {
                 @Override
                 public void onSuccess(String t) {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (isFinishing() || isDestroyed()) return;
                     initVideoBean = new Gson().fromJson(t, InitVideoBean.class);
-                    if (initVideoBean != null && initVideoBean.data != null && initVideoBean.data.open == 1 && !TextUtils.isEmpty(initVideoBean.data.url)) {
+                    if (initVideoBean != null && initVideoBean.data != null
+                            && initVideoBean.data.open == 1
+                            && !TextUtils.isEmpty(initVideoBean.data.url)) {
+
+                        // 显示跳过按钮
+                        int totalTime = parseInt(initVideoBean.data.time);
                         circleCountDown.setVisibility(View.VISIBLE);
                         circleCountDown.setTextColor(Color.WHITE);
                         circleCountDown.setText(initVideoBean.data.time);
-                        int totalTime = parseInt(initVideoBean.data.time);
                         circleCountDown.setTimeMillis(totalTime * 1000);
                         circleCountDown.setCountdownProgressListener(1, new CircleTextProgressbar.OnCountdownProgressListener() {
                             @Override
@@ -194,10 +199,18 @@ public class WelcomeActivity extends BaseActivity {
                             }
                         });
                         circleCountDown.start();
+
+                        // 播放视频
                         videoView.setVisibility(View.VISIBLE);
                         ivImage.setVisibility(View.GONE);
+                        videoView.setBackgroundColor(android.graphics.Color.BLACK);
                         videoView.setVideoURI(Uri.parse(initVideoBean.data.url));
                         videoView.start();
+
+                        // *** 关键优化：视频播放的同时并行加载 DB，不等视频结束再加载 ***
+                        isVideoFinished = false;
+                        isDBReady = false;
+                        initDataParallel();
 
                         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                             @Override
@@ -205,19 +218,25 @@ public class WelcomeActivity extends BaseActivity {
                                 mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
                                     @Override
                                     public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                                        if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
-                                            videoView.setBackgroundColor(Color.TRANSPARENT);
+                                        if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                                            // 第一帧渲染后去掉黑色背景，避免黑屏闪烁
+                                            videoView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                                        }
                                         return true;
                                     }
                                 });
                             }
                         });
+
                         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
                             public void onCompletion(MediaPlayer mp) {
-                                initData();
+                                // 视频播完，标记视频完成，检查 DB 是否也已就绪
+                                isVideoFinished = true;
+                                checkBothReady();
                             }
                         });
+
                     } else {
                         initData();
                     }
@@ -226,9 +245,7 @@ public class WelcomeActivity extends BaseActivity {
                 @Override
                 public void onError(String t) {
                     super.onError(t);
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (isFinishing() || isDestroyed()) return;
                     initData();
                 }
             });
@@ -237,41 +254,164 @@ public class WelcomeActivity extends BaseActivity {
         }
     }
 
-    private int parseInt(String time) {
-        if (TextUtils.isEmpty(time)) {
-            return 0;
+    /**
+     * 检查视频和 DB 是否都已完成，都完成才跳转主界面
+     */
+    private void checkBothReady() {
+        if (isVideoFinished && isDBReady) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    goMain();
+                }
+            });
         }
-        return Integer.parseInt(time);
     }
 
     /**
-     * 连服务器查询欢迎页
+     * 在子线程并行加载 DB，加载完成后标记 isDBReady=true
      */
+    private void initDataParallel() {
+        ThreadUtil.execute(new Runnable() {
+            @Override
+            public void run() {
+                doInitData();
+            }
+        });
+    }
+
+    /**
+     * DB 加载核心逻辑（在子线程中执行，UI 操作切回主线程）
+     */
+    private void doInitData() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                initUMeng();
+            }
+        });
+
+        if (!PreferenceConfig.getVersionCode(WelcomeActivity.this).equals(SystemUtils.getVersionName(WelcomeActivity.this))) {
+            // 第一次启动，需要拷贝 DB
+            String[] toast = {
+                getResources().getString(R.string.hint_first_1),
+                getResources().getString(R.string.hint_first_2),
+                getResources().getString(R.string.hint_first_3),
+                getResources().getString(R.string.hint_first_4),
+                getResources().getString(R.string.hint_first_5)
+            };
+            SharedPreferencesUtils.saveBooklibCode(HuDongApplication.getInstance(), "202010011908");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    copyDB(toast);
+                }
+            });
+            // copyDB 内部会发 handler.sendEmptyMessage(4) 完成跳转，此处不设 isDBReady
+        } else {
+            String filePath = HuDongApplication.getInstance().getDBDir();
+            File zipFile = new File(filePath + "/hudong.db");
+            long length = 0;
+            try {
+                InputStream inputStream = getAssets().open("hudong.db");
+                length = inputStream.available();
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (length > 0 && (!zipFile.exists() || zipFile.length() != length)) {
+                if (zipFile.exists()) zipFile.delete();
+                String[] toast = {
+                    getResources().getString(R.string.hint_first_1),
+                    getResources().getString(R.string.hint_first_2),
+                    getResources().getString(R.string.hint_first_3),
+                    getResources().getString(R.string.hint_first_4),
+                    getResources().getString(R.string.hint_first_5)
+                };
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        copyDB(toast);
+                    }
+                });
+                // copyDB 内部会发 handler.sendEmptyMessage(4) 完成跳转，此处不设 isDBReady
+            } else {
+                // DB 已就绪，标记完成并检查是否可以跳转
+                HomeDataManager.getInstance().updateSuccessRefreshHomeCategoryVolumes();
+                isDBReady = true;
+                checkBothReady();
+            }
+        }
+    }
+
+    /**
+     * 非视频流程（点击跳过、倒计时结束等）直接调用此方法
+     */
+    private void initData() {
+        initUMeng();
+        if (!PreferenceConfig.getVersionCode(this).equals(SystemUtils.getVersionName(this))) {
+            String[] toast = {
+                getResources().getString(R.string.hint_first_1),
+                getResources().getString(R.string.hint_first_2),
+                getResources().getString(R.string.hint_first_3),
+                getResources().getString(R.string.hint_first_4),
+                getResources().getString(R.string.hint_first_5)
+            };
+            SharedPreferencesUtils.saveBooklibCode(HuDongApplication.getInstance(), "202010011908");
+            copyDB(toast);
+        } else {
+            String filePath = HuDongApplication.getInstance().getDBDir();
+            File zipFile = new File(filePath + "/hudong.db");
+            long length = 0;
+            try {
+                InputStream inputStream = getAssets().open("hudong.db");
+                length = inputStream.available();
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (length > 0 && (!zipFile.exists() || zipFile.length() != length)) {
+                if (zipFile.exists()) zipFile.delete();
+                String[] toast = {
+                    getResources().getString(R.string.hint_first_1),
+                    getResources().getString(R.string.hint_first_2),
+                    getResources().getString(R.string.hint_first_3),
+                    getResources().getString(R.string.hint_first_4),
+                    getResources().getString(R.string.hint_first_5)
+                };
+                copyDB(toast);
+            } else {
+                HomeDataManager.getInstance().updateSuccessRefreshHomeCategoryVolumes();
+                if (!jump) {
+                    goMain();
+                }
+            }
+        }
+    }
+
+    private int parseInt(String time) {
+        if (TextUtils.isEmpty(time)) return 0;
+        return Integer.parseInt(time);
+    }
+
     private void initWelcomeInfo(final boolean isNet) {
         ThreadUtil.doOnOtherThread(new Runnable() {
             @Override
             public void run() {
-                //获取本地缓存
                 String locJson = SharedPreferencesUtils.getWelcomeInfo(ATHIS);
                 if (StringUtil.isNotEmpty(locJson)) {
                     try {
                         welcomeBeanList = JSONObject.parseArray(locJson, ShouYeBean.class);
-                        Iterator<ShouYeBean> shouYeBeanterator = welcomeBeanList.iterator();
-                        while (shouYeBeanterator.hasNext()) {
-                            ShouYeBean shouYeBean = shouYeBeanterator.next();
-                            if (TimeUtils.getTime(shouYeBean.getEnddate().getVal()) < TimeUtils.getNowStamp()) {
-                                //结束时间小于当前时间（已过期）
+                        Iterator<ShouYeBean> it = welcomeBeanList.iterator();
+                        while (it.hasNext()) {
+                            ShouYeBean bean = it.next();
+                            if (TimeUtils.getTime(bean.getEnddate().getVal()) < TimeUtils.getNowStamp()) {
                                 try {
-                                    File file = new File(SystemConstants.APP_PATH + shouYeBean.getPicFileName());
-                                    if (file.exists()) {
-                                        //删除
-                                        file.delete();
-                                        //已过期移除
-                                        welcomeBeanList.remove(shouYeBean);
-                                        continue;
-                                    }
-                                    welcomeBeanList.remove(shouYeBean);
+                                    File file = new File(SystemConstants.APP_PATH + bean.getPicFileName());
+                                    if (file.exists()) file.delete();
+                                    it.remove();
                                 } catch (Exception e) {
+                                    it.remove();
                                 }
                             }
                         }
@@ -284,11 +424,7 @@ public class WelcomeActivity extends BaseActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (isNet) {
-                                goMainActivity();
-                            } else {
-                                goMainActivity();
-                            }
+                            goMainActivity();
                         }
                     });
                 }
@@ -296,70 +432,54 @@ public class WelcomeActivity extends BaseActivity {
         });
     }
 
-
-    //处理welcome获取的数据
     private void dealWelcome() {
         if (welcomeBeanList == null || welcomeBeanList.isEmpty()) {
             goMainActivity();
             return;
         }
         for (ShouYeBean shouYeBean : welcomeBeanList) {
-            //保存图片到本地
             try {
                 File file = new File(SystemConstants.APP_PATH + shouYeBean.getPicFileName());
                 if (file.exists()) {
-//                    已缓存，不用下载
                     shouYeBean.setLocPicFilePath(SystemConstants.APP_PATH + shouYeBean.getPicFileName());
                     continue;
                 }
                 DownloadFileUtils.downLoadFromUrl(shouYeBean.getPic_url(), shouYeBean.getPicFileName(), SystemConstants.APP_PATH);
-                //
                 shouYeBean.setLocPicFilePath(SystemConstants.APP_PATH + shouYeBean.getPicFileName());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        //保存启动页信息
         SharedPreferencesUtils.saveWelcomeInfo(this, JSONObject.toJSONString(welcomeBeanList));
-        //通知页面更新
         Message message = new Message();
         message.what = 3;
         handler.sendMessage(message);
     }
 
-    //展示启动页图片
     private void showWelcomeImage() {
         if (welcomeBeanList != null && !welcomeBeanList.isEmpty()) {
-            //获取上一次展示的下标
             int showNowIndex = SharedPreferencesUtils.getShowNow(WelcomeActivity.this);
             if (showNowIndex == -1 || showNowIndex >= welcomeBeanList.size() - 1) {
                 showNowIndex = 0;
             } else {
                 showNowIndex++;
             }
-            //展示图片
             int showType = welcomeBeanList.get(showNowIndex).getType();
-
             switch (showType) {
                 case 1:
-                    //每次启动都打开
-                    //展示图片
                     SharedPreferencesUtils.saveShowNow(WelcomeActivity.this, showNowIndex);
                     displayImage(showNowIndex);
                     break;
                 case 2:
-                    //每天启动一次
-                    if (!SharedPreferencesUtils.getShowDate(WelcomeActivity.this).equals(TimeUtils.getDate())) {//如果不是今天
+                    if (!SharedPreferencesUtils.getShowDate(WelcomeActivity.this).equals(TimeUtils.getDate())) {
                         SharedPreferencesUtils.saveShowDate(WelcomeActivity.this, TimeUtils.getDate());
                         SharedPreferencesUtils.saveShowNow(WelcomeActivity.this, showNowIndex);
-                        //展示图片
                         displayImage(showNowIndex);
                     } else {
                         goMainActivity();
                     }
                     break;
                 default:
-                    //
                     goMainActivity();
                     break;
             }
@@ -368,59 +488,46 @@ public class WelcomeActivity extends BaseActivity {
         }
     }
 
-    /**
-     * 展示图片
-     *
-     * @param index
-     */
     private void displayImage(int index) {
         recLen = Integer.valueOf(welcomeBeanList.get(index).getShowtime());
         url = welcomeBeanList.get(index).getLink();
-
         Picasso.get()
-                .load(StringUtil.isNotEmpty(welcomeBeanList.get(index).getLocPicFilePath()) ? "file://" + welcomeBeanList.get(index).getLocPicFilePath() : welcomeBeanList.get(index).getPic_url())
-                .resize(DensityUtil.dip2px(200), DensityUtil.dip2px(230))
-                .into(new Target() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap loadedImage, Picasso.LoadedFrom from) {
-                        if (loadedImage != null) {
-                            ivImage.setImageBitmap(loadedImage);
-                        }
-                        circleCountDown.setVisibility(View.VISIBLE);
-                        circleCountDown.setText(recLen + "");
-                        circleCountDown.setTimeMillis(1000 * recLen);
-                        circleCountDown.start();
-                        HuDongApplication.getInstance().getFileSystem().put(SystemConfig.WELCOME_IMAGE_KEY, loadedImage, 3600);
-
-                        ivImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                try {
-                                    if (StringUtil.isEmpty(url) || !SystemUtils.isOnline(WelcomeActivity.this)) {
-                                        return;
-                                    }
-                                    SystemUtils.jumpToUrl(ATHIS, url);
-                                    jump = true;
-                                    circleCountDown.stop();
-                                    circleCountDown.setText("跳过");
-                                    circleCountDown.setProgress(0);
-                                } catch (final Exception e) {
-                                    XToast.showToast(WelcomeActivity.this, "网页地址未提供，或者无需提供！");
-                                }
+            .load(StringUtil.isNotEmpty(welcomeBeanList.get(index).getLocPicFilePath())
+                ? "file://" + welcomeBeanList.get(index).getLocPicFilePath()
+                : welcomeBeanList.get(index).getPic_url())
+            .resize(DensityUtil.dip2px(200), DensityUtil.dip2px(230))
+            .into(new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap loadedImage, Picasso.LoadedFrom from) {
+                    if (loadedImage != null) ivImage.setImageBitmap(loadedImage);
+                    circleCountDown.setVisibility(View.VISIBLE);
+                    circleCountDown.setText(recLen + "");
+                    circleCountDown.setTimeMillis(1000 * recLen);
+                    circleCountDown.start();
+                    HuDongApplication.getInstance().getFileSystem().put(SystemConfig.WELCOME_IMAGE_KEY, loadedImage, 3600);
+                    ivImage.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                if (StringUtil.isEmpty(url) || !SystemUtils.isOnline(WelcomeActivity.this)) return;
+                                SystemUtils.jumpToUrl(ATHIS, url);
+                                jump = true;
+                                circleCountDown.stop();
+                                circleCountDown.setText("跳过");
+                                circleCountDown.setProgress(0);
+                            } catch (Exception e) {
+                                XToast.showToast(WelcomeActivity.this, "网页地址未提供，或者无需提供！");
                             }
-                        });
-                    }
-
-                    @Override
-                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {//音频封面加载失败
-                        goMainActivity();
-                    }
-
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                    }
-                });
+                        }
+                    });
+                }
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                    goMainActivity();
+                }
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {}
+            });
     }
 
     private void goMainActivity() {
@@ -432,30 +539,21 @@ public class WelcomeActivity extends BaseActivity {
         });
     }
 
-
-    /**
-     * 检查本地的激活状态
-     */
     private void checkLocalActivationState() {
         check();
     }
 
     private void check() {
-        if (SystemUtils.isOnline(ATHIS)) {//有网络访问服务器
+        if (SystemUtils.isOnline(ATHIS)) {
             if (AccountManager.getInstance().isLogin()) {
-                //重置显示状态
-                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_home_list_type, true)) {
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_home_list_type, true))
                     SharedUtil.putBoolean(PreferenceConfig.Preference_home_list_type, true);
-                }
-                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_home_sort_type, true)) {
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_home_sort_type, true))
                     SharedUtil.putBoolean(PreferenceConfig.Preference_home_sort_type, true);
-                }
-                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_history_search_visible, true)) {
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_history_search_visible, true))
                     SharedUtil.putBoolean(PreferenceConfig.Preference_history_search_visible, true);
-                }
-                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_short_paragraphs_visible, true)) {
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate() && !SharedUtil.getBoolean(PreferenceConfig.Preference_short_paragraphs_visible, true))
                     SharedUtil.putBoolean(PreferenceConfig.Preference_short_paragraphs_visible, true);
-                }
                 jumpActivity();
             } else {
                 jumpActivity();
@@ -470,121 +568,49 @@ public class WelcomeActivity extends BaseActivity {
         }
     }
 
-
-    private void initData() {
-        initUMeng();
-        long l = System.currentTimeMillis();
-        if (!PreferenceConfig.getVersionCode(this).equals(SystemUtils.getVersionName(this))) {
-            String[] toast = {getResources().getString(R.string.hint_first_1), getResources().getString(R.string.hint_first_2),
-                    getResources().getString(R.string.hint_first_3), getResources().getString(R.string.hint_first_4), getResources().getString(R.string.hint_first_5)};
-            //设置书籍识别码,一定是数字类型的，不能有任何非数据的符号出现在里面，包括空格
-            String bookCode = "202010011908";
-            SharedPreferencesUtils.saveBooklibCode(HuDongApplication.getInstance(), bookCode);
-            copyDB(toast);
-        } else {
-            String filePath = HuDongApplication.getInstance().getDBDir();
-            File zipFile = new File(filePath + "/hudong.db");
-            InputStream inputStream = null;
-            long length = 0;
-            try {
-                inputStream = getAssets().open("hudong.db");
-                length = inputStream.available();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                        inputStream = null;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            if (length > 0 && (!zipFile.exists() || zipFile.length() != length)) {
-                if (zipFile.exists()) {
-                    zipFile.delete();
-                }
-                String[] toast = {getResources().getString(R.string.hint_first_1), getResources().getString(R.string.hint_first_2),
-                        getResources().getString(R.string.hint_first_3), getResources().getString(R.string.hint_first_4), getResources().getString(R.string.hint_first_5)};
-                copyDB(toast);
-            } else {
-                HomeDataManager.getInstance().updateSuccessRefreshHomeCategoryVolumes();
-                if (!jump) {//!updateDatabase() &&  447631360
-                    goMain();
-                }
-            }
-        }
-    }
-
     private void copyDB(String[] toast) {
-        //判断空间是否充足
         long availableSize = getAvailableSize();
         String filePath = HuDongApplication.getInstance().getDBDir();
-        File dirFile = new File(filePath);
-
         File zipFile = new File(filePath + "/hudong.db");
-        InputStream inputStream = null;
         long length = 0;
         try {
-            inputStream = getAssets().open("hudong.db");
+            InputStream inputStream = getAssets().open("hudong.db");
             length = inputStream.available();
+            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                    inputStream = null;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
         if (availableSize < length) {
-            //空间不足
             DialogUtils.showSureDialog(this, "温馨提示", "您的手机存储空间不足，请先清理空间后使用", "确定", new DialogUtils.onDialogClickListener() {
                 @Override
-                public void onCancel(Dialog dialog) {
-                }
-
+                public void onCancel(Dialog dialog) {}
                 @Override
-                public void onOk(Dialog dialog) {
-                    finish();
-                }
+                public void onOk(Dialog dialog) { finish(); }
             });
             return;
         }
-        //先删除目录
-//        dirFile.delete();
-
         Random random = new Random();
-        int i = random.nextInt(toast.length);
-        String hint = toast[i];
+        String hint = toast[random.nextInt(toast.length)];
         final WelcomeBookProgressDialog dialog = new WelcomeBookProgressDialog(this, "加载中", true, hint);
-        if (!dialog.isShowing())
-            dialog.show();
-        Window mWindow = dialog.getWindow();
-        mWindow.setGravity(Gravity.BOTTOM);
+        if (!dialog.isShowing()) dialog.show();
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
         dialog.setMaxProgress(500);
+        final long finalLength = length;
         ThreadUtil.execute(new Runnable() {
+            @Override
             public void run() {
                 ThreadUtil.ProgressThread progressThread = new ThreadUtil.ProgressThread(500, dialog.getProgressBar(), dialog.getProgress(), 33);
                 ThreadUtil.execute(progressThread);
                 new File(filePath).mkdir();
                 FileUtil.copyDBToSD(ATHIS, "hudong.db", zipFile.getAbsolutePath());
-//                    Zip4jUtils.uncompressZip4j(filePath + "/hudong.db.zip", filePath, SystemConfig.ZIP_PASSWORD);
                 progressThread.setStop(true);
                 HomeDataManager.getInstance().updateSuccessRefreshHomeCategoryVolumes();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            if (dialog != null && dialog.isShowing()) {
-                                dialog.dismiss();
-                            }
-                        } catch (Exception e) {
-                        }
+                            if (dialog != null && dialog.isShowing()) dialog.dismiss();
+                        } catch (Exception e) {}
                     }
                 });
                 handler.sendEmptyMessage(4);
@@ -592,14 +618,10 @@ public class WelcomeActivity extends BaseActivity {
         });
     }
 
-    // FIX: 原方法用 Environment.getExternalStorageDirectory() 检测 SD 卡空间
-    // Android 10+ 访问 SD 卡根目录受限，改为检测内部存储剩余空间
+    // FIX: 改为检测内部存储空间，原 SD 卡根目录在 Android 10+ 受限
     private long getAvailableSize() {
-        // FIX: 使用应用内部存储路径（data 分区）代替 SD 卡根目录
         StatFs sf = new StatFs(android.os.Environment.getDataDirectory().getAbsolutePath());
-        long blockSize = sf.getBlockSizeLong();
-        long availCount = sf.getAvailableBlocksLong();
-        return availCount * blockSize;
+        return sf.getAvailableBlocksLong() * sf.getBlockSizeLong();
     }
 
     @Override
@@ -608,27 +630,22 @@ public class WelcomeActivity extends BaseActivity {
     }
 
     private void goMain() {
-        //检查登录
         checkLocalActivationState();
     }
 
     private boolean isJumpNext = false;
 
     private void jumpActivity() {
-        if (isJumpNext == true) {
-            return;
-        }
+        if (isJumpNext) return;
         isJumpNext = true;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //判断是否登录
                 if (AccountManager.getInstance().isLogin()) {
                     Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
-                    //未登录，跳转登录页
                     WeixinLoginActivity.launchAct(WelcomeActivity.this);
                     finish();
                 }
@@ -644,37 +661,24 @@ public class WelcomeActivity extends BaseActivity {
             String des = "";
             if (passWord != null && !"".equals(passWord)) {
                 for (int i = 0; i < passWord.length(); i++) {
-                    if (passWord.charAt(i) >= 48 && passWord.charAt(i) <= 57) {
-                        des += passWord.charAt(i);
-                    }
+                    char c = passWord.charAt(i);
+                    if (c >= 48 && c <= 57) des += c;
                 }
             }
             LogUtil.test("netpassWord：" + des);
-            if (!StringUtil.isEmpty(des)) {
-                DES.setPassword(des);
-            }
+            if (!StringUtil.isEmpty(des)) DES.setPassword(des);
             HuDongApplication.getInstance().getFileSystem().put("desPassWord", des);
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
     }
 
     private void getVideoData() {
         requestPermissions();
     }
 
-    /**
-     * 获取meta-data中的值
-     *
-     * @param key
-     * @return
-     */
     public Object getMetaData(String key) {
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            bundle.getBoolean("");
-            Object value = bundle.get(key);
-            return value;
+            return ai.metaData.get(key);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -683,15 +687,11 @@ public class WelcomeActivity extends BaseActivity {
 
     private void initUMeng() {
         try {
-            ApplicationInfo applicationInfo = getApplicationContext().getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            if (applicationInfo != null) {
-                if (applicationInfo.metaData != null) {
-                    int channelId = applicationInfo.metaData.getInt("DISTRIBUTE_CHANNEL", -1);
-                    if (channelId == -1)
-                        channelId = 0;
-                    String appkey = applicationInfo.metaData.getString("UMENG_APPKEY");
-//                    MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(getApplicationContext(), appkey, String.valueOf(channelId)));
-                }
+            ApplicationInfo applicationInfo = getApplicationContext().getPackageManager()
+                .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            if (applicationInfo != null && applicationInfo.metaData != null) {
+                int channelId = applicationInfo.metaData.getInt("DISTRIBUTE_CHANNEL", 0);
+                // String appkey = applicationInfo.metaData.getString("UMENG_APPKEY");
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -714,16 +714,13 @@ public class WelcomeActivity extends BaseActivity {
         mImmersionBar = ImmersionBar.with(this);
         mImmersionBar.reset();
         mImmersionBar.init();
-
         getVideoData();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mImmersionBar != null) {
-            mImmersionBar.destroy();
-        }
+        if (mImmersionBar != null) mImmersionBar.destroy();
         if (circleCountDown != null) {
             circleCountDown.stop();
             circleCountDown = null;
@@ -731,17 +728,14 @@ public class WelcomeActivity extends BaseActivity {
         handler.removeCallbacksAndMessages(null);
     }
 
-    private int duration = 0;
-
     @Override
     protected void onPause() {
         super.onPause();
         if (videoView != null) {
             videoView.pause();
-            duration = videoView.getCurrentPosition();
+            videoDuration = videoView.getCurrentPosition();
         }
     }
-
 
     @Override
     protected void onResume() {
@@ -749,14 +743,11 @@ public class WelcomeActivity extends BaseActivity {
         if (jump) {
             jump = false;
             goMain();
-        } else if (!isFirstResume) {
-//            goMain();
         }
         isFirstResume = false;
         if (videoView != null) {
             videoView.start();
-            videoView.seekTo(duration);
+            videoView.seekTo(videoDuration);
         }
     }
-
 }

@@ -42,7 +42,6 @@ import com.read.scriptures.config.ZConfig;
 import com.read.scriptures.control.BaiduSpeechManager;
 import com.read.scriptures.manager.AccountManager;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.manager.alispeech.AliSpeechManager;
 import com.read.scriptures.net.NetworkUtils;
 import com.read.scriptures.ui.activity.base.BaseActivity;
 import com.read.scriptures.ui.fragment.LevelQuestionFragment;
@@ -743,7 +742,6 @@ public class StartAnswerActivity extends BaseActivity {
 
     private XunFeiSpeechManager mXunFeiSpeechManager;
     private BaiduSpeechManager baiduSpeechManager;
-    private AliSpeechManager mAliSpeechManager;
 
     private void initSpeechTts(String str) {
         // 初始化合成对象
@@ -752,8 +750,6 @@ public class StartAnswerActivity extends BaseActivity {
             mXunFeiSpeechManager = new XunFeiSpeechManager(this);
             mXunFeiSpeechManager.setTtsListener(mTtsListener);
             mXunFeiSpeechManager.init(mTtsInitListener);
-//            mAliSpeechManager = new AliSpeechManager(this, mainHandler);
-//            mAliSpeechManager.setSpeechPopupWindow(mSpeechPopupWindow);
         } else {
             mXunFeiSpeechManager.stopSpeaking();
             startSpeech(str);
@@ -772,8 +768,6 @@ public class StartAnswerActivity extends BaseActivity {
         mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
 //        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
 //            baiduSpeechManager.speak(remarkTxt);
-//        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_ALI) {
-//            mAliSpeechManager.speak(remarkTxt);
 //        }
     }
 

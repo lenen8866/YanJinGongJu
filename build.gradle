@@ -117,10 +117,10 @@ android {
 
     defaultConfig {
         applicationId "com.read.scriptures"
-        versionCode 36
+        versionCode 37
         // FIX: minSdkVersion 去掉重复声明，只保留一个，即 API 23
         minSdkVersion 23
-        versionName "1.9"
+        versionName "3.0"
         targetSdkVersion 29
         multiDexEnabled true
         ndk {

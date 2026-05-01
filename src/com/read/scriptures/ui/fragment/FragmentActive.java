@@ -262,8 +262,7 @@ public class FragmentActive extends Fragment implements View.OnClickListener {
     @BindView(R.id.tv_notice_history)
     TextView tv_notice_history;
 
-    @BindView(R.id.rg_service_setting)
-    RadioGroup rg_service_setting;
+    // rg_service_setting 已移除（在线客服功能已删除）
 
     public static final String PAY_TYPE_ALIPAY = "alipay";
     public static final String PAY_TYPE_WEICHAT = "wxpay";
@@ -491,23 +490,7 @@ public class FragmentActive extends Fragment implements View.OnClickListener {
             ll_pay_info.setVisibility(View.GONE);
             view_line.setVisibility(View.GONE);
         }
-        boolean isServiceOpen = PreferencesUtils.getBoolean(getActivity(), "service_is_open", true);
-        rg_service_setting.check(isServiceOpen ? R.id.rb_service_setting_left : R.id.rb_service_setting_right);
-        rg_service_setting.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.rb_service_setting_left://开启;
-                        PreferencesUtils.putBoolean(group.getContext(), "service_is_open", true);
-                        EventBus.getDefault().post("service_is_open");
-                        break;
-                    case R.id.rb_service_setting_right://隐藏
-                        PreferencesUtils.putBoolean(group.getContext(), "service_is_open", false);
-                        EventBus.getDefault().post("service_is_hide");
-                        break;
-                }
-            }
-        });
+        // 在线客服设置已移除
     }
 
     private void queryInfo() {

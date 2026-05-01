@@ -46,13 +46,6 @@ public class SystemConfig {
     public static final String BAIDU_APP_KEY = "5V5oacmSUuzdy1zzGRVTANjq";
     public static final String BAIDU_SECRET_KEY = "wbqhSQergCHWAtKuecfiPgkjBmfqxhEC";
 
-    /** 阿里语音 */
-    public static final String ALI_APP_KEY = "TkBeJ8ixAp7nVM83";
-    public static final String ALI_TOKEN = "8f4409a8fd754971b08a9ae191b9468c";//地区
-    public static final String ALI_AccessKey = "REMOVED_KEY_ID";//地区
-    public static final String ALI_AccessKey_Secret = "REMOVED_KEY_SECRET";//地区
-    //
-
 
     // TtsMode.MIX; 离在线融合，在线优先； TtsMode.ONLINE 纯在线； 没有纯离线
     public static TtsMode ttsMode = TtsMode.MIX;
@@ -64,10 +57,9 @@ public class SystemConfig {
 
     public static final int SPEECH_MODEL_XF = 1;//讯飞
     public static final int SPEECH_MODEL_BAIDU = 2;//百度
-    public static final int SPEECH_MODEL_ALI = 3;//阿里
 
 
-    public static int Speech_Model = SPEECH_MODEL_BAIDU;//1为讯飞，2为百度, 3为微软，4为阿里
+    public static int Speech_Model = SPEECH_MODEL_BAIDU;//1为讯飞，2为百度
     
     public static String readContent = "";
     /** splash加载延迟等待时间 */

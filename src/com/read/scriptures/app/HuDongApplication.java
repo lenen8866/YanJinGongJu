@@ -234,7 +234,7 @@ public class HuDongApplication extends EIApplication {
         createNotify();
         //初始化朗读模式
         int speachMode = SharedUtil.getInt(SystemConfig.SP_SPEACH_MODEL_KEY, SystemConfig.SPEECH_MODEL_BAIDU);
-        SystemConfig.Speech_Model = speachMode == SystemConfig.SPEECH_MODEL_ALI ? SystemConfig.SPEECH_MODEL_BAIDU : speachMode;
+        SystemConfig.Speech_Model = speachMode;
 
         addActivityLifecycleCallbacks();
         RxVolley.setRequestQueue(RequestQueue.newRequestQueue(RxVolley.CACHE_FOLDER, new OkHttpStack(new OkHttpClient())));

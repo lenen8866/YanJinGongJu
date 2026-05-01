@@ -740,63 +740,7 @@
                     </RadioGroup>
                 </RelativeLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/bgColor" />
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_white_column_selector"
-                    android:clickable="true"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="right"
-                        android:text="在线客服"
-                        android:textColor="@color/gray_333333"
-                        android:textSize="16sp" />
-
-                    <RadioGroup
-                        android:id="@+id/rg_service_setting"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:orientation="horizontal">
-
-                        <RadioButton
-                            android:id="@+id/rb_service_setting_left"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:button="@null"
-                            android:drawableRight="@drawable/selector_radiobutton_home_type"
-                            android:drawablePadding="@dimen/common_margin_8"
-                            android:text="显示"
-                            android:textColor="@color/rbtn_home_show_type_color_selector" />
-
-
-                        <RadioButton
-                            android:id="@+id/rb_service_setting_right"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="@dimen/common_margin_16"
-                            android:button="@null"
-                            android:drawableRight="@drawable/selector_radiobutton_home_type"
-                            android:drawablePadding="@dimen/common_margin_8"
-                            android:text="隐藏"
-                            android:textColor="@color/rbtn_home_show_type_color_selector" />
-
-
-                    </RadioGroup>
-                </RelativeLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/bgColor" />
 
 
                 <RelativeLayout
