@@ -982,6 +982,13 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
         // 朗读模式
         if (mSpeechModel) {
+            // 修复：弹窗打开前先读取当前内容赋値给 readContent
+            // 避免弹窗关闭时 startSpeaking 发现 readContent 为空而不播放
+            String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
+            if (!TextUtils.isEmpty(remarkTxt)) {
+                remarkTxt = remarkTxt.replace("<b>", "").replace("</b>", "");
+                SystemConfig.readContent = StringUtil.getRealSpeekText(remarkTxt);
+            }
             showSpeechPopupWindow();
             return;
         }

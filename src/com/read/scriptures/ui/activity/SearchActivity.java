@@ -1143,10 +1143,6 @@ public class SearchActivity extends BaseActivity implements OnClickListener {
                 bd.putParcelableArrayList(BundleConstants.PARAM_BOOK_MARK_LIST, list);
                 ActivityUtil.next(ATHIS, BookmarkEditActivity.class, bd, -1);
                 break;
-            case 2:
-                // 以短信发送
-                CommonUtil.callSystemSmsAction(ATHIS, "", bookmark.getReplaceContent());
-                break;
             case 3: {
                 // 复制
                 StringBuffer copy = new StringBuffer();

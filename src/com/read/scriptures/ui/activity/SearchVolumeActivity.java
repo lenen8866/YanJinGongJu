@@ -504,9 +504,6 @@ public class SearchVolumeActivity extends BaseActivity {
             bd.putParcelableArrayList(BundleConstants.PARAM_BOOK_MARK_LIST, list);
             ActivityUtil.next(ATHIS, BookmarkEditActivity.class, bd, -1);
             break;
-        case 2:
-            CommonUtil.callSystemSmsAction(ATHIS, "", bookmark.getContent());
-            break;
         case 3:
             StringBuffer copy = new StringBuffer();
             copy.append("《" + bookmark.getVolumeName() + "》");

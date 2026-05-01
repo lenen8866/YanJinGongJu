@@ -102,7 +102,10 @@ public class SpeechPopupWindow extends PopupWindow
         mXunFeiSpeechManager = xunFeiSpeechManager;
         mXunFeiSpeechManager.setPlayTimeChangeListener(this);
         mBaiduSpeechManager = baiduSpeechManager;
-        mBaiduSpeechManager.setPlayTimeChangeListener(this);
+        // 修复：模式A（百度）已隐藏，baiduSpeechManager 可能为 null，加判空保护
+        if (mBaiduSpeechManager != null) {
+            mBaiduSpeechManager.setPlayTimeChangeListener(this);
+        }
 //        if (SystemConfig.Speech_Model == 1){
 //            mSpeechManager = speechManager;
 //            mSpeechManager.setPlayTimeChangeListener(this);
@@ -575,10 +578,19 @@ public class SpeechPopupWindow extends PopupWindow
     public void dismiss() {
         super.dismiss();
         if (engineType == 0 && mSpeechModel) {
+            // 修复：直接调用 startSpeaking 而不是 resetSpeaking
+            // resetSpeaking 依赖 readContent 已赋値，如果为空则不播放
+            // startSpeaking 直接发送開始事件，由 ChapterReaderActivity.startSpeech() 处理
             if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                mXunFeiSpeechManager.resetSpeaking();
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                mBaiduSpeechManager.resetSpeaking();
+                mXunFeiSpeechManager.startSpeaking(
+                    SystemConfig.readContent.contains("行(xing2)")
+                        ? SystemConfig.readContent.replaceAll("行\\(xing2\\)", "行")
+                        : SystemConfig.readContent,
+                    mXunFeiSpeechManager.getTtsListener()
+                );
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                    && mBaiduSpeechManager != null) {
+                mBaiduSpeechManager.speak(SystemConfig.readContent);
             }
             setButton(1);
         }

@@ -239,18 +239,6 @@ public class NetworkManager {
         return null;
     }
 
-    /**
-     * 获取本机串号imei
-     *
-     * @param context
-     * @return
-     */
-    public static String getIMEI(Context context) {
-        TelephonyManager telephonyManager = (TelephonyManager) context
-                .getSystemService(Context.TELEPHONY_SERVICE);
-        return telephonyManager.getDeviceId();
-    }
-
     /***
      * 判断是否有外网连接（普通方法不能判断外网的网络是否连接，比如连接上局域网）
      *

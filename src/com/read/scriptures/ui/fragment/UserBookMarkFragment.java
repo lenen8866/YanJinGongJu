@@ -453,11 +453,6 @@ public class UserBookMarkFragment extends BaseFragment
         // 获取当前被选择的菜单项的信息
         Bookmark bookmark = mBookMarkListAdapter.getItem(onLongItemIndex);
         switch (menuItem.getItemId()) {
-            case 1:
-                // 已短信发送
-                //以短信方式发送
-                CommonUtil.callSystemSmsAction(getActivity(), "", bookmark.getContent());
-                break;
             case 2:
                 // 复制
                 StringBuffer copy = new StringBuffer();

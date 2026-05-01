@@ -47,8 +47,10 @@ public class SystemConfig {
     public static final String BAIDU_SECRET_KEY = "wbqhSQergCHWAtKuecfiPgkjBmfqxhEC";
 
 
-    // TtsMode.MIX; 离在线融合，在线优先； TtsMode.ONLINE 纯在线； 没有纯离线
-    public static TtsMode ttsMode = TtsMode.MIX;
+    // 修复：原来 TtsMode.MIX 会进行离线鉴权检验（auth()）
+    // 离线鉴权需要百度后台登记的包名与 App 包名一致，否则鉴权失败导致所有手机报「首次初始化需要连接网络」
+    // 改为 TtsMode.ONLINE （纯在线模式），不走 auth() 鉴权，有网就能用
+    public static TtsMode ttsMode = TtsMode.ONLINE;
 
     // 离线发音选择，VOICE_FEMALE即为离线女声发音。
     // assets目录下bd_etts_common_speech_m15_mand_eng_high_am-mix_v3.0.0_20170505.dat为离线男声模型；
@@ -59,7 +61,7 @@ public class SystemConfig {
     public static final int SPEECH_MODEL_BAIDU = 2;//百度
 
 
-    public static int Speech_Model = SPEECH_MODEL_BAIDU;//1为讯飞，2为百度
+    public static int Speech_Model = SPEECH_MODEL_XF;//默认讯飞，模式A（百度）已隐藏
     
     public static String readContent = "";
     /** splash加载延迟等待时间 */

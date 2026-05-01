@@ -195,49 +195,6 @@ public class CommonUtil {
     }
 
     /**
-     * 调用系统拨号
-     *
-     * @param context
-     * @param phone
-     */
-    public static void callSystemDialAction(Context context, String phone) {
-        Uri uri = Uri.parse("tel:" + phone);
-        Intent intent = new Intent(Intent.ACTION_DIAL, uri);
-        context.startActivity(intent);
-    }
-
-    /**
-     * 调用系统拨号
-     *
-     * @param context
-     * @param phone
-     */
-    public static void callSystemSmsAction(Context context, String phone, String content) {
-        content = content.replaceAll("〖(.*?)〗", "");
-        content = content.replaceAll("(?<=\\[)(.*?)(?=])", "");
-        content = content.replaceAll("(?<=\\{)[^}]*(?=\\})", "");
-        content = content.replaceAll("\\[\\]", "");
-        content = content.replaceAll("\\{\\}", "");
-        Uri uri = Uri.parse("smsto:" + phone);
-        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
-        intent.putExtra("sms_body", content);
-        context.startActivity(intent);
-    }
-
-    /**
-     * 调用系统发送短信
-     *
-     * @param context
-     * @param phone
-     */
-    public static void callSystemSmsAction(Context context, String phone) {
-        Uri uri = Uri.parse("smsto:" + phone);
-        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
-        intent.putExtra("sms_body", "");
-        context.startActivity(intent);
-    }
-
-    /**
      * 获取本地ip地址
      *
      * @return

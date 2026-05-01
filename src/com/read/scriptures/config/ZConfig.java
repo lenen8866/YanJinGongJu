@@ -43,11 +43,6 @@ public class ZConfig {
 //    public static final String OFFICAL_WEBSITE = "http://bbs.sdattg.com";
 //
 //    /**
-//     * 我的手机号
-//     */
-//    public static final String MY_PHONE = "17084904383";
-//
-//    /**
 //     * 支付URL
 //     */
 //    public static final String PAY_URL = "http://101.200.169.236/index.php/home/order/pay";

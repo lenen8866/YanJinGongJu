@@ -52,11 +52,13 @@
                 android:textColor="@color/voice_model_selector"
                 android:button="@null"
                 android:gravity="center"
-                android:checked="true"
+                android:checked="false"
+                android:visibility="gone"
                 android:text="@string/modelA" />
             <View
                 android:layout_width="5dp"
-                android:layout_height="5dp"/>
+                android:layout_height="5dp"
+                android:visibility="gone"/>
             <RadioButton
                 android:id="@+id/radio_engine"
                 android:layout_width="0dp"
@@ -66,6 +68,7 @@
                 android:textColor="@color/voice_model_selector"
                 android:button="@null"
                 android:gravity="center"
+                android:checked="true"
                 android:text="@string/modelB" />
             <View
                 android:layout_width="5dp"

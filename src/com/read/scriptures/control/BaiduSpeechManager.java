@@ -116,11 +116,16 @@ public class BaiduSpeechManager {
         // MIX_MODE_HIGH_SPEED_NETWORK ， 3G 4G wifi状态下使用在线，其它状态离线。在线状态下，请求超时1.2s自动转离线
         // MIX_MODE_HIGH_SPEED_SYNTHESIZE, 2G 3G 4G wifi状态下使用在线，其它状态离线。在线状态下，请求超时1.2s自动转离线
 
-        // 离线资源文件， 从assets目录中复制到临时目录，需要在initTTs方法前完成
+        // 离线资源文件，从 assets 目录中复制到临时目录
         OfflineResource offlineResource = createOfflineResource(SystemConfig.offlineVoice);
-        // 声学模型文件路径 (离线引擎使用), 请确认下面两个文件存在
-        params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilename());
-        params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilename());
+        // 修复：createOfflineResource 可能因 assets 文件不存在而返回 null
+        // 加 null 检查，避免 NullPointerException 导致崩溃
+        if (offlineResource != null) {
+            params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilename());
+            params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilename());
+        } else {
+            Log.e("BaiduSpeechManager", "离线语音资源加载失败，offlineResource 为 null，跳过离线模型参数设置");
+        }
         return params;
     }
 
