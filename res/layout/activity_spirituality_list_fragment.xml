@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <com.read.scriptures.EIUtils.ExpandGridView
+        android:id="@+id/baike_classify_gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:background="#faf7f7"
+        android:minHeight="40dp"
+        android:layout_alignParentTop="true"
+        android:scrollbars="horizontal" />
+
+    <View
+        android:id="@+id/dex_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/baike_classify_gridview"
+        android:background="@color/common_color_line_bg" />
+
+    <LinearLayout
+        android:id="@+id/layout_recent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/dex_line"
+        android:background="@drawable/bg_white_top_bottom_stroke"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="最近查看"
+            android:textColor="#ff424142"
+            android:textSize="16.0sp" />
+
+        <com.read.scriptures.EIUtils.ExpandGridView
+            android:id="@+id/gridview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
+            android:numColumns="3"
+            android:scrollbars="none" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_all_book"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_recent"
+        android:background="@drawable/bg_white_top_bottom_stroke"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="所有书籍"
+            android:textColor="#ff424142"
+            android:textSize="16.0sp" />
+
+        <ImageButton
+            android:id="@+id/time_pick"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:background="@drawable/sel_bg_trans_white"
+            android:contentDescription="@string/app_name"
+            android:padding="16dp"
+            android:src="@drawable/time_pick" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_centerInParent="true"
+            android:gravity="center_vertical"
+            android:text="@string/app_name"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+        <ImageButton
+            android:id="@+id/btn_today"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginRight="10dp"
+            android:layout_gravity="center"
+            android:background="@drawable/ico_today"
+            android:contentDescription="@string/app_name"
+            android:backgroundTint="#ff424142"
+            />
+    </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/ll_all_book">
+        <com.read.scriptures.widget.TouchInterceptSlidingView
+            android:id="@+id/sliding_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+             />
+        <TextView
+            android:id="@+id/tv_no_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="暂无书籍"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <!--<FrameLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/action_bar"-->
+        <!--&gt;-->
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical">-->
+            <!--<LinearLayout-->
+                <!--android:id="@+id/layout_recent"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_below="@+id/action_bar"-->
+                <!--android:orientation="vertical" >-->
+
+                <!--<TextView-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="36dp"-->
+                    <!--android:background="@drawable/bg_white_top_bottom_stroke"-->
+                    <!--android:gravity="center_vertical"-->
+                    <!--android:paddingLeft="16dp"-->
+                    <!--android:text="最近查看"-->
+                    <!--android:textColor="#ff424142"-->
+                    <!--android:textSize="16.0sp" />-->
+
+                <!--<com.lgmshare.eiframe.ui.widget.ExpandGridView-->
+                    <!--android:id="@+id/gridview"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:numColumns="3"-->
+                    <!--android:scrollbars="none" />-->
+            <!--</LinearLayout>-->
+
+            <!--<TextView-->
+                <!--android:id="@+id/layout_spirituality"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="36dp"-->
+                <!--android:layout_below="@+id/layout_recent"-->
+                <!--android:background="@drawable/bg_white_top_bottom_stroke"-->
+                <!--android:gravity="center_vertical"-->
+                <!--android:paddingLeft="16dp"-->
+                <!--android:text="所有书籍"-->
+                <!--android:textColor="#ff424142"-->
+                <!--android:textSize="16.0sp" />-->
+
+            <!--<com.read.scriptures.widget.TouchInterceptSlidingView-->
+                <!--android:id="@+id/sliding_layout"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:layout_alignParentBottom="true"-->
+                <!--android:layout_below="@+id/layout_spirituality" />-->
+        <!--</RelativeLayout>-->
+    <!--</FrameLayout>-->
+
+
+</RelativeLayout>

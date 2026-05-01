@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/ll_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:paddingTop="@dimen/common_margin_16"
+        android:paddingBottom="@dimen/common_margin_16"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_operation_all_checked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="80dp"
+            android:gravity="center"
+            android:drawableTop="@drawable/selector_operation_checked_all"
+            android:textColor="@color/selector_operation_text_color"
+            android:drawablePadding="@dimen/common_margin_8"
+            android:textSize="@dimen/txt_size_14"
+            android:text="全选"/>
+
+
+        <TextView
+            android:id="@+id/tv_operation_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="80dp"
+            android:gravity="center"
+            android:drawableTop="@drawable/selector_operation_top"
+            android:textColor="@color/selector_operation_text_color"
+            android:drawablePadding="@dimen/common_margin_8"
+            android:textSize="@dimen/txt_size_14"
+            android:text="置顶"/>
+
+        <TextView
+            android:id="@+id/tv_operation_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="80dp"
+            android:gravity="center"
+            android:drawableTop="@drawable/selector_operation_delete"
+            android:textColor="@color/selector_operation_text_color"
+            android:drawablePadding="@dimen/common_margin_8"
+            android:textSize="@dimen/txt_size_14"
+            android:text="删除"/>
+
+
+    </LinearLayout>
+    <com.baoyz.swipemenulistview.SwipeMenuListView
+        android:id="@+id/lv_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/ll_bottom"
+        android:dividerHeight="0dp"
+        android:divider="@color/transparent"/>
+
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp"
+        android:drawableTop="@drawable/ic_empty_annotation"
+        android:drawablePadding="20dp"
+        android:gravity="center"
+        android:text="你还没有阅读过任何书籍，快去阅读吧"
+        android:textSize="14sp"
+        android:visibility="gone"/>
+
+</RelativeLayout>

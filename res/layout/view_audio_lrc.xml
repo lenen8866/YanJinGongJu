@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#77000000">
+
+    <TextView
+        android:paddingRight="30dp"
+        android:paddingLeft="30dp"
+        android:id="@+id/tv_chapter_detail1"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+
+    <com.read.scriptures.view.lrc.LrcView
+        android:id="@+id/mlv_lrc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_chapter_detail1"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        app:currentIndicateLrcColor="#FFFF00"
+        app:indicatorTextColor="#FFFF00"
+        app:isLrcCurrentTextBold="true"
+        app:lrcCurrentTextColor="#FFFF00"
+        app:lrcLineSpaceSize="7dp"
+        app:lrcNormalTextColor="@color/white"
+        app:lrcTextSize="17sp"
+        app:noLrcTextColor="@color/white"
+        app:playIconHeight="40dp"
+        app:playIconWidth="40dp" />
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/iv_edit_lrc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/icon_edit_lrc" />
+
+</RelativeLayout>

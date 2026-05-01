@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_chapter_read"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#eeeeee"
+    android:orientation="vertical" >
+
+    <include
+        android:id="@+id/layout_title"
+        layout="@layout/layout_chapter_read_title" />
+
+    <View
+        android:id="@+id/dex_line"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#ff333333"
+        android:layout_below="@+id/layout_title" />
+
+    <com.read.scriptures.widget.TouchInterceptSlidingView
+        android:id="@+id/sliding_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_status"
+        android:layout_below="@+id/dex_line" />
+
+    <RelativeLayout
+        android:id="@+id/layout_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp" >
+
+        <TextView
+            android:id="@+id/tv_week"
+            style="@style/dg_33_14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true" />
+
+        <TextView
+            android:id="@+id/tv_book_name"
+            style="@style/dg_33_14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical" >
+
+            <TextView
+                android:id="@+id/tv_strong"
+                style="@style/dg_33_14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <com.read.scriptures.widget.BatteryView
+                android:id="@+id/battery_view"
+                android:layout_width="20dp"
+                android:layout_height="12dp"
+                android:layout_marginLeft="3dp" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_option"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/actionbar_height"
+        android:layout_alignParentTop="true"
+        android:background="#b0000000"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/btn_cancle"
+            style="@style/dg_white_18"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/cancel" />
+
+        <TextView
+            android:id="@+id/tv_select_num"
+            style="@style/dg_white_18"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+        <TextView
+            android:id="@+id/btn_complete"
+            style="@style/dg_white_18"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:paddingRight="16dp"
+            android:text="@string/complete" />
+    </RelativeLayout>
+
+</RelativeLayout>

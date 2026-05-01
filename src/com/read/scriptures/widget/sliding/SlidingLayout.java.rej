@@ -1,0 +1,18 @@
+diff a/src/com/lgmshare/hudong/widget/sliding/SlidingLayout.java b/src/com/lgmshare/hudong/widget/sliding/SlidingLayout.java	(rejected hunks)
+@@ -300,13 +300,14 @@
+             final int yAxisBottom = bound.bottom + top;// 字符底部y坐标
+ 
+             if ((yAxisTop <= lineShow) && (yAxisBottom >= lineShow)) {
+-                textY = yAxisTop;
++                textY = top;
+ 
+-                centerY = (yAxisTop + yAxisBottom) / 2;
++                centerY = top - 75;
+                 bottomY = yAxisBottom;
+                 final int start = layout.getLineStart(j);
+                 final int end = layout.getLineEnd(j);
+                 String result = textView.getText().toString().substring(start, end).trim();
++                this.result = result;
+                 result = TextUtil.replaceBlank(result);
+                 final List<String> lists = reader.getmSpeechTextMap().get(selectIndex);
+                 // LogUtil.test("result：" + result + "\nlists:" + lists);

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.SeekBar.Text" parent="@android:style/Widget.SeekBar">
+        <item name="android:paddingLeft">14.5dip</item>
+        <item name="android:paddingRight">14.5dip</item>
+        <item name="android:maxHeight">16.669983dip</item>
+        <item name="android:progressDrawable">@drawable/seekbar_style</item>
+        <item name="android:minHeight">16.669983dip</item>
+        <item name="android:thumb">@drawable/seekbar_thumb</item>
+        <item name="android:thumbOffset">8.0dip</item>
+        <item name="android:splitTrack">false</item>
+    </style>
+</resources>

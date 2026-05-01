@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="chapter_read_8option">
+        <item>显示注释</item>
+        <item>内容朗读</item>
+        <item>字体设置</item>
+        <item>搜索本书</item>
+        <item>书签目录</item>
+        <!--<item>背景颜色</item>-->
+        <!--<item>简繁转换</item>-->
+        <item>横竖阅读</item>
+        <item>版本对照</item>
+
+<!--        <item>夜间模式</item>-->
+    </string-array>
+
+    <string-array name="player_name_list">
+        <item>普通话-小燕</item>
+        <item>普通话-小宇</item>
+        <item>普通话-小研</item>
+        <item>普通话-小琪</item>
+        <item>普通话-小峰</item>
+        <item>粤语-小梅</item>
+        <item>台湾话-小莉</item>
+        <item>四川话-小蓉</item>
+        <item>东北话-小芸</item>
+        <item>河南话-小坤</item>
+        <item>湖南话-小强</item>
+        <item>陕西话-小莹</item>
+        <item>普通话-小新</item>
+        <item>普通话-楠楠</item>
+        <item>普通话-老孙</item>
+        <item>普通话-嘉嘉</item>
+    </string-array>
+    <string-array name="player_name_list_param">
+        <item>xiaoyan</item>
+        <item>xiaoyu</item>
+        <item>vixy</item>
+        <item>vixq</item>
+        <item>vixf</item>
+        <item>vixm</item>
+        <item>vixl</item>
+        <item>vixr</item>
+        <item>vixyun</item>
+        <item>vixk</item>
+        <item>vixqa</item>
+        <item>vixying</item>
+        <item>vixx</item>
+        <item>vinn</item>
+        <item>vils</item>
+        <item>jiajia</item>
+    </string-array>
+
+</resources>

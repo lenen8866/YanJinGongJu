@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--<style name="MainTheme" parent="@android:style/Theme.Holo">-->
+        <!--<item name="android:windowIsTranslucent">false</item>-->
+        <!--<item name="android:windowContentOverlay">@null</item>-->
+        <!--<item name="android:backgroundDimEnabled">false</item>-->
+        <!--<item name="android:windowNoTitle">false</item>-->
+        <!--<item name="android:actionBarSize">@dimen/actionbar_height</item>-->
+        <!--<item name="android:windowBackground">@color/gray_f5f5f5</item>-->
+        <!--<item name="android:label">@string/app_name</item>-->
+    <!--</style>-->
+    <!--&lt;!&ndash; Application No Title Theme. &ndash;&gt;-->
+    <!--<style name="MyTheme" parent="MainTheme"></style>-->
+
+    <!-- Application No Title Theme. -->
+
+</resources>

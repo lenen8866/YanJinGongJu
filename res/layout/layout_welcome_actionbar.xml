@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/actionbar_height"
+    android:layout_marginLeft="5dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginRight="5dp"
+    android:background="@color/main_color"
+    android:gravity="center_vertical">
+
+    <ImageView
+        android:id="@+id/btn_img_left"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="6dp"
+        android:src="@drawable/ic_foot" />
+
+
+    <FrameLayout
+        android:id="@+id/fl_book_update"
+        android:layout_width="40dp"
+        android:layout_height="25dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/common_margin_8"
+        android:layout_marginRight="@dimen/common_margin_8"
+        android:layout_toRightOf="@id/btn_img_left"
+        android:background="@drawable/ic_book_update"
+        android:visibility="invisible">
+
+        <ImageView
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_dwon_cover"
+            android:visibility="gone" />
+    </FrameLayout>
+
+
+    <ImageView
+        android:id="@+id/iv_recharge_home"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/ll_center"
+        android:src="@drawable/icon_home_recharge" />
+
+    <ImageView
+        android:id="@+id/btn_back"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_alignParentRight="true"
+        android:padding="5dp"
+        android:src="@drawable/ic_setting" />
+
+    <ImageView
+        android:id="@+id/iv_search"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginRight="@dimen/common_margin_8"
+        android:layout_toLeftOf="@id/btn_back"
+        android:padding="5dp"
+        android:src="@drawable/ic_home_search" />
+
+    <LinearLayout
+        android:id="@+id/ll_center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="@dimen/txt_size_20"
+            android:textStyle="bold" />
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="@dimen/common_margin_8"
+            android:layout_toRightOf="@id/tv_title"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_version_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_toRightOf="@id/tv_title"
+                android:text="V1.0"
+                android:textColor="@color/white"
+                android:textSize="@dimen/txt_size_10" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_toRightOf="@id/tv_title"
+                android:text="专业版"
+                android:textColor="@color/white"
+                android:textSize="@dimen/txt_size_10" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/btn_img_right"-->
+    <!--        android:layout_width="48dp"-->
+    <!--        android:layout_height="48dp"-->
+    <!--        android:padding="10dp"-->
+    <!--        android:visibility="gone"-->
+    <!--        android:src="@drawable/ic_user_setting"/>-->
+
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:background="@drawable/edit_back_grey"-->
+    <!--        android:layout_weight="1" >-->
+
+    <!--        <LinearLayout-->
+    <!--            android:id="@+id/linear_type"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:padding="4dp"-->
+    <!--            android:background="@drawable/edit_back_grey"-->
+    <!--            android:gravity="center"-->
+    <!--            android:orientation="horizontal">-->
+    <!--            &lt;!&ndash;<ImageView&ndash;&gt;-->
+    <!--                &lt;!&ndash;android:id="@+id/iv_arrow"&ndash;&gt;-->
+    <!--                &lt;!&ndash;android:layout_width="24dp"&ndash;&gt;-->
+    <!--                &lt;!&ndash;android:layout_height="24dp"&ndash;&gt;-->
+    <!--                &lt;!&ndash;android:src="@drawable/ic_right_arrow"/>&ndash;&gt;-->
+    <!--            <ImageView-->
+    <!--                android:id="@+id/ic_by_name_arrow"-->
+    <!--                android:layout_width="12dp"-->
+    <!--                android:layout_height="12dp"-->
+    <!--                android:layout_gravity="center_vertical"-->
+    <!--                android:layout_marginRight="5dp"-->
+    <!--                android:src="@drawable/ic_down_arrow"/>-->
+    <!--            <TextView-->
+    <!--                android:id="@+id/tv_search_type"-->
+    <!--                android:layout_width="wrap_content"-->
+    <!--                android:layout_height="wrap_content"-->
+    <!--                android:textColor="@color/black"-->
+    <!--                android:text="搜内容"-->
+    <!--                android:textSize="12sp"/>-->
+
+    <!--        </LinearLayout>-->
+
+    <!--        <LinearLayout-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="1"-->
+    <!--            android:padding="5dp"-->
+    <!--            android:gravity="center_vertical"-->
+    <!--            android:orientation="horizontal">-->
+    <!--            <com.read.scriptures.widget.ClearEditText-->
+    <!--                android:id="@+id/search_edittext"-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:background="@color/transparent"-->
+    <!--                android:gravity="center_vertical"-->
+    <!--                android:imeOptions="actionSearch"-->
+    <!--                android:singleLine="true"-->
+    <!--                android:hint="已选中 圣经 全部"-->
+    <!--                android:textColorHint="#999"-->
+    <!--                android:textSize="12sp" />-->
+
+    <!--            <ImageView-->
+    <!--                android:layout_width="24dp"-->
+    <!--                android:layout_height="24dp"-->
+    <!--                android:src="@drawable/ic_qr"-->
+    <!--                android:visibility="gone"/>-->
+    <!--        </LinearLayout>-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tv_search"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:text="搜索"-->
+    <!--            android:background="@color/green"-->
+    <!--            android:textColor="@color/white"-->
+    <!--            android:paddingTop="10dp"-->
+    <!--            android:paddingBottom="10dp"-->
+    <!--            android:paddingLeft="20dp"-->
+    <!--            android:paddingRight="20dp"/>-->
+
+    <!--    </LinearLayout>-->
+
+
+</RelativeLayout>

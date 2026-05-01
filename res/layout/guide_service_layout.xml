@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/icon_tips"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:paddingHorizontal="40dp"
+        android:paddingBottom="60dp"
+        android:text="这里增加了客服入口，\n如果有什么疑问，\n可以随时点击联系客服。\n(长按可以移动)"
+        android:textColor="@color/black" />
+</LinearLayout>

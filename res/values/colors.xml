@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="main_color">#5677FC</color>
+    <color name="main_color_alpha80">#cc5677FC</color>
+
+
+    <color name="voice_text_normal">#ffffffff</color>
+    <color name="voice_text_pressed">#ffff453e</color>
+    <color name="voice_text_radio_on">#ffff453e</color>
+    <color name="voice_text_radio_off">#ffffffff</color>
+
+    <color name="remark_text">#7b2f2f</color>
+    <color name="tip_text">#ff0000</color>
+
+    <!-- 画面背景色 -->
+    <!-- 分割线背景色 -->
+    <!-- 控件按下时显示的颜色 -->
+
+    <!-- actionbar默认的背景色 -->
+    <color name="actionbar_bg">#3a81cc</color>
+    <color name="transparent">#00000000</color>
+    <!-- For list corner -->
+    <color name="edittext_bg">#ffffff</color>
+    <color name="edittext_stroke">#d2d2d0</color>
+    <!-- activity默认的背景色 -->
+    <color name="common_color_activity_bg">#fafafa</color>
+    <!-- 公共颜色设置 -->
+    <color name="common_color_layout_bg">#f5f5f5</color>
+    <color name="common_color_line_bg">#e7e7e7</color>
+    <color name="common_color_list_line">#e7e7e7</color>
+    <!-- custom Dialog -->
+    <color name="dialog_txt_content">#4c4c4c</color>
+    <color name="dialog_txt_default">#4c4c4c</color>
+    <color name="dialog_btn_normal">#fafafa</color>
+    <color name="dialog_btn_pressed">#E0E0E0</color>
+    <!-- 常用控件统一颜色值 -->
+    <color name="red">#f44336</color>
+    <color name="indigo">#3f51b5</color>
+    <color name="blue">#2196f3</color>
+    <color name="light_blue">#03a9f4</color>
+    <color name="green">#4caf50</color>
+    <color name="orange">#ff9800</color>
+    <color name="grey">#9e9e9e</color>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+
+    <color name="white_alph70">#88ffffff</color>
+
+    <color name="grey_alph30">#449e9e9e</color>
+    <!-- red -->
+
+    <!-- indigo -->
+    <!-- gray -->
+    <color name="gray_4c4c4c">#4c4c4c</color>
+    <color name="gray_cecece">#cecece</color>
+    <color name="gray_999999">#999999</color>
+    <color name="gray_9e9e9e">#9e9e9e</color>
+    <color name="gray_fafafa">#fafafa</color>
+    <color name="gray_f5f5f5">#f5f5f5</color>
+    <color name="gray_bdbdbd">#bdbdbd</color>
+    <color name="gray_757575">#757575</color>
+    <color name="gray_616161">#616161</color>
+    <color name="gray_333333">#333333</color>
+    <!-- blue grey -->
+    <!-- blue -->
+    <color name="blue_90caf9">#90caf9</color>
+    <color name="blue_2196f3">#2196f3</color>
+    <color name="blue_1565c0">#1565c0</color>
+    <!-- light blue -->
+    <color name="light_blue_03a9f4">#03a9f4</color>
+    <!-- orange -->
+    <color name="orange_fff3e0">#fff3e0</color>
+    <color name="orange_ffb74d">#ffb74d</color>
+    <color name="orange_ffa726">#ffa726</color>
+    <color name="orange_ff9800">#ff9800</color>
+    <color name="orange_e65100">#e65100</color>
+    <!-- deep orange -->
+    <color name="deep_orange_f4511e">#f4511e</color>
+
+    <!-- cyan -->
+    <color name="cyan_e0f7fa">#e0f7fa</color>
+    <!-- teal -->
+    <!-- green -->
+    <!-- light green -->
+    <color name="light_green_aed581">#aed581</color>
+    <!-- lime -->
+    <!-- yellow -->
+    <color name="yellow_fffde7">#fffde7</color>
+    <color name="yellow_fff59d">#fff59d</color>
+    <!-- amber -->
+    <!-- scan doce -->
+    <color name="result_view">#b0000000</color>
+    <color name="viewfinder_mask">#60000000</color>
+
+    <!-- custom -->
+    <!-- 红色 -->
+    <!-- 银色 -->
+    <color name="silver_color">#c0c0c0</color>
+    <!-- 黑色 -->
+    <color name="black_color">#000000</color>
+    <!-- 系统黑色 -->
+    <color name="black_sys_color">#111111</color>
+    <!-- 白色 -->
+    <!-- 象牙白 -->
+    <color name="white_ivory_color">#fffff0</color>
+    <!-- 花白 -->
+    <!-- 浅灰 -->
+    <color name="gray_simple_color">#a9a9a9</color>
+    <!-- 淡灰 -->
+    <color name="gary_light_color">#d3d3d3</color>
+    <!-- 灰 -->
+    <!-- toast灰 -->
+    <!-- 海贝白 -->
+    <!-- 烟白 -->
+    <!-- 猫白 -->
+    <color name="white_cat_color">#e9e7d8</color>
+    <!-- 薄荷白 -->
+    <!-- qq底部按钮白 -->
+    <color name="white_qq_color">#f9f9f9</color>
+    <!-- qq系统灰白 -->
+    <color name="white_gary_qq_sys_color">#eaeaea</color>
+    <!-- dialog按钮白 -->
+    <color name="white_button_color">#f4f4f4</color>
+    <!-- dialog按钮灰 -->
+    <!-- 靛蓝色 -->
+    <!-- 深海蓝 -->
+    <!-- 深墨蓝 -->
+    <!-- 天空蓝 -->
+    <color name="blue_sky_color">#acd6e0</color>
+    <!-- 甸水蓝 -->
+    <!-- 系统蓝 -->
+    <color name="blue_sys_color">#0d86ff</color>
+    <!-- 底部黑蓝 -->
+    <!-- 轻淡蓝色 -->
+    <!-- 冰蓝色 -->
+    <color name="blue_ice_color">#abcce5</color>
+    <!-- 选中淡黄色 -->
+    <!-- 警示粉红色 -->
+    <!-- 豆沙绿 -->
+    <!-- 朱红色 -->
+    <!-- 沙红色 -->
+    <!-- 蓝黑色 -->
+    <!-- 蓝绿色 -->
+    <color name="blue_green_color">#033647</color>
+
+    <!-- 轻蓝色 -->
+    <!-- 轻白色 -->
+    <!-- 轻豆沙绿色 -->
+    <!-- 淡棕红 -->
+    <!-- 冰青色 -->
+    <!-- 柱状图专用颜色 -->
+    <!-- 赤 -->
+    <!-- 橙 -->
+    <!-- 黄 -->
+    <!-- 绿 -->
+    <color name="barchart_pickle">#597d35</color>
+    <!-- 青 -->
+    <!-- 蓝 -->
+    <!-- 紫 -->
+
+    <!-- 柱状图原包中的青 -->
+    <!-- 柱状图原包中的黄 -->
+    <!-- 柱状图原包中的橙 -->
+    <!-- 柱状图原包中的蓝 -->
+    <color name="barchart_blue">#8CEAFF</color>
+    <!-- 柱状图原包中的红 -->
+    <color name="barchart_red">#FF8C9D</color>
+    <!-- 柱状图专用颜色 -->
+
+    <color name="part_line">#e1dddd</color>
+
+    <color name="loading_bg">#99000000</color>
+
+    <color name="colorPrimary">#4182c0</color>
+    <color name="colorPrimaryDark">#4182c0</color>
+    <color name="colorAccent">#29b6f6</color>
+
+    <color name="color_read_white">#e6ddcc</color>
+    <color name="color_read_yellow">#dddddd</color>
+    <color name="color_read_grey">#3a3436</color>
+    <color name="color_read_green">#dcd0ba</color>
+    <color name="color_read_blue">#cce9ce</color>
+
+    <color name="color_text_white">#3a3342</color>
+    <color name="color_text_yellow">#323232</color>
+    <color name="color_text_grey">#95938f</color>
+    <color name="color_text_green">#3a3342</color>
+    <color name="color_text_blue">#323232</color>
+
+    <color name="progress_back">#c4545454</color>
+
+    <!--字体颜色-->
+    <color name="text_1">#3C3D3D</color>
+    <color name="text_2">#3A342A</color>
+    <color name="text_3">#93928F</color>
+    <color name="text_4">#323333</color>
+    <color name="text_5">#627079</color>
+    <color name="text_6">#374234</color>
+    <color name="text_7">#FEFFFF</color>
+    <color name="text_8">#E1DBD1</color>
+    <color name="text_9">#D8C8C1</color>
+    <color name="text_10">#DBDFCE</color>
+    <color name="text_11">#D0DFD2</color>
+    <color name="text_12">#B8D2CF</color>
+    <color name="text_13">#43393A</color>
+    <color name="text_14">#44403A</color>
+    <color name="text_15">#474848</color>
+    <color name="text_16">#202936</color>
+    <color name="text_17">#251110</color>
+    <color name="text_18">#000101</color>
+    <color name="text_19">#BFC0C0</color>
+    <color name="text_20">#8B8C8C</color>
+    <color name="text_21">#656666</color>
+    <color name="text_22">#5E5353</color>
+    <color name="text_23">#3B4E4E</color>
+    <color name="text_24">#586476</color>
+    <color name="text_25">#F4F3F0</color>
+
+    <!--背景颜色-->
+    <color name="bac_1">#F4F3F0</color>
+    <color name="bac_2">#D9C8AC</color>
+    <color name="bac_3">#3A3230</color>
+    <color name="bac_4">#CBE8CF</color>
+    <color name="bac_5">#001C28</color>
+    <color name="bac_6">#806768</color>
+    <color name="bac_7">#7B7263</color>
+    <color name="bac_8">#FDF9F9</color>
+    <color name="bac_9">#BFBFC0</color>
+    <color name="bac_10">#DAD0C5</color>
+    <color name="bac_11">#C4BAAF</color>
+    <color name="bac_12">#C9CABB</color>
+    <color name="bac_13">#231F1F</color>
+    <color name="bac_14">#B9C9BC</color>
+    <color name="bac_15">#B4B999</color>
+    <color name="bac_16">#7B7364</color>
+    <color name="bac_17">#5D5E5E</color>
+    <color name="bac_18">#1F321A</color>
+    <color name="bac_19">#323333</color>
+    <color name="bac_20">#31100F</color>
+    <color name="bac_21">#010101</color>
+    <color name="bac_22">#B4BA9A</color>
+    <color name="bac_23">#B59B94</color>
+    <color name="bac_24">#678080</color>
+    <color name="bac_25">#6A7D65</color>
+
+    <color name="color1">#5677FC</color>
+    <color name="color2">#775677FC</color>
+</resources>

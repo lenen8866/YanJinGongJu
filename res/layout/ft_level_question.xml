@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="25dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/rl_1"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_1_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="律法书"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_1_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:layout_marginRight="20dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/rl_2"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_2_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="诗歌、智慧书"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_2_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_top_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            app:cardBackgroundColor="#5677FC"
+            app:cardCornerRadius="35dp"
+            app:cardElevation="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_1">
+
+            <TextView
+                android:id="@+id/tv_top_name"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:gravity="center"
+                android:text="旧约"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_top_1">
+
+            <RelativeLayout
+                android:id="@+id/rl_3"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_3_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="历史书"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_3_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_top_1">
+
+            <RelativeLayout
+                android:id="@+id/rl_4"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_4_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="先知书"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_4_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cl_1"
+        android:layout_marginTop="40dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/rl_5"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_5_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="四福音"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_5_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/rl_6"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_6_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="书信"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_6_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_bottom_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            app:cardBackgroundColor="#5677FC"
+            app:cardCornerRadius="35dp"
+            app:cardElevation="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_5">
+
+            <TextView
+                android:id="@+id/tv_bottom_name"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:gravity="center"
+                android:text="新约"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_bottom_2">
+
+            <RelativeLayout
+                android:id="@+id/rl_7"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_7_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="教会历史"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_7_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="3dp"
+            app:cardElevation="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_bottom_2">
+
+            <RelativeLayout
+                android:id="@+id/rl_8"
+                android:layout_width="95dp"
+                android:layout_height="32dp"
+                android:background="#5677FC">
+
+                <TextView
+                    android:id="@+id/tv_8_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="约翰的启示"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <FrameLayout
+                    android:layout_width="26dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/ic_corner_mark3"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_8_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="-3dp"
+                        android:gravity="center_horizontal"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="8sp" />
+                </FrameLayout>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rcv_answer_num"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:layout_marginRight="10dp"
+            android:id="@+id/bt_rank"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="5dp"
+            android:background="#6cbb6b"
+            android:text="排行榜"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            app:layout_constraintRight_toLeftOf="@+id/cv_10"
+            app:layout_constraintLeft_toLeftOf="@+id/ll_start_answer"
+            app:layout_constraintTop_toBottomOf="@+id/ll_start_answer" />
+
+        <LinearLayout
+            android:id="@+id/ll_start_answer"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="65dp"
+            android:layout_marginRight="65dp"
+            android:background="#6cbb6b"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_answer_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="今天剩余0次"
+                android:textColor="@color/white"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            app:cardBackgroundColor="#5677FC"
+            app:cardCornerRadius="35dp"
+            app:layout_constraintBottom_toBottomOf="@+id/bt_rank"
+            app:layout_constraintRight_toLeftOf="@+id/tv_prompt_num"
+            app:layout_constraintTop_toTopOf="@+id/bt_rank">
+
+            <TextView
+                android:id="@+id/tv_recharge_title"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:gravity="center"
+                android:text="剩余"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/tv_prompt_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/main_color"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@+id/bt_rank"
+            app:layout_constraintRight_toRightOf="@+id/ll_start_answer"
+            app:layout_constraintTop_toTopOf="@+id/bt_rank" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:src="@drawable/icon_shop_car"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/bt_rank"
+            app:layout_constraintLeft_toRightOf="@+id/ll_start_answer"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/bt_rank" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_answer_num"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp" />
+
+</RelativeLayout>

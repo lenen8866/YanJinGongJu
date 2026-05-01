@@ -1,0 +1,307 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.jakewharton.butterknife'
+//推送
+//apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.huawei.agconnect'
+apply from: "${rootProject.rootDir}/andresguard.gradle"
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.28'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation project(path: ':music-player-lib')
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+
+    implementation 'com.caverock:androidsvg-aar:1.3'
+
+    implementation 'com.facebook.fresco:imagepipeline-okhttp3:0.14.1'
+
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
+
+    api 'com.squareup.okhttp3:okhttp:3.9.1'
+    api files('libs/org.apache.http.legacy.jar')
+    api 'androidx.annotation:annotation:1.0.0'
+    api 'com.youth.banner:banner:1.4.10'
+    api 'org.lucasr.twowayview:twowayview:0.1.4'
+    api files('libs/com.baidu.tts_2.3.2.20180713_6101c2a.jar')
+
+    api 'androidx.multidex:multidex:2.0.0'
+    api 'net.lingala.zip4j:zip4j:1.3.2'
+    api 'androidx.cardview:cardview:1.0.0'
+    api 'com.github.tbruyelle:rxpermissions:0.10.2'
+    api(name: 'alipaySdk-15.6.5-20190718211159-noUtdid', ext: 'aar')
+    api(name: 'nuisdk-release', ext: 'aar')
+    // RxJava
+    api 'io.reactivex.rxjava2:rxjava:2.0.1'
+    api 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    api 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    api 'com.github.NightWhistler:HtmlSpanner:0.4'
+
+    api 'com.github.SilenceDut:jpinyin:v1.0'
+    //权限管理
+    api 'com.github.dfqin:grantor:2.5'
+    implementation 'com.gyf.barlibrary:barlibrary:2.3.0'
+    // Speech SDK
+    implementation 'com.github.duanhong169:colorpicker:1.1.6'
+    //滴水，留海屏幕适配
+    implementation 'com.github.smarxpan:NotchScreenTool:0.0.1'
+    implementation 'com.github.florent37:viewanimator:1.1.0'
+
+    implementation 'com.umeng.umsdk:common:9.4.0'//必选
+    implementation 'com.umeng.umsdk:share-core:7.1.5'
+    implementation 'com.umeng.umsdk:share-board:7.1.5'
+    implementation 'com.umeng.umsdk:share-qq:7.1.5'
+    implementation 'com.umeng.umsdk:share-wx:7.1.5'
+    implementation 'com.umeng.umsdk:asms:1.2.3' // asms包依赖(必选)
+//    implementation 'com.umeng.sdk:utdid:1.1.5.3'
+    implementation 'com.tencent.tauth:qqopensdk:3.53.0'//QQ官方依赖库，必选
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.7.0'//微信官方依赖库，必选
+
+
+    implementation 'com.github.promeg:tinypinyin:2.0.3'
+    implementation 'com.github.promeg:tinypinyin-lexicons-android-cncity:2.0.3'
+
+    def room_version = "2.2.5"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'me.dkzwm.widget.srl:core:1.6.6.8'
+
+    implementation 'com.contrarywind:Android-PickerView:4.1.9'
+    implementation 'com.binioter:guideview:1.0.0'
+    //推送
+    implementation 'cn.jiguang.sdk:jcore:2.7.2'  // 此处以JCore 2.7.2 版本为例。
+    implementation 'cn.jiguang.sdk:jpush:4.0.0'  // 此处以JPush 4.0.0 版本为例
+    // 接入华为厂商
+    implementation 'com.huawei.hms:push:4.0.2.300'
+    implementation 'cn.jiguang.sdk.plugin:huawei:4.0.0'// 极光厂商插件版本与接入 JPush 版本保持一致，下同
+    // 接入 FCM 厂商
+//    implementation 'com.google.firebase:firebase-messaging:21.0.1'
+//    implementation 'cn.jiguang.sdk.plugin:fcm:4.0.0'
+    // 接入魅族厂商
+    implementation 'cn.jiguang.sdk.plugin:meizu:4.0.0'
+    // 接入 VIVO 厂商
+    implementation 'cn.jiguang.sdk.plugin:vivo:4.0.0'
+    // 接入 OPPO 厂商
+    implementation 'cn.jiguang.sdk.plugin:oppo:4.0.0'
+    // 接入小米厂商
+    implementation 'cn.jiguang.sdk.plugin:xiaomi:4.0.0'
+    implementation 'org.litepal.android:kotlin:3.0.0'
+    implementation 'com.dsiner.lib:slidelayout:1.0.4'
+}
+
+
+android {
+    useLibrary 'org.apache.http.legacy'
+    ndkVersion '22.0.7026061'
+    signingConfigs {
+        release {
+            keyAlias '醉雪乱'
+            keyPassword '123456'
+            storeFile file('../lgmshare/hudong.keystore')
+            storePassword '123456'
+        }
+        debug {
+            storeFile file('../lgmshare/hudong.keystore')
+            storePassword "123456"
+            keyAlias "醉雪乱"
+            keyPassword "123456"
+        }
+    }
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.read.scriptures"
+        versionCode 36
+        // FIX: minSdkVersion 去掉重复声明，只保留一个，即 API 23
+        minSdkVersion 23
+        versionName "1.9"
+        targetSdkVersion 29
+        multiDexEnabled true
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+        // 适配默认语言英语
+        resConfigs 'en'
+
+        manifestPlaceholders = [
+                qqappid       : "1105925560",
+                JPUSH_PKGNAME : applicationId,
+                JPUSH_APPKEY  : "f73fde01c4d5df1c53d39eee", //JPush 上注册的包名对应的 Appkey.
+                JPUSH_CHANNEL : "developer-default", //暂时填写默认值即可.
+                MEIZU_APPKEY  : "MZ-魅族的APPKEY",
+                MEIZU_APPID   : "MZ-魅族的APPID",
+                XIAOMI_APPID  : "2882303761519920309",
+                XIAOMI_APPKEY : "5711992024309",
+                OPPO_APPKEY   : "OP-oppo的APPKEY",
+                OPPO_APPID    : "OP-oppo的APPID",
+                OPPO_APPSECRET: "OP-oppo的APPSECRET",
+                VIVO_APPKEY   : "vivo的APPKEY",
+                VIVO_APPID    : "vivo的APPID"
+        ]
+    }
+    lintOptions {
+//        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            //是否移除无用资源
+            zipAlignEnabled false
+            //是否混淆
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // 备注："debug"类型的构建类型
+//            applicationIdSuffix ".debug"
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+//            zipAlignEnabled true
+            //是否混淆ChapterReaderActivity
+//            minifyEnabled true
+//            shrinkResources true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+        }
+    }
+
+    flavorDimensions "default"
+    productFlavors {
+        internal {
+            manifestPlaceholders = [DISTRIBUTE_CHANNEL_VALUE: "1", YOUMI_CHANNEL_VALUE: "", WP_APP_PID_VALUE: "defualt"]
+            dimension "default"
+        }
+
+        yingyongbao {
+            manifestPlaceholders = [DISTRIBUTE_CHANNEL_VALUE: "2", YOUMI_CHANNEL_VALUE: "", WP_APP_PID_VALUE: "defualt"]
+            dimension "default"
+        }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+            jniLibs.srcDirs = ['libs']
+        }
+
+    }
+
+    //修改默认打包名称  QuickCash_1.0.1.202003041432_Alpha.apk
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
+                output.outputFileName = "${variant.versionName}.${getCurrentTime()}_Debug.apk"
+            } else if (variant.buildType.name == "release") {
+                output.outputFileName = "${variant.versionName}_${getCurrentTime()}.apk"
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    compileOptions {
+        encoding "UTF-8"
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+
+//获取当前时间
+def getCurrentTime() {
+    return new Date().format("yyyyMMddHHmm")
+}
+buildscript {
+    ext.kotlin_version = '1.6.10'
+    repositories {
+//        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+//        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
+//        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
+//        maven { url 'http://maven.aliyun.com/nexus/content/repositories/gradle-plugin' }
+        maven { url 'https://dl.bintray.com/umsdk/release' }
+        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven{ url 'https://maven.aliyun.com/repository/jcenter'}
+        maven {
+            url 'https://csspeechstorage.blob.core.windows.net/maven/'
+        }
+        maven { url "https://jitpack.io" }
+        maven { url  'https://repo1.maven.org/maven2/'}
+        maven {url 'https://developer.huawei.com/repo/'}
+        google()
+        mavenCentral()
+
+//        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.2.2"
+        classpath 'com.jakewharton:butterknife-gradle-plugin:10.2.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // fcm
+//        classpath 'com.google.gms:google-services:4.3.4'
+        // hms
+        classpath 'com.huawei.agconnect:agcp:1.4.1.300'
+        //引入AndResGuard
+        classpath 'com.tencent.mm:AndResGuard-gradle-plugin:1.2.18'
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    maven { url 'https://dl.bintray.com/umsdk/release' }
+    maven { url "https://maven.aliyun.com/repository/public" }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven{ url 'https://maven.aliyun.com/repository/jcenter'}
+    maven {
+        url 'https://csspeechstorage.blob.core.windows.net/maven/'
+    }
+    maven { url "https://jitpack.io" }
+    maven { url  'https://repo1.maven.org/maven2/'}
+    maven {url 'https://developer.huawei.com/repo/'}
+    google()
+    mavenCentral()
+
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://dl.bintray.com/umsdk/release' }
+        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven{ url 'https://maven.aliyun.com/repository/jcenter'}
+        maven {
+            url 'https://csspeechstorage.blob.core.windows.net/maven/'
+        }
+        maven { url "https://jitpack.io" }
+        maven { url  'https://repo1.maven.org/maven2/'}
+        maven {url 'https://developer.huawei.com/repo/'}
+        google()
+        mavenCentral()
+        //hms
+        //fcm
+//        maven { url "https://maven.google.com" }
+
+    }
+}

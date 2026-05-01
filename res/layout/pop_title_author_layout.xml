@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/radio_group"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        app:cardBackgroundColor="@color/white"
+        app:cardElevation="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.read.scriptures.view.indexablerv.IndexableLayout
+            android:id="@+id/indexAbleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:indexBar_background="#08000000"
+            app:indexBar_layout_width="24dp"
+            app:indexBar_textColor="@android:color/black"
+            app:indexBar_textSpace="8dp" />
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

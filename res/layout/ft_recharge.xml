@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_main"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="100dp">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="20dp"
+            android:lineSpacingExtra="4dp"
+            android:padding="5dp"
+            android:text="\u3000你手若有行善的力量，不可推辞，就当向那应得的人施行。你那里若有现成的，不可对邻舍说：“去吧！明天再来，我必给你。“【箴3：27-28】\n\u3000福音虽是免费，但传福音却是要付代价的，钱财带不到天上去，但被主纪念的事工可以带到天上。\n\u3000另外：我们收到的所有爱心支持都会全部用于福音事工！"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="7dp"
+            app:cardElevation="5dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:padding="5dp"
+                    android:id="@+id/iv_jump"
+                    android:layout_width="40dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="right"
+                    android:src="@drawable/icon_pro" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_recharge_1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <CheckBox
+                            android:id="@+id/cb_recharge_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:button="@null"
+                            android:checked="true"
+                            android:drawableLeft="@drawable/selector_pay_type"
+                            android:drawablePadding="10dp"
+                            android:text="乐意捐"
+                            android:textColor="@color/recharge_tx_color_selector"
+                            android:textSize="@dimen/txt_size_14" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_recharge_2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <CheckBox
+                            android:id="@+id/cb_recharge_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:button="@null"
+                            android:checked="false"
+                            android:drawableLeft="@drawable/selector_pay_type"
+                            android:drawablePadding="10dp"
+                            android:text="感恩捐"
+                            android:textColor="@color/recharge_tx_color_selector"
+                            android:textSize="@dimen/txt_size_14" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_recharge_3"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <CheckBox
+                            android:id="@+id/cb_recharge_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:button="@null"
+                            android:checked="false"
+                            android:drawableLeft="@drawable/selector_pay_type"
+                            android:drawablePadding="10dp"
+                            android:text="十一捐"
+                            android:textColor="@color/recharge_tx_color_selector"
+                            android:textSize="@dimen/txt_size_14" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcv_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:text="自定义金额"
+                    android:textColor="#999999"
+                    android:textSize="14sp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="30dp"
+                        android:text="¥"
+                        android:textSize="30sp"
+                        android:textStyle="bold" />
+
+                    <com.read.scriptures.widget.ClearEditText
+                        android:id="@+id/et_money"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="10dp"
+                        android:background="@null"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
+                        android:maxLength="7"
+                        android:textColor="@color/gray_4c4c4c"
+                        android:textColorHint="@color/gray_bdbdbd"
+                        android:textCursorDrawable="@null"
+                        android:textSize="36sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:background="#e4e4e4" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:paddingLeft="30dp"
+                    android:paddingRight="30dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <CheckBox
+                            android:id="@+id/rb_wx_pay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:button="@null"
+                            android:checked="true"
+                            android:drawableLeft="@drawable/selector_1_pay_type"
+                            android:drawableRight="@drawable/selector_pay_mothed_wx"
+                            android:drawablePadding="10dp"
+                            android:text="微信"
+                            android:textColor="@color/gray_333333"
+                            android:textSize="@dimen/txt_size_14" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <CheckBox
+                            android:drawableLeft="@drawable/selector_2_pay_type"
+                            android:id="@+id/rb_ali_pay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:button="@null"
+                            android:drawableRight="@drawable/selector_pay_mothed_ali"
+                            android:drawablePadding="10dp"
+                            android:text="支付宝"
+                            android:textColor="@color/gray_333333"
+                            android:textSize="@dimen/txt_size_14" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_confirm_pay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_wxpay_selector"
+                    android:gravity="center"
+                    android:padding="7dp"
+                    android:text="确认支付"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/txt_size_16" />
+
+                <CheckBox
+                    android:id="@+id/cb_remark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="留言"
+                    android:textColor="@color/black"
+                    android:textSize="13sp" />
+
+                <RelativeLayout
+                    android:id="@+id/rl_remark"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/dialog_recharge_item_bg"
+                    android:minHeight="80dp"
+                    android:visibility="gone">
+
+                    <EditText
+                        android:id="@+id/et_remark"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="说点什么吧~"
+                        android:maxLength="60"
+                        android:maxLines="3"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingRight="10dp"
+                        android:textColor="@color/black"
+                        android:textSize="13sp" />
+
+                </RelativeLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

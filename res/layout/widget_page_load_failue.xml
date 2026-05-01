@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/common_color_layout_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:ignore="Overdraw">
+
+    <TextView
+        android:id="@+id/textViewMessage"
+        style="@style/dg_33_16"
+        android:drawablePadding="16dp"
+        android:drawableTop="@drawable/ic_error"
+        android:gravity="center_horizontal"
+        android:text="@string/abs_message_error" />
+
+    <Button
+        android:id="@+id/buttonError"
+        style="@style/dg_orange_18"
+        android:layout_gravity="center_horizontal"
+        android:background="@color/transparent"
+        android:paddingBottom="16dp"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="16dp"
+        android:text="@string/abs_button_error" />
+
+</LinearLayout>

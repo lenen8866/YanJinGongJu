@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_main"
+    android:visibility="gone"
+    style="@style/NavPage">
+
+    <include
+        android:id="@+id/top_view"
+        layout="@layout/title_view" />
+
+    <View
+        android:id="@+id/dex_line"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_below="@id/top_view"
+        android:background="@color/gray_9e9e9e" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <LinearLayout
+            android:id="@+id/ll_success"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_pay_success" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center"
+                android:text="恭喜您，支付成功！"
+                android:textColor="#ff000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tv_active_time"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text=""
+                android:textColor="@color/red" />
+
+            <TextView
+                android:id="@+id/tv_sure"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_sure_selector"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="确认"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_fail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_pay_fail" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center"
+                android:text="支付失败"
+                android:textColor="#ff000000" />
+
+            <TextView
+                android:id="@+id/tv_back_pay"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_sure_selector"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="重新支付"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </FrameLayout>
+
+
+</RelativeLayout>

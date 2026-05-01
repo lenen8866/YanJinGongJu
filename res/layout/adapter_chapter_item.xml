@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/list_item_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/dialog_btn_middle"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_list_name"
+            style="@style/dg_66_16"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="@dimen/common_margin_8"
+            android:ellipsize="marquee"
+            android:singleLine="true" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/grid_item_layout"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:background="@drawable/dialog_btn_middle"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_grid_name"
+            style="@style/dg_66_16"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="@dimen/common_margin_8"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="222"/>
+
+        <TextView
+            android:id="@+id/tv_grid_details"
+            style="@style/dg_66_12"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="@dimen/common_margin_8"
+            android:layout_marginRight="@dimen/common_margin_8"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:visibility="gone"
+            android:text="111"/>
+    </LinearLayout>
+</RelativeLayout>

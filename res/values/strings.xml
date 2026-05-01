@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">研经工具</string>
+    <string name="action_settings">Settings</string>
+    <string name="about_activate">本手机已经永久激活，永久免费升级!</string>
+    <string name="errcode_success">分享成功</string>
+    <string name="errcode_cancel">分享取消</string>
+    <string name="errcode_deny">分享被拒绝</string>
+    <string name="errcode_unsupported">不支持错误</string>
+    <string name="errcode_unknown">分享返回</string>
+    <!-- 更多 -->
+    <string name="about_help">问：为什么要激活？\n
+答：激活后，所有功能将不受限制，永久正常使用！\n
+\n
+问：如何激活？\n
+答：点击“短信获取”“电话服务”“官网申请”等3种方式。\n
+            &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;支付账号369780451@qq.com 魏建新\n
+\n
+问：再升级还会收费吗？\n
+答：再升级，注册成功用户将不再收取费用！\n
+\n
+问：可以一个激活码注册多个吗？\n
+答：目前不支持…\n
+\n
+问：你们工作时间是多久？\n
+答:周日至周五（5:00-18:30）\n
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;周六（休息）\n
+\n
+问：官网指定客服QQ是多少？\n
+答：\n
+613224761, 613224762, \n
+613224763, 613224764, \n
+613224765, 613224766, \n
+613224767, 613224768, \n
+613224769， 83485488\n
+\n
+官网QQ群\n
+18602946,18602947,\n
+18602948,18602949\n</string>
+    <!--首页第一次加载提示语-->
+    <string name="hint_first_1">在本软件使用中，有任何不明白的，可以随时联系客服</string>
+    <string name="hint_first_2">阅读累了，您可以尝试“朗读模式”让听进去学习！</string>
+    <string name="hint_first_3">当您选择支付时，您的款项将归于圣，也用于圣！</string>
+    <string name="hint_first_4">关注“研经工具”公众号，学习软件小细节</string>
+    <string name="hint_first_5">电子产品长期阅读，对视力有减退，软件只是工具而已！</string>
+    <!-- common -->
+    <string name="ensure">确定</string>
+    <string name="back">返回</string>
+    <string name="cancel">取消</string>
+    <string name="search">搜索</string>
+    <string name="login">登录</string>
+    <string name="complete">完成</string>
+    <string name="save">保存</string>
+    <string name="activate_pay">缴费</string>
+    <!-- Empty LineLayout -->
+    <string name="abs_message_loading">玩命加载中…</string>
+    <string name="abs_message_empty">没有数据，看看其他吧！</string>
+    <string name="abs_message_error">网络连接错误</string>
+    <string name="abs_button_loading">取消</string>
+    <string name="abs_button_empty">重试</string>
+    <string name="abs_button_error">重试</string>
+    <!-- 下拉列表 -->
+    <string name="xlistview_header_hint_normal">下拉刷新</string>
+    <string name="xlistview_header_hint_ready">松开后刷新</string>
+    <string name="xlistview_header_hint_refreshing">正在刷新\u2026</string>
+    <string name="xlistview_header_last_time">上次更新时间：</string>
+    <string name="xlistview_footer_hint_normal">查看更多</string>
+    <string name="xlistview_footer_hint_ready">松开后加载</string>
+    <string name="xlistview_footer_hint_loading">正在加载\u2026</string>
+    <!-- txt -->
+    <string name="txt_quit_app">退出应用</string>
+    <string name="txt_are_you_sure_to_quit">您确定要退出吗？</string>
+
+
+    <string name="txt_quit_login">退出登录</string>
+
+    <string name="txt_update_book">更新书籍</string>
+    <!-- Preferences -->
+    <string name="pref_category">Category</string>
+    <string name="color1_title">Color 1</string>
+    <string name="color1_summary">black color by default, set by reference</string>
+    <string name="color2_title">Color 2</string>
+    <string name="color2_summary">not persistent color\nalpha slider added via code</string>
+    <string name="color3_title">Color 3</string>
+    <string name="color3_summary">picker with alpha slider</string>
+    <string name="color4_title">Color 4</string>
+    <string name="color4_summary">color set with HEX code in xml</string>
+    <string name="dialog_color_picker">选择背景颜色</string>
+    <string name="press_color_to_apply">点击应用颜色</string>
+    <string name="close">关闭</string>
+    <string name="update">更新</string>
+    <string name="tts_clock_label">定时关闭朗读</string>
+    <string name="tts_local_library_download_label">下载本地语音朗读包</string>
+    <string name="tts_local_library_download_tips">免流量享高品质真人发音</string>
+    <string name="tts_local_library_download_button">安装仅9.88M</string>
+    <string name="tts_local_library_play_tips">离线朗读免流量享受高品质真人发音</string>
+    <string name="tts_snda_setting">设置音质和语速></string>
+    <string name="tts_exit">退出语音朗读</string>
+    <string name="tts_voice_woman">标准女声</string>
+    <string name="tts_voice_man">标准男声</string>
+    <string name="tts_voice_yueyu">粤语</string>
+    <string name="tts_voice_taiwan">台湾话</string>
+    <string name="tts_voice_sichuan">四川话</string>
+    <string name="tts_voice_dongbei">东北话</string>
+    <string name="tts_voice_henan">河南话</string>
+    <string name="tts_voice_hunan">湖南话</string>
+    <string name="tts_voice_shanxi">陕西话</string>
+    <string name="tts_voice_boy">男童声</string>
+    <string name="tts_voice_girl">女童声</string>
+    <string name="tts_voice_old">老年声</string>
+
+    <string name="tts_voice_soft">温柔女声</string>
+    <string name="tts_voice_affine">亲和女声</string>
+    <string name="tts_voice_sweet">甜美女声</string>
+    <string name="tts_voice_lolita">萝莉女声</string>
+    <string name="tts_voice_natural">自然女声</string>
+    <string name="tts_voice_serious">严肃女声</string>
+    <string name="tts_voice_zhejiang">浙江话</string>
+    <string name="tts_voice_man_two">标准男声二</string>
+    <string name="tts_voice_man_three">标准男声三</string>
+    <string name="tts_voice_man_four">标准男声四</string>
+
+    <string name="player_clock_opt_15">15分钟</string>
+    <string name="player_clock_opt_30">30分钟</string>
+    <string name="player_clock_opt_60">60分钟</string>
+    <string name="player_clock_opt_90">90分钟</string>
+    <string name="player_clock_opt_close">关闭定时</string>
+    <string name="modelA">模式A</string>
+    <string name="modelB">模式B</string>
+    <string name="modelC">模式C</string>
+    <string name="read_setting_reader_select">朗读设置：</string>
+    <string name="label_tempo_adjust">语速选择：</string>
+    <string name="label_tempo_slow">慢</string>
+    <string name="label_tempo_fast">快</string>
+    <string name="label_pause">暂停</string>
+    <string name="label_speak_title">朗读标题：</string>
+    <string name="scan_text">将二维码/条码放入框内, 即可自动扫描.</string>
+    <string name="scan_camera_ban_log">应用已被禁止访问相机。可在“设置>应用”重新授权。</string>
+    <string name="login_hint">%s！\n&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;您尚未登录，请先登录。</string>
+    <string name="user_history">历史记录</string>
+    <string name="user_collect">收藏书籍</string>
+    <string name="user_remark">我的书签</string>
+    <string name="history_empty_hint">你还没有阅读过任何书籍哦！</string>
+    <string name="collect_empty_hint">你还没收藏过任何书籍哦！</string>
+    <string name="mark_list_empty">你还没有添加过书签哦</string>
+    <string name="serach_mark_list_empty">暂无搜索书签内容</string>
+    <string name="collect_success">收藏成功</string>
+    <string name="collect_cancel_success">取消成功</string>
+    <string name="account_login_protocol_red_one">用户协议</string>
+    <string name="account_login_protocol_red_two">隐私协议</string>
+    <!--Refresh-->
+
+    <string name="sr_pull_down">下拉刷新</string>
+    <string name="sr_pull_down_to_refresh">下拉刷新</string>
+    <string name="sr_release_to_refresh">松开立即刷新</string>
+    <string name="sr_refreshing">正在刷新中</string>
+    <string name="sr_refresh_complete">更新完成</string>
+    <string name="sr_refresh_failed">更新失败</string>
+</resources>

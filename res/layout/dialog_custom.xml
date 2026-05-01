@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="18dp"
+    android:layout_marginRight="18dp"
+    android:background="@drawable/edittext_rounded_bg"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:id="@+id/txt_dialog_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:singleLine="true"
+            android:textColor="@color/main_color"
+            android:textSize="@dimen/txt_size_18" />
+
+        <TextView
+            android:id="@+id/outUpdateLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:paddingRight="8dp"
+            android:text="站外下载"
+            android:textColor="@color/blue" />
+    </RelativeLayout>
+
+
+    <com.read.scriptures.view.NullMenuEditText
+        android:layout_marginBottom="10dp"
+        android:id="@+id/txt_dialog_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:focusable="false"
+        android:maxHeight="400dp"
+        android:minHeight="80dp"
+        android:paddingLeft="@dimen/common_margin_8"
+        android:paddingRight="@dimen/common_margin_8"
+        android:scrollbars="vertical"
+        android:textColor="@color/dialog_txt_content"
+        android:textSize="@dimen/txt_size_16" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/main_color_alpha80"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="57dp"
+        android:background="@android:color/transparent">
+
+        <Button
+            android:id="@+id/btn_dialog_negative"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/dialog_btn_negative_bg"
+            android:singleLine="true"
+            android:textColor="@color/dialog_txt_default"
+            android:textSize="@dimen/txt_size_18"/>
+
+        <View
+            android:id="@+id/view_line"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/main_color_alpha80"/>
+
+        <Button
+            android:id="@+id/btn_dialog_positive"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/dialog_btn_positive_bg"
+            android:singleLine="true"
+            android:textColor="@color/main_color"
+            android:textSize="@dimen/txt_size_18"/>
+    </LinearLayout>
+
+</LinearLayout>

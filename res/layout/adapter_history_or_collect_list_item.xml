@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:background="@color/white">
+    <RelativeLayout
+        android:id="@+id/rl_head"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/common_margin_16"
+        android:layout_marginTop="@dimen/common_margin_16"
+        android:layout_marginBottom="@dimen/common_margin_16"
+        android:background="@color/cyan_e0f7fa">
+        <TextView
+            android:id="@+id/tv_head"
+            style="@style/dg_33_18"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="0"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+        <ImageView
+            android:id="@+id/iv_top_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_top_lable"/>
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:id="@+id/ll_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:layout_marginRight="@dimen/common_margin_16">
+        <FrameLayout
+            android:id="@+id/fl_check"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:clickable="true">
+
+            <CheckBox
+                android:id="@+id/cb_select"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/selector_radiobutton_home_type"
+                android:button="@null"
+                android:enabled="false"
+                android:clickable="false"/>
+        </FrameLayout>
+        <TextView
+            android:id="@+id/tv_book_name"
+            style="@style/dg_99_12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="时间" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/ll_right"
+        android:layout_toRightOf="@id/rl_head"
+        android:layout_marginLeft="@dimen/common_margin_8"
+        android:layout_marginRight="@dimen/common_margin_8"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+            <TextView
+                android:id="@+id/tv_name"
+                style="@style/dg_33_18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="dddddddddddddd" />
+            <ImageView
+                android:id="@+id/ze_icon_first"
+                android:layout_width="18dp"
+                android:layout_gravity="center_vertical"
+                android:layout_height="18dp"
+                android:scaleType="fitCenter"
+                android:layout_marginLeft="5dp"
+                android:visibility="gone"
+                android:background="@drawable/ic_tag_ze"/>
+            </LinearLayout>
+            <ImageView
+                android:id="@+id/ze_icon_last"
+                android:layout_width="18dp"
+                android:layout_gravity="center_vertical"
+                android:layout_height="18dp"
+                android:scaleType="fitCenter"
+                android:layout_marginLeft="5dp"
+                android:visibility="gone"
+                android:background="@drawable/ic_tag_ze"/>
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tv_content"
+            style="@style/dg_66_14"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_margin_8"
+            android:layout_toLeftOf="@id/tv_book_name"
+            android:singleLine="true"
+            android:lineSpacingMultiplier="1.5"
+            android:text="dddddddddddddd" />
+
+    </LinearLayout>
+
+
+    <View
+        android:id="@+id/view_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/rl_head"
+        android:layout_marginLeft="@dimen/common_margin_16"
+        android:layout_marginRight="@dimen/common_margin_16"
+        android:background="#F3F3F3"/>
+
+</RelativeLayout>

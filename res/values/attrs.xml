@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircleImageView">
+        <attr name="border_width" format="dimension" />
+        <attr name="border_color" format="color" />
+    </declare-styleable>
+    <declare-styleable name="ViewFlow">
+        <attr name="sidebuffer" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="CircleFlowIndicator">
+        <attr name="activeColor" format="color" />
+        <attr name="inactiveColor" format="color" />
+        <attr name="radius" format="dimension" />
+        <attr name="spacing" format="dimension" />
+        <attr name="centered" format="boolean" />
+        <attr name="fadeOut" format="integer" />
+        <attr name="inactiveType">
+            <flag name="stroke" value="0" />
+            <flag name="fill" value="1" />
+        </attr>
+        <attr name="activeType">
+            <flag name="stroke" value="0" />
+            <flag name="fill" value="1" />
+        </attr>
+        <attr name="snap" format="boolean" />
+    </declare-styleable>
+
+    <!-- fragment标题指示 -->
+    <declare-styleable name="PagerSlidingTabStrip">
+        <attr name="pstsIndicatorColor" format="color" />
+        <attr name="pstsUnderlineColor" format="color" />
+        <attr name="pstsDividerColor" format="color" />
+        <attr name="pstsSelectedTabTextColor" format="color" />
+        <attr name="pstsIndicatorHeight" format="dimension" />
+        <attr name="pstsUnderlineHeight" format="dimension" />
+        <attr name="pstsDividerPadding" format="dimension" />
+        <attr name="pstsTabPaddingLeftRight" format="dimension" />
+        <attr name="pstsScrollOffset" format="dimension" />
+        <attr name="pstsTabBackground" format="reference" />
+        <attr name="pstsShouldExpand" format="boolean" />
+        <attr name="pstsTextAllCaps" format="boolean" />
+        <attr name="pstsIsDraw" format="boolean" />
+        <attr name="pstsTabTextSize" format="dimension" />
+    </declare-styleable>
+
+    <!--电池-->
+    <declare-styleable name="Battery">
+        <attr name="batteryOrientation">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        <attr name="batteryColor" format="color" />
+        <attr name="batteryPower" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="ConsecutiveScrollerLayout_Layout">
+        <attr name="layout_isConsecutive" format="boolean" />
+        <attr name="layout_isNestedScroll" format="boolean" />
+        <attr name="layout_isSticky" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="WHProportionRelativeLayout">
+        <attr name="proportion" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="HorizontalExpandMenu">
+        <attr name="back_color" format="color"></attr>
+        <attr name="stroke_size" format="dimension"></attr>
+        <attr name="stroke_color" format="color"></attr>
+        <attr name="corner_radius" format="dimension"></attr>
+        <attr name="button_style">
+            <enum name="right" value="0" />
+            <enum name="left" value="1" />
+        </attr>
+        <attr name="button_icon_size" format="dimension"></attr>
+        <attr name="button_icon_stroke_width" format="dimension"></attr>
+        <attr name="button_icon_color" format="color"></attr>
+        <attr name="expand_time" format="integer"></attr>
+    </declare-styleable>
+
+    <declare-styleable name="CircleTextProgressbar">
+        <attr name="in_circle_color" format="color" />
+    </declare-styleable>
+    <declare-styleable name="ShapeTextView">
+        <!--Button圆角-->
+        <attr name="shapeRadius" format="dimension"></attr>
+        <!--边框宽度-->
+        <attr name="shapeStrokeWidth" format="dimension"></attr>
+        <!--边框颜色-->
+        <attr name="shapeStrokeColor" format="color"></attr>
+        <!--背景颜色-->
+        <attr name="shapeBackgroundColor" format="color"></attr>
+        <!--背景按下的颜色-->
+        <attr name="shapeBackgroundSelectorColor" format="color"></attr>
+    </declare-styleable>
+    <declare-styleable name="CirclePercentView">
+        <!--圆弧背景色-->
+        <attr name="circleBgColor" format="color" />
+        <!--圆弧进度条颜色-->
+        <attr name="circleProgressColor" format="color" />
+        <!--圆弧宽度-->
+        <attr name="circleRadius" format="integer" />
+        <!--渐变开始颜色-->
+        <attr name="circleStartColor" format="color" />
+        <!--渐变结束颜色-->
+        <attr name="circleEndColor" format="color" />
+        <!--是否渐变-->
+        <attr name="circleIsGradient" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="IndexableRecyclerView">
+        <attr name="indexBar_selectedTextColor" format="color" />
+        <attr name="indexBar_textColor" format="color" />
+        <attr name="indexBar_textSize" format="dimension" />
+        <attr name="indexBar_textSpace" format="dimension" />
+        <attr name="indexBar_background" format="reference|color" />
+        <attr name="indexBar_layout_width" format="dimension">
+            <!--<enum name="wrap_content" value="-2" /> 暂不支持 -->
+        </attr>
+    </declare-styleable>
+    <!--下拉刷新-->
+    <declare-styleable name="AbsClassicRefreshView">
+        <attr name="pull_style" format="enum">
+            <enum name="style_default" value="0" />
+            <enum name="style_scale" value="1" />
+            <enum name="style_pin" value="2" />
+            <enum name="style_follow_scale" value="3" />
+            <enum name="style_follow_pin" value="4" />
+            <enum name="style_follow_center" value="5" />
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="RadiusCardView">
+        <!--        左上圆角大小-->
+        <attr name="rcv_topLeftRadiu" format="dimension" />
+        <!--        右上圆角大小-->
+        <attr name="rcv_topRightRadiu" format="dimension" />
+        <!--        右下圆角大小-->
+        <attr name="rcv_bottomRightRadiu" format="dimension" />
+        <!--        左下圆角大小-->
+        <attr name="rcv_bottomLeftRadiu" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="BubbleSeekBar">
+        <attr name="bsb_min" format="float|reference" /> <!--min < max, default: 0.0f-->
+        <attr name="bsb_max" format="float|reference" /> <!--min < max, default: 100.0f-->
+        <attr name="bsb_progress" format="float|reference" /> <!--real time progress value, default: min-->
+        <attr name="bsb_is_float_type" format="boolean" /> <!--support for float type-->
+        <attr name="bsb_track_size" format="dimension|reference" /> <!--height of right-track(on the right of thumb), default: 2dp-->
+        <!--height of left-track(on the left of thumb), default: 2dp higher than right-track's height-->
+        <attr name="bsb_second_track_size" format="dimension|reference" />
+        <attr name="bsb_thumb_radius" format="dimension|reference" /> <!--radius of thumb, default: 2dp higher than left-track's height-->
+        <!--radius of thumb when be dragging, default: 2 times of left-track's height-->
+        <attr name="bsb_thumb_radius_on_dragging" format="dimension|reference" />
+        <attr name="bsb_track_color" format="color|reference" /> <!--color of right-track, default: R.color.colorPrimary-->
+        <attr name="bsb_second_track_color" format="color|reference" /> <!--color of left-track, default: R.color.colorAccent-->
+        <attr name="bsb_thumb_color" format="color|reference" /> <!--color of thumb, default: same as left-track's color-->
+        <attr name="bsb_section_count" format="integer|reference" /> <!--shares of whole progress(max - min), default: 10-->
+        <attr name="bsb_show_section_mark" format="boolean" /> <!--show demarcation points or not, default: false-->
+        <attr name="bsb_auto_adjust_section_mark" format="boolean" /> <!--auto scroll to the nearest section_mark or not, default: false-->
+        <attr name="bsb_show_section_text" format="boolean" /> <!--show section-text or not, default: false-->
+        <attr name="bsb_section_text_size" format="dimension|reference" /> <!--text size of section-text, default: 14sp-->
+        <attr name="bsb_section_text_color" format="color|reference" /> <!--text color of section-text, default: same as right-track's color-->
+        <!--text position of section-text relative to track, sides, bottom_sides, below_section_mark, default: sides-->
+        <attr name="bsb_section_text_position">
+            <enum name="sides" value="0" />
+            <enum name="bottom_sides" value="1" />
+            <enum name="below_section_mark" value="2" />
+        </attr>
+        <attr name="bsb_section_text_interval" format="integer" /> <!--the interval of two section-text, default: 1-->
+        <attr name="bsb_show_thumb_text" format="boolean" /> <!--show real time progress-text under thumb or not, default: false-->
+        <attr name="bsb_thumb_text_size" format="dimension|reference" /> <!--text size of progress-text, default: 14sp-->
+        <attr name="bsb_thumb_text_color" format="color|reference" /> <!--text color of progress-text, default: same as left-track's color-->
+        <attr name="bsb_show_progress_in_float" format="boolean" /> <!--show bubble-progress in float or not, default: false-->
+        <attr name="bsb_touch_to_seek" format="boolean" /> <!--touch anywhere on track to quickly seek, default: false-->
+        <attr name="bsb_seek_step_section" format="boolean" /> <!--seek one step by one section, the progress is discrete, default: false-->
+        <attr name="bsb_seek_by_section" format="boolean" /> <!--seek by section, the progress may not be linear, default: false-->
+        <attr name="bsb_bubble_color" format="color|reference" /> <!--color of bubble, default: same as left-track's color-->
+        <attr name="bsb_bubble_text_size" format="dimension|reference" /> <!--text size of bubble-progress, default: 14sp-->
+        <attr name="bsb_bubble_text_color" format="color|reference" /> <!--text color of bubble-progress, default: #ffffffff-->
+        <attr name="bsb_anim_duration" format="integer" /> <!--duration of animation, default: 200ms-->
+        <attr name="bsb_always_show_bubble" format="boolean" /> <!--bubble shows all time, default: false-->
+        <attr name="bsb_always_show_bubble_delay" format="integer" /> <!--the delay duration before bubble shows all the time, default: 200ms-->
+        <attr name="bsb_hide_bubble" format="boolean" /> <!--hide bubble, default: false-->
+        <attr name="bsb_rtl" format="boolean" /> <!--right to left, default: false-->
+        <attr name="android:enabled" />
+    </declare-styleable>
+
+    <declare-styleable name="LrcView">
+        <attr name="lrcTextSize" format="dimension" />
+        <attr name="lrcLineSpaceSize" format="dimension" />
+        <attr name="lrcNormalTextColor" format="reference|color" />
+        <attr name="lrcCurrentTextColor" format="reference|color" />
+        <attr name="lrcTouchDelay" format="integer" />
+        <attr name="noLrcTextSize" format="dimension" />
+        <attr name="noLrcTextColor" format="reference|color" />
+        <attr name="indicatorLineHeight" format="dimension" />
+        <attr name="indicatorTextSize" format="dimension" />
+        <attr name="indicatorTextColor" format="reference|color" />
+        <attr name="currentIndicateLrcColor" format="reference|color" />
+        <attr name="indicatorTouchDelay" format="integer" />
+        <attr name="indicatorLineColor" format="reference|color" />
+        <attr name="indicatorStartEndMargin" format="dimension" />
+        <attr name="iconLineGap" format="dimension" />
+        <attr name="playIconWidth" format="dimension" />
+        <attr name="playIconHeight" format="dimension" />
+        <attr name="playIcon" format="reference" />
+        <attr name="isLrcCurrentTextBold" format="boolean" />
+        <attr name="isLrcIndicatorTextBold" format="boolean" />
+    </declare-styleable>
+
+</resources>

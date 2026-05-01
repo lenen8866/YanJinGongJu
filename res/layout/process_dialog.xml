@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/confirm_background"
+    android:orientation="vertical"
+     >
+
+    <TextView
+        android:id="@+id/process_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="14dp"
+        android:text="加载中…"
+        android:textColor="@color/black_sys_color"
+        android:textSize="18sp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp" >
+
+        <ProgressBar
+            android:id="@+id/process_dialog_process"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:indeterminate="false"
+            android:indeterminateOnly="false"
+            android:padding="5dp"
+            android:progress="0"
+            android:progressDrawable="@drawable/progressbar_horizontal_1" />
+
+        <TextView
+            android:id="@+id/process_dialog_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="15.0sp"
+            android:gravity="center_vertical"
+            android:paddingLeft="7.0sp"
+            android:text="加载中…"
+            android:textColor="#ff3f3f3f"
+            android:textSize="16.0dip" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/process_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="加载中…"
+        android:textColor="@color/black_sys_color"
+        android:textSize="12sp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/btn_apk_install"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:layout_gravity="center_horizontal"
+        android:text="安装"
+        android:visibility="gone"/>
+</LinearLayout>

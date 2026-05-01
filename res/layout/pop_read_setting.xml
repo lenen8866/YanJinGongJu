@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				xmlns:tools="http://schemas.android.com/tools"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:background="#292423"
+				android:orientation="vertical">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+        android:padding="10dp"
+		android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:gravity="center">
+			<RelativeLayout
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+				>
+				<ImageView
+					android:id="@+id/tv_size_small"
+					android:layout_width="56dp"
+					android:layout_height="32dp"
+                    android:layout_centerInParent="true"
+                    android:padding="4dp"
+					android:src="@drawable/ic_size_subtract"
+                    android:background="@drawable/iv_btn_selector"
+					/>
+			</RelativeLayout>
+
+            <TextView
+                android:id="@+id/tv_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="24"
+				android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:layout_margin="4dp"
+                android:textSize="12sp"/>
+			<RelativeLayout
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+                android:layout_margin="5dp"
+				>
+				<ImageView
+					android:id="@+id/tv_size_big"
+					android:layout_width="56dp"
+					android:layout_height="32dp"
+                    android:layout_centerInParent="true"
+					android:padding="4dp"
+					android:src="@drawable/ic_size_add"
+                    android:background="@drawable/iv_btn_selector"/>
+			</RelativeLayout>
+			<RelativeLayout
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_margin="5dp"
+				>
+				<ImageView
+					android:id="@+id/iv_font"
+					android:layout_width="56dp"
+					android:layout_height="32dp"
+					android:layout_centerInParent="true"
+					android:padding="4dp"
+					android:src="@drawable/ic_font_name"
+					android:background="@drawable/iv_btn_selector"/>
+			</RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+			android:layout_marginTop="5dp"
+			android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+			android:layout_marginRight="20dp"
+			android:background="@drawable/btn_white_normal">
+            <TextView
+				android:id="@+id/tv_traditional"
+                android:layout_width="48dp"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:textColor="@color/white"
+				android:layout_margin="4dp"
+				android:layout_gravity="center"
+                android:text="繁"/>
+            <!--<TextView-->
+                <!--android:layout_width="0dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:layout_weight="1"-->
+                <!--android:gravity="center"-->
+                <!--android:textColor="@color/white"-->
+                <!--android:layout_marginLeft="5dp"-->
+                <!--android:background="@drawable/btn_white_normal"-->
+                <!--android:text="字体"/>-->
+        </LinearLayout>
+
+	</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <ImageView
+                    android:id="@+id/iv_4_hor"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_4_hor"
+                    android:padding="2dp"
+                    android:clickable="true"
+                    android:background="@drawable/btn_border_normal"
+                    android:layout_margin="4dp"/>
+                <ImageView
+                    android:id="@+id/iv_3_hor"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_3_hor"
+                    android:padding="2dp"
+                    android:clickable="true"
+                    android:background="@drawable/btn_border_normal"
+                    android:layout_margin="4dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_full_4_hor"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:src="@drawable/ic_full_4_hor"
+                    android:padding="2dp"
+                    android:clickable="true"
+                    android:background="@drawable/btn_border_normal"
+                    android:layout_margin="4dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_2_hor"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_2_hor"
+                    android:padding="2dp"
+                    android:clickable="true"
+                    android:background="@drawable/btn_border_normal"
+                    android:layout_margin="4dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_3_ver"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_3_ver"
+                    android:padding="2dp"
+					android:visibility="gone"
+                    android:clickable="true"
+                    android:background="@drawable/btn_border_normal"
+                    android:layout_margin="4dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_more_margin"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:clickable="true"
+                    android:background="@drawable/ic_more_setting_pressed"
+                    android:layout_margin="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <RadioGroup
+				android:id="@+id/rg_background"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                >
+				<RadioButton
+					android:id="@+id/iv_text_green"
+					android:layout_width="48dp"
+					android:layout_height="32dp"
+					android:layout_weight="1"
+					android:button="@null"
+					android:background="@drawable/iv_green_border_selector"
+					android:layout_margin="4dp"
+					android:checked="true"/>
+
+                <RadioButton
+                    android:id="@+id/iv_text_white"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:background="@drawable/iv_white_border_selector"
+                    android:layout_margin="4dp"/>
+
+                <RadioButton
+                    android:id="@+id/iv_text_yellow"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:background="@drawable/iv_yellow_border_selector"
+                    android:layout_margin="4dp"/>
+
+                <RadioButton
+                    android:id="@+id/iv_text_grey"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:background="@drawable/iv_grey_border_selector"
+                    android:layout_margin="4dp"/>
+
+
+                <RadioButton
+                    android:id="@+id/iv_text_blue"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:background="@drawable/iv_blue_border_selector"
+                    android:layout_margin="4dp"/>
+
+                <RadioButton
+                    android:id="@+id/iv_more_color"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:button="@null"
+                    android:background="@drawable/iv_more_border_selector"
+                    android:layout_margin="4dp"/>
+            </RadioGroup>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</LinearLayout>

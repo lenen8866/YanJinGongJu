@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/title_view" />
+
+    <TextView
+        android:id="@+id/tv_hint"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_weight="3"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="@dimen/txt_size_10"
+        android:text="@string/login_hint"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@mipmap/ic_launcher" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_margin_16"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="欢迎使用研经工具APP\n登录后即可尽情使用本软件"
+            android:textColor="@color/gray_616161"
+            android:textSize="14sp"
+            android:visibility="visible" />
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6">
+
+        <RelativeLayout
+            android:id="@+id/rl_login"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginRight="20dp">
+
+            <TextView
+                android:id="@+id/tv_login"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_wxpay_selector"
+                android:clickable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:drawableLeft="@drawable/ic_weichat_svg"
+                android:drawablePadding="@dimen/common_margin_8"
+                android:gravity="center"
+                android:text="微信登录"
+                android:textColor="@color/white"
+                android:textSize="@dimen/txt_size_18" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rl_login"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/cb_login_protocol"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:button="@null"
+                android:checked="true"
+                android:drawableLeft="@drawable/selector_radiobutton_home_type"
+                android:gravity="center_vertical"
+                android:paddingRight="@dimen/common_margin_8" />
+
+            <TextView
+                android:id="@+id/tv_agreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:paddingLeft="@dimen/common_margin_8"
+                android:text="我同意本平台，"
+                android:textColor="@color/gray_333333"
+                android:textSize="@dimen/txt_size_12" />
+
+            <TextView
+                android:id="@+id/tv_service_protocol"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/account_login_protocol_red_one"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/txt_size_12" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="和"
+                android:textColor="@color/gray_333333"
+                android:textSize="@dimen/txt_size_12" />
+
+            <TextView
+                android:id="@+id/tv_priacy_policy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/account_login_protocol_red_two"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/txt_size_12" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="。"
+                android:textColor="@color/gray_333333"
+                android:textSize="@dimen/txt_size_12" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+</LinearLayout>

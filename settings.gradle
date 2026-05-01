@@ -1,0 +1,2 @@
+include ':ijkplayerlib'
+include ':music-player-lib','com.lgmshare.hudong'

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <inset android:insetTop="0.0dip" android:insetBottom="0.0dip">
+            <nine-patch android:src="@drawable/seek_bar_bg" android:dither="true"
+              xmlns:android="http://schemas.android.com/apk/res/android" />
+        </inset>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <inset android:insetTop="0.0dip" android:insetBottom="0.0dip">
+                <nine-patch android:src="@drawable/seek_bar_progress"
+                  xmlns:android="http://schemas.android.com/apk/res/android" />
+            </inset>
+        </clip>
+    </item>
+    <item android:id="@android:id/secondaryProgress">
+        <clip>
+            <inset android:insetTop="0.0dip" android:insetBottom="0.0dip">
+                <nine-patch android:src="@drawable/seek_bar_progress"
+                  xmlns:android="http://schemas.android.com/apk/res/android" />
+            </inset>
+        </clip>
+    </item>
+</layer-list>

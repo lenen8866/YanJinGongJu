@@ -1,0 +1,184 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/common_color_activity_bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/layout_actionbar"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:background="@color/main_color"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:contentDescription="@string/app_name"
+            android:padding="8dp"
+            android:src="@drawable/common_back_selector" />
+
+        <com.read.scriptures.widget.ClearEditText
+            android:id="@+id/et_search"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/edittext_rounded_bg"
+            android:hint="箴2:4搜求它，如搜求珍宝！"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:paddingLeft="8dp"
+            android:textColor="@color/gray_4c4c4c"
+            android:textColorHint="@color/gray_bdbdbd"
+            android:textCursorDrawable="@null"
+            android:textSize="@dimen/txt_size_16" />
+
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="56dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/sel_bg_trans_white"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_action_search" />
+    </LinearLayout>
+
+    <RadioGroup
+        android:id="@+id/radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/layout_actionbar"
+        android:background="@color/gray_f5f5f5"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_1"
+            style="@style/dg_33_16"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="目录搜索" />
+
+        <RadioButton
+            android:id="@+id/rb_3"
+            style="@style/dg_33_16"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="标题搜索" />
+
+        <RadioButton
+            android:id="@+id/rb_2"
+            style="@style/dg_33_16"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="内容搜索" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_below="@+id/radio_group"
+        android:background="@drawable/bg_white_top_bottom_stroke"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:text="搜索历史"
+        android:textColor="#ff424142"
+        android:textSize="16.0sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_name">
+
+        <LinearLayout
+            android:id="@+id/layout_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:background="@color/gray_f5f5f5"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:text="搜索历史"
+                android:textColor="#ff424142"
+                android:textSize="16.0sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/common_color_list_line" />
+
+            <ListView
+                android:id="@+id/listview_history"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@color/orange_fff3e0"
+                android:divider="@color/transparent"
+                android:dividerHeight="0dp"
+                android:drawSelectorOnTop="false"
+                android:fadeScrollbars="true"
+                android:fastScrollEnabled="false"
+                android:focusable="true"
+                android:scrollbars="vertical" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_result"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_result"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:textColor="#ff424142"
+                android:textSize="16.0sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/common_color_list_line" />
+
+            <ListView
+                android:id="@+id/listview_result"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@color/orange_fff3e0"
+                android:divider="@color/common_color_line_bg"
+                android:dividerHeight="1dp"
+                android:drawSelectorOnTop="false"
+                android:fadeScrollbars="true"
+                android:fastScrollEnabled="true"
+                android:focusable="true"
+                android:scrollbars="vertical" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ProgressBar
+        android:id="@+id/search_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:layout_below="@+id/radio_group"
+        android:layout_gravity="center_vertical"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progressbar_color" />
+</RelativeLayout>

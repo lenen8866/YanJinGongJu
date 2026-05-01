@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_donate_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:text="温馨提示"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/textContent"
+       android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_recharge_item_bg"
+        android:lineSpacingExtra="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:text="用户您好：\n欢迎您使用我们的“研经工具”，为了节约您的手机内存空间，\n以便软件正常使用，我们建议您本手机卸载早期版本以及其他旧版本的软件\n因其软件，会占据您手机的空间/内存,有可能导致本软件功能无法正常使用，\n为此，我们建议您暂时卸载，如果真有需要，可在对应的网站进行下载和更新...\n为此带来不便，请谅解...."
+        android:textColor="@color/black"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:paddingLeft="30dp"
+        android:paddingTop="10dp"
+        android:paddingRight="30dp"
+        android:paddingBottom="10dp">
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/txt_cancel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="暂不处理"
+                android:gravity="center"
+                android:textColor="@color/gray_333333"
+                android:textSize="@dimen/txt_size_14"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/txt_uninstall"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="立即优化"
+                android:gravity="center"
+                android:textColor="@color/gray_333333"
+                android:textSize="@dimen/txt_size_14"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

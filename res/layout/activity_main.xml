@@ -1,0 +1,129 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:id="@+id/linear_root"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/common_color_activity_bg"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/fl_view"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/main_color"
+            android:orientation="vertical">
+
+            <include
+                layout="@layout/layout_welcome_actionbar"
+                android:layout_height="29dp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <com.read.scriptures.widget.PagerSlidingTabStrip
+                    android:id="@+id/indicator"
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/main_color"
+                    app:pstsDividerColor="@color/main_color"
+                    app:pstsIndicatorColor="@color/white"
+                    app:pstsSelectedTabTextColor="@color/white"
+                    app:pstsShouldExpand="true"
+                    app:pstsTabPaddingLeftRight="10dip"
+                    app:pstsTabTextSize="16sp"
+                    app:pstsUnderlineColor="@color/white_alph70"
+                    app:pstsUnderlineHeight="0dip" />
+
+                <com.read.scriptures.widget.NoScrollViewPager
+                    android:id="@+id/pager"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_below="@+id/indicator"
+                    android:background="@color/white" />
+
+                <include
+                    android:id="@+id/include_notice"
+                    layout="@layout/layout_main_notice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/indicator"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <ListView
+                android:id="@+id/listview_history"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="113dp"
+                android:background="@drawable/btn_black_border"
+                android:cacheColorHint="@color/orange_fff3e0"
+                android:divider="@color/transparent"
+                android:dividerHeight="0dp"
+                android:drawSelectorOnTop="false"
+                android:fadeScrollbars="true"
+                android:fastScrollEnabled="false"
+                android:focusable="true"
+                android:scrollbars="vertical"
+                android:visibility="gone" />
+        </FrameLayout>
+
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/touch_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.read.scriptures.view.AudioPlayingView
+        android:id="@+id/fl_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <FrameLayout
+        android:visibility="gone"
+        android:id="@+id/fl_service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="35dp"
+        android:layout_marginBottom="10dp"
+        android:background="#0d000000"
+        app:layout_constraintBottom_toTopOf="@+id/fl_view"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icon_service" />
+
+        <View
+            android:id="@+id/view_unread"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="3dp"
+            android:background="@drawable/unread_msg_bg"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/video_full_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

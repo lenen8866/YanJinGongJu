@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/baike_list_name"
+        style="@style/dg_33_14"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:paddingBottom="4dp"
+        android:paddingLeft="18dp"
+        android:singleLine="true"
+        android:paddingRight="4dp"
+        android:paddingTop="8dp"
+        android:text="ddde"
+        android:textColor="#5e5e5e" />
+
+    <TextView
+        android:id="@+id/baike_list_title"
+        style="@style/dg_33_12"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:paddingBottom="4dp"
+        android:paddingRight="8dp"
+        android:paddingLeft="18dp"
+        android:paddingTop="8dp"
+        android:singleLine="true"
+        android:text="dd222de"
+        android:textColor="#d9d9d7" />
+
+</LinearLayout>
