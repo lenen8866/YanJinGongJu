@@ -220,11 +220,14 @@ public class ChapterReadAdapter extends CustomSelectableAdapter<Integer, String>
         }
         //圣经增加数字下标
         String head = CharUtils.match("[\\u4e00-\\u9fa5]{1,2}\\d+:\\d+", content);
-        boolean isSJmode = isShengJing || isLuoJiShengJing(content);
+        // PERF: isLuoJiShengJing 内部做正则匹配，原来在同一个 getView 里被调用两次
+        // 改为只计算一次，结果复用
+        boolean isLuoJi = isLuoJiShengJing(content);
+        boolean isSJmode = isShengJing || isLuoJi;
         if (isSJmode) {
             viewHolder.tvItem.setVisibility(View.VISIBLE);
             viewHolder.tvVersion.setVisibility(View.VISIBLE);
-            if (isLuoJiShengJing(content)) {
+            if (isLuoJi) {
                 int startIndex = head.lastIndexOf(":") + 1;
                 viewHolder.tvItem.setText(head.substring(startIndex));
             } else {

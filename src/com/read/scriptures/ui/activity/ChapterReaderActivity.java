@@ -1133,47 +1133,34 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
     }
 
+    // 修复：复用 VersionSettingDialog，避免每次都 new 一个新对象不释放
+    private VersionSettingDialog mVersionSettingDialog;
+
     private void versionSetting() {
-        new VersionSettingDialog(this, HUAI_ZHU_CHAPTER)
-                .setListener(new VersionSettingDialog.OnChoiceClickListener() {
-                    @Override
-                    public void versionSelect(List<String> versions) {
-                        if (versions != null && !versions.isEmpty()) {
+        if (mVersionSettingDialog == null || !mVersionSettingDialog.isShowing()) {
+            mVersionSettingDialog = new VersionSettingDialog(this, HUAI_ZHU_CHAPTER)
+                    .setListener(new VersionSettingDialog.OnChoiceClickListener() {
+                        @Override
+                        public void versionSelect(List<String> versions) {
+                            if (versions == null || versions.isEmpty()) return;
                             if (HUAI_ZHU_CHAPTER != 2) {
                                 HuDongApplication.mVersions = versions;
-
-                                try {
-                                    mChapterReadSlidingAdapter.setChapters(mChapters);
-                                    mChapterReadSlidingAdapter.setTipsKeyword(mTipsKeyword);
-                                    mChapterReadSlidingAdapter.setSearchType(mSearchType);
-                                    mChapterReadSlidingAdapter.setChapterName(mChapterName);
-                                    mChapterReadSlidingAdapter.setChapterContent(mChapterContent);
-                                    mChapterReadSlidingAdapter.setChapterNameKeyWord(mChapterNameKeyWord);
-                                    mChapterReadSlidingAdapter.mTipsValidate = true;
-                                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
                             } else {
                                 HuDongApplication.mVersions_HZ = versions;
-
-                                try {
-                                    mChapterReadSlidingAdapter.setChapters(mChapters);
-                                    mChapterReadSlidingAdapter.setTipsKeyword(mTipsKeyword);
-                                    mChapterReadSlidingAdapter.setSearchType(mSearchType);
-                                    mChapterReadSlidingAdapter.setChapterName(mChapterName);
-                                    mChapterReadSlidingAdapter.setChapterContent(mChapterContent);
-                                    mChapterReadSlidingAdapter.setChapterNameKeyWord(mChapterNameKeyWord);
-                                    mChapterReadSlidingAdapter.mTipsValidate = true;
-                                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                            }
+                            // 修复：每次回调只调 notifyDataSetChanged()
+                            // 原来每次先重复 set 大量 adapter 属性再刷新，这些 set 操作本身就很耗时
+                            // 实际上 versions 已经通过全局变量共享，adapter 内部读取的就是最新值
+                            // 直接 notifyDataSetChanged() 就够
+                            try {
+                                mChapterReadSlidingAdapter.notifyDataSetChanged();
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
-                    }
-                })
-                .show();
+                    });
+        }
+        mVersionSettingDialog.show();
     }
 
     private void setChapterModel(final boolean model) {

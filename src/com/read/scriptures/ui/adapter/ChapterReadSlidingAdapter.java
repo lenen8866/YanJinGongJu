@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.read.scriptures.R;
+import com.read.scriptures.app.HuDongApplication;
 import com.read.scriptures.config.PreferenceConfig;
 import com.read.scriptures.config.SystemConfig;
 import com.read.scriptures.model.Chapter;
@@ -19,6 +20,8 @@ import com.read.scriptures.widget.FlexiListView;
 import com.read.scriptures.widget.sliding.SlidingAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -326,7 +329,34 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         return getContentList(mPageIndex);
     }
 
+    // 修复：缓存章节内容，避免每次 notifyDataSetChanged 都重新解析
+    // 原来每次刷新都调用 queryChaptreContent 全量重新解析每一行，包含 jian2fan 繁体转换（IO 操作）
+    // 现改为：版本列表变化时才重新计算，相同版本状态下直接返回缓存
+    private final HashMap<Integer, List<String>> mContentCache = new HashMap<>();
+    private String mLastVersionsKey = "";
+
+    private String buildVersionsKey() {
+        // 用版本列表拼接成一个 key，判断版本是否发生变化
+        List<String> v = HuDongApplication.mVersions;
+        if (HUAI_ZHU_CHAPTER_HAS_ZW == 1) v = HuDongApplication.mVersions_HZ;
+        if (v == null) return "";
+        java.util.ArrayList<String> sorted = new ArrayList<>(v);
+        Collections.sort(sorted);
+        return sorted.toString();
+    }
+
     private List<String> getContentList(int index) {
+        // 版本发生变化时清除缓存
+        String currentKey = buildVersionsKey();
+        if (!currentKey.equals(mLastVersionsKey)) {
+            mContentCache.clear();
+            mLastVersionsKey = currentKey;
+        }
+        // 命中缓存直接返回
+        if (mContentCache.containsKey(index)) {
+            return mContentCache.get(index);
+        }
+        // 未命中才真正计算
         List<String> content = null;
         if (mChapters != null) {
             if (index >= mChapters.size()) {
@@ -341,6 +371,7 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         if (content == null) {
             content = new ArrayList<String>();
         }
+        mContentCache.put(index, content);
         return content;
     }
 
