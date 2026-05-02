@@ -158,28 +158,34 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, SeekBar
                 .OnSeekBarChangeListener, Reader, MainHandlerConstant, FloatView.ListViewListener {
 
-    private RelativeLayout mParentView;
-    private RelativeLayout mRlReaderView;
+    // 包级访问：供 ChapterReaderSettingDelegate 调用 protected showToast
+    void showToastPkg(String msg) {
+        showToast(msg);
+    }
+
+    // 包级访问：供 ChapterReaderSettingDelegate 使用（同包内可见）
+    RelativeLayout mParentView;
+    RelativeLayout mRlReaderView;
     // 顶部数据信息栏
-    private RelativeLayout mTitleLayout;
-    private TextView mTitleVolumeTextView;
-    private TextView mTitletvCategoryName;
-    private TextView mTitletvCategoryType;
-    private TextView mTitleChapterTextView;
-    private ImageView iv_back;
-    private PopupWindow popSetting;
-    private PopupWindow popMarginSetting;
-    private PopupWindow popColorSetting;
-    private View dex;
+    RelativeLayout mTitleLayout;
+    TextView mTitleVolumeTextView;
+    TextView mTitletvCategoryName;
+    TextView mTitletvCategoryType;
+    TextView mTitleChapterTextView;
+    ImageView iv_back;
+    PopupWindow popSetting;
+    PopupWindow popMarginSetting;
+    PopupWindow popColorSetting;
+    View dex;
     // 底部状态栏
-    private TextView mStatusWeekTextView;
-    private TextView mStatusBatteryTextView;
-    private TextView mStatusTimeTextView;
-    private RelativeLayout mStatusLayout;
+    TextView mStatusWeekTextView;
+    TextView mStatusBatteryTextView;
+    TextView mStatusTimeTextView;
+    RelativeLayout mStatusLayout;
 
-    private TextView tvItemTxt;
+    TextView tvItemTxt;
 
-    private BatteryView mStatusBatteryView;
+    BatteryView mStatusBatteryView;
     // 顶部操作栏
     private RelativeLayout mOptionLayout;
     private TextView mOptionSelectNumTextView;
@@ -188,12 +194,29 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private TouchInterceptSlidingView mSlidingLayout;//===========================================================
     private ChapterReadSlidingAdapter mChapterReadSlidingAdapter;//===============================================
 
+    /**
+     * 获取章节阅读滑动适配器
+     * @return ChapterReadSlidingAdapter
+     */
+    public ChapterReadSlidingAdapter getChapterReadSlidingAdapter() {
+        return mChapterReadSlidingAdapter;
+    }
+
     private Chapter mChapter;
     private String enter = "";
     private int mTipsPostion;
     private String mTipsKeyword;
     private String mTipsContent;
     private List<Chapter> mChapters;
+
+    /**
+     * 获取章节列表
+     * @return List<Chapter>
+     */
+    public List<Chapter> getChapters() {
+        return mChapters;
+    }
+
     private String categoryName;
     private int mSearchType;
     private String mChapterName;
@@ -255,6 +278,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private List<Category> mRootCategorys;
     private Map<Category, List<Category>> mRootCategoryMaps;
 
+    // ================================================================
+    // REGION: 生命周期（onCreate / onResume / onPause / onDestroy 等）
+    // 文件位置：第 259 行 — 第 690 行
+    // ================================================================
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -311,9 +338,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             }
         }).start();
         initActionBar();
-        initSettingPop();
-        initMarginPop();
-        initColorPop();
+        mSettingDelegate = new ChapterReaderSettingDelegate(this, mChapterReadSlidingAdapter, handler);
+        mSettingDelegate.initSettingPop();
+        mSettingDelegate.initMarginPop();
+        mSettingDelegate.initColorPop();
         initDatetimeUpdateThread();
         startService(new Intent(ChapterReaderActivity.this, NotifacationService.class));
     }
@@ -687,6 +715,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         initFloatView();
     }
 
+    // ================================================================
+    // REGION: 滚动监听 / 翻页控制
+    // 文件位置：第 695 行 — 第 815 行
+    // ================================================================
     private void listScrollLister() {
         boolean isSJmode = isLuoJiShengJing(mChapters);
         try {
@@ -954,6 +986,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
 
     @Override
+    // ================================================================
+    // REGION: 点击事件分发（onItemClick / onClick 等）
+    // 文件位置：第 957 行 — 第 1180 行
+    // ================================================================
     public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
         switch (parent.getId()) {
             case R.id.sliding_listview:
@@ -1117,7 +1153,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 });
                 return;
             }
-            tv_size.setText(String.valueOf(textSize));
+            if (mSettingDelegate != null) mSettingDelegate.updateTextSizeTv(textSize);
             popSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
 //            changeTextSizePopWindow();
         } else if (mTitles.get(position).equals("搜索本书")) {//搜索
@@ -1176,6 +1212,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         adapter.notifyDataSetChanged();
     }
 
+    // ================================================================
+    // REGION: 功能跳转（分享、复制、书签、搜索等）
+    // 文件位置：第 1180 行 — 第 1745 行
+    // ================================================================
     private void goBookmarkEditActivity() {
         final ArrayList<Bookmark> bookmarks = new ArrayList<Bookmark>();
         final List<String> lists = mChapterReadSlidingAdapter.getCurrentChapterReadAdapter()
@@ -1437,13 +1477,13 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
         if (HuDongApplication.getInstance().getTextModel() == SystemConfig.TEXT_MODEL_FANTI) {
             HuDongApplication.getInstance().setTextModel(SystemConfig.TEXT_MODEL_NORMAL);
-            tv_traditional.setText("繁");
+            if (mSettingDelegate != null) mSettingDelegate.updateTraditionalTv(false);
             mChapterReadSlidingAdapter.setTipsKeyword(mTipsKeyword);
             mChapterReadSlidingAdapter.setChapterContent(mChapterContent);
             Log.w("TTT", "changeTextModel1 222222");
         } else {
             HuDongApplication.getInstance().setTextModel(SystemConfig.TEXT_MODEL_FANTI);
-            tv_traditional.setText("简");
+            if (mSettingDelegate != null) mSettingDelegate.updateTraditionalTv(true);
             mChapterReadSlidingAdapter.setTipsKeyword(SearchTextUtil.jian2fan(mTipsKeyword));
             mChapterReadSlidingAdapter.setChapterContent(SearchTextUtil.jian2fan(mChapterContent));
             Log.w("TTT", "changeTextModel1 3333333333");
@@ -1592,26 +1632,22 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             fromUser) {
         switch (seekBar.getId()) {
             case R.id.line_seek_bar:
-                Log.e("onProgressChangedASDASD", "行间距:" + progress);
                 HuDongApplication.getInstance().setmLineMargin(progress);
-                tv_line.setText(progress + "");
+                if (mSettingDelegate != null) mSettingDelegate.updateLineTv(progress);
                 mChapterReadSlidingAdapter.setLineMargin(progress);
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.section_seek_bar:
-                Log.e("onProgressChangedASDASD", "段间距:" + progress);
                 HuDongApplication.getInstance().setTextMagin(progress);
-                tv_section.setText(progress + "");
+                if (mSettingDelegate != null) mSettingDelegate.updateSectionTv(progress);
                 mChapterReadSlidingAdapter.setTextMargin(progress);
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
-                Log.e("onProgressChangedASDASD", "左右间距:" + progress);
                 break;
             case R.id.left_right_seek_bar:
                 HuDongApplication.getInstance().setTextAround(progress);
-                tv_left_right.setText(progress + "");
+                if (mSettingDelegate != null) mSettingDelegate.updateLeftRightTv(progress);
                 mChapterReadSlidingAdapter.setTextAroundMargin(progress);
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
-                Log.e("onProgressChangedASDASD", "左右间距:" + progress);
                 break;
         }
     }
@@ -1737,6 +1773,11 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     ////////////////////////////////////////////////////////
     private XunFeiSpeechManager mXunFeiSpeechManager;
 
+    // ================================================================
+    // REGION: 语音朗读（讯飞 TTS / 百度 TTS / 朗读进度）
+    // 文件位置：第 1745 行 — 第 2260 行
+    // 关联文件：ChapterReaderSpeechHelper.java（已抽取核心逻辑）
+    // ================================================================
     private final HashMap<Integer, List<String>> mSpeechTextMap = new HashMap<Integer, List<String>>();
 
     // 缓冲进度
@@ -1756,7 +1797,9 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private boolean longClick;
 
     private void initSpeechTts() {
-        return_default.performLongClick();//格式 初始化
+        if (mSettingDelegate != null && mSettingDelegate.return_default != null) {
+            mSettingDelegate.return_default.performLongClick();//格式 初始化
+        }
         mSpeechPosition = 0;
         mSpeechIndex = 0;
         mSpeechTxtNumIndex = 0;
@@ -2397,6 +2440,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
     }
 
+    // ================================================================
+    // REGION: onClick 主入口（所有按鈕点击分发）
+    // 文件位置：第 2400 行 — 第 2550 行
+    // ================================================================
     @Override
     public void onClick(final View view) {
         switch (view.getId()) {
@@ -2458,7 +2505,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 changeTextModel();
                 break;
             case R.id.iv_2_hor:
-                setBackground(R.id.iv_2_hor);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_2_hor);
                 HuDongApplication.getInstance().setTextMagin(40);
                 HuDongApplication.getInstance().setTextAround(20);
                 mChapterReadSlidingAdapter.setTextMargin(40);
@@ -2466,7 +2513,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.iv_3_hor:
-                setBackground(R.id.iv_3_hor);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_3_hor);
                 HuDongApplication.getInstance().setTextMagin(30);
                 HuDongApplication.getInstance().setTextAround(20);
                 mChapterReadSlidingAdapter.setTextMargin(30);
@@ -2474,7 +2521,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.iv_4_hor:
-                setBackground(R.id.iv_4_hor);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_4_hor);
                 HuDongApplication.getInstance().setTextMagin(20);
                 HuDongApplication.getInstance().setTextAround(20);
                 mChapterReadSlidingAdapter.setTextMargin(20);
@@ -2482,7 +2529,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.iv_full_4_hor:
-                setBackground(R.id.iv_full_4_hor);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_full_4_hor);
                 HuDongApplication.getInstance().setTextMagin(20);
                 HuDongApplication.getInstance().setTextAround(0);
                 mChapterReadSlidingAdapter.setTextMargin(20);
@@ -2490,17 +2537,11 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.iv_3_ver:
-                setBackground(R.id.iv_3_ver);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_3_ver);
                 break;
             case R.id.iv_more_margin:
-                setBackground(R.id.iv_more_margin);
-                sb_line.setProgress(HuDongApplication.getInstance().getmLineMargin());
-                sb_section.setProgress(HuDongApplication.getInstance().getTextMagin());
-                sb_left_right.setProgress(HuDongApplication.getInstance().getTextAround());
-                tv_left_right.setText(HuDongApplication.getInstance().getTextAround() + "");
-                tv_line.setText(HuDongApplication.getInstance().getmLineMargin() + "");
-                tv_section.setText(HuDongApplication.getInstance().getTextMagin() + "");
-                popMarginSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
+                if (mSettingDelegate != null) mSettingDelegate.setBackground(R.id.iv_more_margin);
+                if (mSettingDelegate != null) mSettingDelegate.showMarginPop(mParentView);
                 break;
             //间距设置
             case R.id.iv_back_margin:
@@ -2512,800 +2553,19 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 if (popColorSetting != null)
                     popColorSetting.dismiss();
                 break;
-            case R.id.return_default://恢复默认设置
+            case R.id.return_default:
                 HuDongApplication.getInstance().setmLineMargin(7);
                 HuDongApplication.getInstance().setTextMagin(7);
                 HuDongApplication.getInstance().setTextAround(22);
-                sb_line.setProgress(7);
-                sb_section.setProgress(7);
-                sb_left_right.setProgress(22);
-                tv_left_right.setText(HuDongApplication.getInstance().getTextAround() + "");
-                tv_line.setText(HuDongApplication.getInstance().getmLineMargin() + "");
-                tv_section.setText(HuDongApplication.getInstance().getTextMagin() + "");
+                if (mSettingDelegate != null) mSettingDelegate.resetMarginProgress(7, 7, 22);
                 mChapterReadSlidingAdapter.notifyDataSetChanged();
                 break;
         }
     }
 
-    private ImageView tv_size_small;
-    private ImageView iv_font;
-    private ImageView tv_size_big;
-    private TextView tv_size;
-    private TextView tv_traditional;
-    private ImageView iv_2_hor;
-    private ImageView iv_3_hor;
-    private ImageView iv_4_hor;
-    private ImageView iv_full_4_hor;
-    private ImageView iv_3_ver;
-    private ImageView iv_more_margin;
-    private RadioGroup rg_background;
-    private RadioButton iv_text_white;
-    private RadioButton iv_text_yellow;
-    private RadioButton iv_text_grey;
-    private RadioButton iv_text_green;
-    private RadioButton iv_text_blue;
-    private RadioButton iv_more_color;
-
-    private void initSettingPop() {
-        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.pop_read_setting, null);
-        tv_size_small = (ImageView) view.findViewById(R.id.tv_size_small);
-        iv_font = (ImageView) view.findViewById(R.id.iv_font);
-        tv_size_big = (ImageView) view.findViewById(R.id.tv_size_big);
-        tv_size = (TextView) view.findViewById(R.id.tv_size);
-        tv_traditional = (TextView) view.findViewById(R.id.tv_traditional);
-        iv_2_hor = (ImageView) view.findViewById(R.id.iv_2_hor);
-        iv_3_hor = (ImageView) view.findViewById(R.id.iv_3_hor);
-        iv_4_hor = (ImageView) view.findViewById(R.id.iv_4_hor);
-        iv_full_4_hor = (ImageView) view.findViewById(R.id.iv_full_4_hor);
-        iv_3_ver = (ImageView) view.findViewById(R.id.iv_3_ver);
-        iv_more_margin = (ImageView) view.findViewById(R.id.iv_more_margin);
-        rg_background = (RadioGroup) view.findViewById(R.id.rg_background);
-        iv_text_white = (RadioButton) view.findViewById(R.id.iv_text_white);
-        iv_text_yellow = (RadioButton) view.findViewById(R.id.iv_text_yellow);
-        iv_text_grey = (RadioButton) view.findViewById(R.id.iv_text_grey);
-        iv_text_green = (RadioButton) view.findViewById(R.id.iv_text_green);
-        iv_text_blue = (RadioButton) view.findViewById(R.id.iv_text_blue);
-        iv_more_color = (RadioButton) view.findViewById(R.id.iv_more_color);
-        rg_background.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.iv_text_white) {
-                    if (popColorSetting == null)
-                        return;
-                    HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.color_read_white));
-                    HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.color_text_white));
-                    setBackTint();
-                    mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.color_read_white));
-                    mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.color_text_white));
-                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-
-                } else if (checkedId == R.id.iv_text_yellow) {
-                    if (popColorSetting == null)
-                        return;
-                    HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.color_read_yellow));
-                    HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.color_text_yellow));
-                    setBackTint();
-                    mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.color_read_yellow));
-                    mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.color_text_yellow));
-                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                } else if (checkedId == R.id.iv_text_grey) {
-                    if (popColorSetting == null)
-                        return;
-                    HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.color_read_grey));
-                    HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.color_text_grey));
-                    setBackTint();
-                    mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.color_read_grey));
-                    mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.color_text_grey));
-                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                } else if (checkedId == R.id.iv_text_green) {
-                    if (popColorSetting == null)
-                        return;
-                    HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.color_read_green));
-                    HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.color_text_green));
-                    setBackTint();
-                    mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.color_read_green));
-                    mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.color_text_green));
-                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                } else if (checkedId == R.id.iv_text_blue) {
-                    if (popColorSetting == null)
-                        return;
-                    HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.color_read_blue));
-                    HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.color_text_blue));
-                    setBackTint();
-                    mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.color_read_blue));
-                    mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.color_text_blue));
-                    mChapterReadSlidingAdapter.notifyDataSetChanged();
-                } else if (checkedId == R.id.iv_more_color) {
-                    if (popColorSetting != null)
-                        popColorSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
-                }
-            }
-        });
-        iv_more_color.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (popColorSetting != null)
-                    popColorSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
-            }
-        });
-        if (HuDongApplication.getInstance().getTextModel() == SystemConfig.TEXT_MODEL_FANTI) {
-            tv_traditional.setText("简");
-        } else {
-            tv_traditional.setText("繁");
-        }
-//        tv_size_small.setOnClickListener(this);
-        tv_size_small.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    updateAddOrSubtract(v.getId());    //手指按下时触发不停的发送消息
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopAddOrSubtract();    //手指抬起时停止发送
-                }
-                return true;
-            }
-        });
-
-        iv_font.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //TODO 去购买字体
-                showToast("正在开发中...");
-//                Intent intent = new Intent(ChapterReaderActivity.this, BuyFontActivity.class);
-//                startActivity(intent);
-            }
-        });
-
-        tv_size_big.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    updateAddOrSubtract(v.getId());    //手指按下时触发不停的发送消息
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopAddOrSubtract();    //手指抬起时停止发送
-                }
-                return true;
-            }
-        });
-//        tv_size_big.setOnClickListener(this);
-        tv_size.setOnClickListener(this);
-        tv_traditional.setOnClickListener(this);
-        iv_2_hor.setOnClickListener(this);
-        iv_3_hor.setOnClickListener(this);
-        iv_4_hor.setOnClickListener(this);
-        iv_full_4_hor.setOnClickListener(this);
-        iv_3_ver.setOnClickListener(this);
-        iv_more_margin.setOnClickListener(this);
-
-        popSetting = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        popSetting.setTouchable(true);
-        popSetting.setFocusable(true);
-        ColorDrawable draw = new ColorDrawable(0x00000000);
-        popSetting.setBackgroundDrawable(draw);
-        popSetting.setAnimationStyle(R.style.pop_bottom);
-        popSetting.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                StatusBarUtils.setBackgroundAlpha(ChapterReaderActivity.this, 1.0f);
-            }
-        });
-        if (HuDongApplication.getInstance().getReadModel() == SystemConfig.READ_MODEL_NORMAL) {
-            setChecked();
-        }
-    }
-
-    private void setChecked() {
-        //TODO 设置图片tint
-        setBackTint();
-
-        if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_white)) {
-            iv_text_white.setChecked(true);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_yellow)) {
-            iv_text_yellow.setChecked(true);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_grey)) {
-            iv_text_grey.setChecked(true);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_green)) {
-            iv_text_green.setChecked(true);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_blue)) {
-            iv_text_blue.setChecked(true);
-        } else {
-            iv_more_color.setChecked(true);
-        }
-
-        if (HuDongApplication.getInstance().getTextAround() == 20 && HuDongApplication.getInstance().getTextMagin() == 40) {
-            setBackground(R.id.iv_2_hor);
-        } else if (HuDongApplication.getInstance().getTextAround() == 20 && HuDongApplication.getInstance().getTextMagin() == 30) {
-            setBackground(R.id.iv_3_hor);
-        } else if (HuDongApplication.getInstance().getTextAround() == 20 && HuDongApplication.getInstance().getTextMagin() == 20) {
-            setBackground(R.id.iv_4_hor);
-        } else if (HuDongApplication.getInstance().getTextAround() == 0 && HuDongApplication.getInstance().getTextMagin() == 20) {
-            setBackground(R.id.iv_full_4_hor);
-        } else if (HuDongApplication.getInstance().getTextAround() == 20 && HuDongApplication.getInstance().getTextMagin() == 40) {
-            setBackground(R.id.iv_3_ver);
-        } else {
-            setBackground(R.id.iv_more_margin);
-        }
-
-    }
-
-    private void setBackground(int id) {
-        switch (id) {
-            case R.id.iv_2_hor:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_normal_pressed));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting));
-                break;
-            case R.id.iv_3_hor:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_normal_pressed));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting));
-                break;
-            case R.id.iv_4_hor:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_normal_pressed));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting));
-                break;
-            case R.id.iv_full_4_hor:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_normal_pressed));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting));
-                break;
-            case R.id.iv_3_ver:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_normal_pressed));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting));
-                break;
-            case R.id.iv_more_margin:
-                iv_2_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_full_4_hor.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_3_ver.setBackground(getResources().getDrawable(R.drawable.btn_border_normal));
-                iv_more_margin.setBackground(getResources().getDrawable(R.drawable.ic_more_setting_pressed));
-                break;
-        }
-    }
-
-    private void setBackTint() {
-        Drawable up = ContextCompat.getDrawable(this, R.drawable.ic_back);
-        Drawable drawableUp = DrawableCompat.wrap(up);
-        DrawableCompat.setTint(drawableUp, HuDongApplication.getInstance().getTextColor());
-        iv_back.setImageDrawable(drawableUp);
-
-        dex.setBackgroundColor(HuDongApplication.getInstance().getTextColor());
-        mTitleVolumeTextView.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mTitletvCategoryType.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mTitleChapterTextView.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mStatusTimeTextView.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mStatusWeekTextView.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mStatusBatteryTextView.setTextColor(HuDongApplication.getInstance().getTextColor());
-        mStatusLayout.setBackgroundColor(HuDongApplication.getInstance().getBackgroudColor());
-        mTitleLayout.setBackgroundColor(HuDongApplication.getInstance().getBackgroudColor());
-        StatusBarUtils.initColorStatusBar(this, HuDongApplication.getInstance().getBackgroudColor());
-        if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_white)) {
-            iv_text_white.setChecked(true);
-            mStatusBatteryView.setColor(0xFF2B2B2B);
-            mStatusBatteryView.setFillColor(0XFFFFFFFF);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_yellow)) {
-            iv_text_yellow.setChecked(true);
-            mStatusBatteryView.setColor(0xFF2B2B2B);
-            mStatusBatteryView.setFillColor(0XFFFFFFFF);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_grey)) {
-            iv_text_grey.setChecked(true);
-            mStatusBatteryView.setColor(0xFFFFFFFF);
-            mStatusBatteryView.setFillColor(0XFF2B2B2B);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_green)) {
-            iv_text_green.setChecked(true);
-            mStatusBatteryView.setColor(0xFF2B2B2B);
-            mStatusBatteryView.setFillColor(0XFFFFFFFF);
-        } else if (HuDongApplication.getInstance().getBackgroudColor() == getResources().getColor(R.color.color_read_blue)) {
-            iv_text_blue.setChecked(true);
-            mStatusBatteryView.setColor(0xFF2B2B2B);
-            mStatusBatteryView.setFillColor(0XFFFFFFFF);
-        } else {
-            iv_more_color.setChecked(true);
-        }
-    }
-
-    private ImageView iv_back_margin;
-    private SeekBar sb_line;
-    private SeekBar sb_section;
-    private SeekBar sb_top_bottom;
-    private SeekBar sb_left_right;
-    private TextView tv_left_right;
-    private TextView tv_line;
-    private TextView tv_section;
-    private TextView return_default;
-
-    private void initMarginPop() {
-        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.pop_magin_setting, null);
-        iv_back_margin = (ImageView) view.findViewById(R.id.iv_back_margin);
-        sb_line = view.findViewById(R.id.line_seek_bar);
-        sb_section = view.findViewById(R.id.section_seek_bar);
-//        sb_top_bottom = (SeekBar) view.findViewById(R.id.top_down_seek_bar);
-        sb_left_right = view.findViewById(R.id.left_right_seek_bar);
-        tv_left_right = view.findViewById(R.id.tv_left_right_margin);
-        tv_line = view.findViewById(R.id.tv_line_margin);
-        tv_section = view.findViewById(R.id.tv_section_margin);
-        return_default = view.findViewById(R.id.return_default);
-        sb_line.setProgress(HuDongApplication.getInstance().getmLineMargin());
-        sb_section.setProgress(HuDongApplication.getInstance().getTextMagin());
-        sb_left_right.setProgress(HuDongApplication.getInstance().getTextAround());
-        tv_left_right.setText(HuDongApplication.getInstance().getTextAround() + "");
-        tv_line.setText(HuDongApplication.getInstance().getmLineMargin() + "");
-        tv_section.setText(HuDongApplication.getInstance().getTextMagin() + "");
-        sb_line.setOnSeekBarChangeListener(this);
-        sb_section.setOnSeekBarChangeListener(this);
-//        sb_top_bottom.setOnSeekBarChangeListener(this);
-        sb_left_right.setOnSeekBarChangeListener(this);
-        iv_back_margin.setOnClickListener(this);
-        return_default.setOnClickListener(this);
-        popMarginSetting = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        popMarginSetting.setTouchable(true);
-        popMarginSetting.setFocusable(true);
-        ColorDrawable draw = new ColorDrawable(0x00000000);
-        popMarginSetting.setBackgroundDrawable(draw);
-        popMarginSetting.setAnimationStyle(R.style.pop_bottom);
-        popMarginSetting.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                HuDongApplication.getInstance().setmLineMargin(sb_line.getProgress());
-                HuDongApplication.getInstance().setTextMagin(sb_section.getProgress());
-                HuDongApplication.getInstance().setTextAround(sb_left_right.getProgress());
-                mChapterReadSlidingAdapter.setLineMargin(sb_line.getProgress());
-                mChapterReadSlidingAdapter.setTextMargin(sb_section.getProgress());
-                mChapterReadSlidingAdapter.setTextAroundMargin(sb_left_right.getProgress());
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                StatusBarUtils.setBackgroundAlpha(ChapterReaderActivity.this, 1.0f);
-            }
-        });
-    }
-
-    private void showColorDialog(View v, int textColor) {
-        final ColorPickerDialog dialog = new ColorPickerDialog(this, textColor == -1 ? Color.BLACK : textColor);
-        dialog.setOnColorChangedListener(new ColorPickerDialog.OnColorChangedListener() {
-            @Override
-            public void onColorChanged(final int color) {
-//                v.setBackgroundColor(color);
-                HuDongApplication.getInstance().setTextColor(color);
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(color);
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-            }
-        });
-        dialog.show();
-    }
-
-    private void showBgColorDialog(View v, int bgColor) {
-        final ColorPickerDialog dialog = new ColorPickerDialog(this, bgColor == -1 ? Color.WHITE : bgColor);
-        dialog.setOnColorChangedListener(new ColorPickerDialog.OnColorChangedListener() {
-            @Override
-            public void onColorChanged(final int color) {
-//                v.setBackgroundColor(color);
-                HuDongApplication.getInstance().setBackgroudColor(color);
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(color);
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-            }
-        });
-        dialog.show();
-    }
-
-    private ImageView iv_back_color;
-    private RecyclerView rv_text;
-    private RecyclerView rv_background;
-
-    private void initColorPop() {
-        String[] toast = new String[25];
-        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.pop_color_setting, null);
-        iv_back_color = view.findViewById(R.id.iv_back_color);
-        rv_text = view.findViewById(R.id.rv_text_color);
-        rv_background = view.findViewById(R.id.rv_background_color);
-        View view_text_color = view.findViewById(R.id.view_text_color);
-        View view_bg_color = view.findViewById(R.id.view_bg_color);
-        int textColor = HuDongApplication.getInstance().getTextColor();
-        int bgColor = HuDongApplication.getInstance().getBackgroudColor();
-//        view_text_color.setBackgroundColor(textColor);
-        view_text_color.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showColorDialog(v, textColor);
-            }
-        });
-
-        view_bg_color.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showBgColorDialog(v, bgColor);
-            }
-        });
-        SpacesItemDecoration decoration = new SpacesItemDecoration(8);
-        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
-        StaggeredGridLayoutManager staggeredGridLayoutManager1 = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
-        rv_text.setLayoutManager(staggeredGridLayoutManager);
-        rv_background.setLayoutManager(staggeredGridLayoutManager1);
-        rv_text.addItemDecoration(decoration);
-        rv_background.addItemDecoration(decoration);
-
-        TextColorAdapter textColorAdapter = new TextColorAdapter(this, Arrays.asList(toast));
-        BackgroundColorAdapter backgroundColorAdapter = new BackgroundColorAdapter(this, Arrays.asList(toast));
-        rv_text.setAdapter(textColorAdapter);
-        rv_background.setAdapter(backgroundColorAdapter);
-
-        textColorAdapter.setOnItemClickListener(new TextColorAdapter.OnItemOnClickListener() {
-            @Override
-            public void onItemClick(View v, int position) {
-                setTextColor(position);
-            }
-        });
-        backgroundColorAdapter.setOnItemClickListener(new BackgroundColorAdapter.OnItemOnClickListener() {
-            @Override
-            public void onItemClick(View v, int position) {
-                setBackgroundColor(position);
-            }
-        });
-        iv_back_color.setOnClickListener(this);
-        popColorSetting = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        popColorSetting.setTouchable(true);
-        popColorSetting.setFocusable(true);
-        ColorDrawable draw = new ColorDrawable(0x00000000);
-        popColorSetting.setBackgroundDrawable(draw);
-        popColorSetting.setAnimationStyle(R.style.pop_bottom);
-        popColorSetting.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                StatusBarUtils.setBackgroundAlpha(ChapterReaderActivity.this, 1.0f);
-            }
-        });
-    }
-
-    private void setTextColor(int position) {
-        switch (position + 1) {
-            case 1:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_1));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_1));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 2:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_2));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_2));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 3:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_3));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_4));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 4:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_4));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_4));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 5:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_5));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_5));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 6:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_6));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_6));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 7:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_7));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_7));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 8:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_8));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_8));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 9:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_9));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_9));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 10:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_10));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_10));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 11:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_11));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_11));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 12:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_12));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_12));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 13:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_13));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_13));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 14:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_14));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_14));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 15:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_15));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_15));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 16:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_16));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_16));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 17:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_17));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_17));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 18:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_18));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_18));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 19:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_19));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_19));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 20:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_20));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_20));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 21:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_21));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_21));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 22:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_22));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_22));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 23:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_23));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_23));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 24:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_24));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_24));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 25:
-                HuDongApplication.getInstance().setTextColor(getResources().getColor(R.color.text_25));
-                setBackTint();
-                mChapterReadSlidingAdapter.setTextColor(getResources().getColor(R.color.text_25));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-        }
-    }
-
-    private void setBackgroundColor(int position) {
-        switch (position + 1) {
-            case 1:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_1));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_1));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 2:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_2));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_2));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 3:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_3));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_3));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 4:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_4));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_4));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 5:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_5));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_5));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 6:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_6));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_6));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 7:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_7));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_7));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 8:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_8));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_8));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 9:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_9));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_9));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 10:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_10));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_10));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 11:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_11));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_11));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 12:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_12));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_12));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 13:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_13));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_13));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 14:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_14));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_14));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 15:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_15));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_15));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 16:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_16));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_16));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 17:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_17));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_17));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 18:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_18));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_18));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 19:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_19));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_19));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 20:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_20));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_20));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 21:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_21));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_21));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 22:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_22));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_22));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 23:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_23));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_23));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 24:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_24));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_24));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-            case 25:
-                HuDongApplication.getInstance().setBackgroudColor(getResources().getColor(R.color.bac_25));
-                setBackTint();
-                mChapterReadSlidingAdapter.setBackgroudColor(getResources().getColor(R.color.bac_25));
-                mChapterReadSlidingAdapter.notifyDataSetChanged();
-                break;
-        }
-    }
-
-    private ScheduledExecutorService scheduledExecutor;
-
-    private void updateAddOrSubtract(int viewId) {
-        final int vid = viewId;
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                Message msg = new Message();
-                msg.what = vid;
-                handler.sendMessage(msg);
-            }
-        }, 0, 200, TimeUnit.MILLISECONDS);    //每间隔100ms发送Message
-    }
-
-    private void stopAddOrSubtract() {
-        if (scheduledExecutor != null) {
-            scheduledExecutor.shutdownNow();
-            scheduledExecutor = null;
-        }
-    }
-
+    // 阅读设置模块已迁移到 ChapterReaderSettingDelegate.java
+    // 包含：字体大小、背景颜色、文字颜色、边距设置（共 783 行 → 已精简）
+    ChapterReaderSettingDelegate mSettingDelegate;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -3322,25 +2582,27 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     };
 
     private void addValue() {
-        if (textSize >= 50)
-            return;
+        if (textSize >= 50) return;
         textSize++;
-        tv_size.setText(String.valueOf(textSize));
+        if (mSettingDelegate != null) mSettingDelegate.updateTextSizeTv(textSize);
         HuDongApplication.getInstance().setTextSize(textSize);
         mChapterReadSlidingAdapter.setTextSize(textSize);
         mChapterReadSlidingAdapter.notifyDataSetChanged();
     }
 
     private void reduceValue() {
-        if (textSize <= 10)
-            return;
+        if (textSize <= 10) return;
         textSize--;
-        tv_size.setText(String.valueOf(textSize));
+        if (mSettingDelegate != null) mSettingDelegate.updateTextSizeTv(textSize);
         HuDongApplication.getInstance().setTextSize(textSize);
         mChapterReadSlidingAdapter.setTextSize(textSize);
         mChapterReadSlidingAdapter.notifyDataSetChanged();
     }
 
+    // ================================================================
+    // REGION: 通知栏 — 播放事件处理
+    // 文件位置：第 3345 行 — 第 3490 行
+    // ================================================================
     public void initNotificationBar() {
         //过滤器
         mIntentFilter = new IntentFilter();
@@ -3483,6 +2745,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }
     }
 
+    // ================================================================
+    // REGION: 滚动背景更新 / 章节名显示 / 習第翻章
+    // 文件位置：第 3490 行 — 第 3680 行
+    // ================================================================
     private void UpdateReadBackground() {
         mSlidingLayout.slideNext();
         mChapterReadSlidingAdapter.setPageIndex(mChapterReadSlidingAdapter.getPageIndex() + 1);
@@ -3677,6 +2943,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     }
 
 
+    // ================================================================
+    // REGION: Handler 处理 / 网络状态 / EventBus 事件 / 其他
+    // 文件位置：第 3680 行 — 文件末尾
+    // ================================================================
     protected void handle(Message msg) {
         switch (msg.what) {
             case INIT_BAIDU_SUCCESS:

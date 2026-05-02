@@ -15,4 +15,8 @@ public interface MainHandlerConstant {
     static final int INIT_BAIDU_SUCCESS = 99;
     static final int INIT_BAIDU_ERROR = 100;
     static final int INIT_ALI_SUCCESS = 98;
+
+    // 语音朗读相关常量
+    static final int SLIDE_NEXT_CHAPTER = 101;  // 自动翻到下一章
+    static final int SPEECH_FINISH = 102;       // 朗读完成
 }

@@ -31,34 +31,6 @@ public class ZConfig {
     public static final String BUY_FONT = "https://book.sdacn.cn/api/v1/books/buy";
 
 
-    /**
-     * 书籍更新(新接口)
-     */
-//    public static final String BOOKLIBUPDATE = URL + "Admin/Book/bookPort";
-
-
-//    /**
-//     * 官网地址
-//     */
-//    public static final String OFFICAL_WEBSITE = "http://bbs.sdattg.com";
-//
-//    /**
-//     * 支付URL
-//     */
-//    public static final String PAY_URL = "http://101.200.169.236/index.php/home/order/pay";
-//
-//
-//    /**
-//     * 注册序列号url
-//     */
-//    public static final String REGISTER_URL = "http://101.200.169.236/index.php?s=/Home/App/judge_user&sequence=";
-
-
-    /*
-     * 分享json
-     */
-//    public static final String SHARE_URL = "http://101.200.169.236/my/FenXiang_json/share.json";
-
 
     //=====================================调整==================================================
 
