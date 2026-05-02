@@ -6,11 +6,13 @@
     android:orientation="vertical"
     android:paddingTop="10dp" >
 
+    <!-- 模式选择行（模式A/B）已彻底隐藏 -->
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:visibility="gone" >
 
         <TextView
             android:layout_width="wrap_content"
@@ -94,6 +96,7 @@
     </LinearLayout>
 
 
+    <!-- 音色选择行：保留，供用户选择音色 -->
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -175,29 +178,29 @@
                     android:layout_margin="2dp"
                     android:checked="true"
                     android:text="@string/tts_voice_man" />
+
                 <RadioButton
                     android:id="@+id/radio_man_two"
                     style="@style/Widget.CompoundButton.RadioButton.AbsPlayer"
                     android:layout_width="@dimen/tts_player_player_wh"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:checked="true"
                     android:text="@string/tts_voice_man_two" />
+
                 <RadioButton
                     android:id="@+id/radio_man_three"
                     style="@style/Widget.CompoundButton.RadioButton.AbsPlayer"
                     android:layout_width="@dimen/tts_player_player_wh"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:checked="true"
                     android:text="@string/tts_voice_man_three" />
+
                 <RadioButton
                     android:id="@+id/radio_man_four"
                     style="@style/Widget.CompoundButton.RadioButton.AbsPlayer"
                     android:layout_width="@dimen/tts_player_player_wh"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:checked="true"
                     android:text="@string/tts_voice_man_four" />
 
                 <RadioButton
@@ -262,7 +265,6 @@
                     android:layout_width="@dimen/tts_player_player_wh"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:checked="true"
                     android:text="@string/tts_voice_zhejiang" />
 
                 <RadioButton
@@ -289,26 +291,6 @@
                     android:layout_margin="2dp"
                     android:text="@string/tts_voice_old" />
 
-
-
-                <!--<RadioButton-->
-                    <!--android:id="@+id/radio_ewoman"-->
-                    <!--style="@style/Widget.CompoundButton.RadioButton.AbsPlayer"-->
-                    <!--android:layout_width="@dimen/tts_player_player_wh"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="@string/tts_voice_ewoman" />-->
-
-                <!--<View-->
-                    <!--android:layout_width="2dp"-->
-                    <!--android:layout_height="fill_parent"-->
-                    <!--android:orientation="vertical" />-->
-
-                <!--<RadioButton-->
-                    <!--android:id="@+id/radio_eman"-->
-                    <!--style="@style/Widget.CompoundButton.RadioButton.AbsPlayer"-->
-                    <!--android:layout_width="@dimen/tts_player_player_wh"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="@string/tts_voice_eman" />-->
             </RadioGroup>
         </HorizontalScrollView>
 
@@ -329,6 +311,8 @@
                 android:textSize="12.0sp" />
         </LinearLayout>
     </FrameLayout>
+
+    <!-- 朗读标题勾选行 -->
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

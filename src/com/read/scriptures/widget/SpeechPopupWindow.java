@@ -39,8 +39,6 @@ public class SpeechPopupWindow extends PopupWindow
     private SeekBar seekBarSpeed;
 
     private int engineType = 0;//SystemConstants.SPEECH_TYPE
-    //    private Button mBaiduButton;
-//    private Button mEngineButton;
     private static Button mLocalButton;
 
     private TextView btn_clock;
@@ -82,19 +80,9 @@ public class SpeechPopupWindow extends PopupWindow
 
     RadioButton mLastSpeachModeRadioButton;
 
-
     private String chanageSuccess = "切换成功";
 
     private boolean mSpeechModel = true;
-
-//    public String getReadContent() {
-//        return readContent;
-//    }
-//
-//    public void setReadContent(String readContent) {
-//        this.readContent = readContent;
-//    }
-
 
     public SpeechPopupWindow(final Context context, final XunFeiSpeechManager xunFeiSpeechManager, final BaiduSpeechManager baiduSpeechManager, SeekBar.OnSeekBarChangeListener listener) {
         super(context);
@@ -102,17 +90,10 @@ public class SpeechPopupWindow extends PopupWindow
         mXunFeiSpeechManager = xunFeiSpeechManager;
         mXunFeiSpeechManager.setPlayTimeChangeListener(this);
         mBaiduSpeechManager = baiduSpeechManager;
-        // 修复：模式A（百度）已隐藏，baiduSpeechManager 可能为 null，加判空保护
+        // 模式A（百度）已隐藏，baiduSpeechManager 可能为 null，加判空保护
         if (mBaiduSpeechManager != null) {
             mBaiduSpeechManager.setPlayTimeChangeListener(this);
         }
-//        if (SystemConfig.Speech_Model == 1){
-//            mSpeechManager = speechManager;
-//            mSpeechManager.setPlayTimeChangeListener(this);
-//        }else {
-//            mBaiduSpeechManager = baiduSpeechManager;
-//            mBaiduSpeechManager.setPlayTimeChangeListener(this);
-//        }
 
         mRootView = LayoutInflater.from(mContext).inflate(R.layout.read_ui_layout, null);
         mRootView.setOnTouchListener(new OnTouchListener() {
@@ -125,12 +106,12 @@ public class SpeechPopupWindow extends PopupWindow
         seekBarSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //progress 1-100
                 if (fromUser) {
                     if (engineType == 0) {
                         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
                             mXunFeiSpeechManager.setSpeechSpeed(progress);
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                                && mBaiduSpeechManager != null) {
                             mBaiduSpeechManager.setSpeechSpeed(progress);
                         }
                         return;
@@ -138,24 +119,21 @@ public class SpeechPopupWindow extends PopupWindow
                     if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
                         mXunFeiSpeechManager.setSpeechSpeed(progress);
                         mXunFeiSpeechManager.resetSpeaking();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                            && mBaiduSpeechManager != null) {
                         mBaiduSpeechManager.setSpeechSpeed(progress);
                         mBaiduSpeechManager.resetSpeaking();
                     }
-
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+
         mBaiduButton = (RadioButton) mRootView.findViewById(R.id.baidu_engine);
         mXFButton = (RadioButton) mRootView.findViewById(R.id.radio_engine);
 
@@ -184,190 +162,85 @@ public class SpeechPopupWindow extends PopupWindow
         manThree = (RadioButton) mRootView.findViewById(R.id.radio_man_three);
         manFour = (RadioButton) mRootView.findViewById(R.id.radio_man_four);
 
-        cbSpeakTitle = (CheckBox)mRootView.findViewById(R.id.cb_speak_title);
+        cbSpeakTitle = (CheckBox) mRootView.findViewById(R.id.cb_speak_title);
 
-
+        // 根据当前保存的音色初始化选中状态
         switch (PreferenceConfig.getSpeech(context)) {
-            case "xiaoyan":
-                xiaoyan.setChecked(true);
-                break;
-            case "xiaoyu":
-                xiaoyu.setChecked(true);
-                break;
-            case "xiaomei":
-                xiaomei.setChecked(true);
-                break;
-            case "xiaolin":
-                xiaolin.setChecked(true);
-                break;
-            case "xiaorong":
-                xiaorong.setChecked(true);
-                break;
-            case "xiaoqian":
-                xiaoqian.setChecked(true);
-                break;
-            case "xiaokun":
-                xiaokun.setChecked(true);
-                break;
-            case "xiaoqiang":
-                xiaoqiang.setChecked(true);
-                break;
-            case "vixying":
-                vixying.setChecked(true);
-                break;
-            case "nannan":
-                nannan.setChecked(true);
-                break;
-            case "xiaoxin":
-                xiaoxin.setChecked(true);
-                break;
-            case "vils":
-                vils.setChecked(true);
-                break;
-            case "soft":
-                soft.setChecked(true);
-                break;
-            case "affine":
-                affine.setChecked(true);
-                break;
-            case "sweet":
-                sweet.setChecked(true);
-                break;
-            case "lolita":
-                lolita.setChecked(true);
-                break;
-            case "natural":
-                natural.setChecked(true);
-                break;
-            case "serious":
-                serious.setChecked(true);
-                break;
-            case "zhejiang":
-                zhejiang.setChecked(true);
-                break;
-            case "manTwo":
-                manTwo.setChecked(true);
-                break;
-            case "manThree":
-                manThree.setChecked(true);
-                break;
-            case "manFour":
-                manFour.setChecked(true);
-                break;
-
+            case "xiaoyan": xiaoyan.setChecked(true); break;
+            case "xiaoyu": xiaoyu.setChecked(true); break;
+            case "xiaomei": xiaomei.setChecked(true); break;
+            case "xiaolin": xiaolin.setChecked(true); break;
+            case "xiaorong": xiaorong.setChecked(true); break;
+            case "xiaoqian": xiaoqian.setChecked(true); break;
+            case "xiaokun": xiaokun.setChecked(true); break;
+            case "xiaoqiang": xiaoqiang.setChecked(true); break;
+            case "vixying": vixying.setChecked(true); break;
+            case "nannan": nannan.setChecked(true); break;
+            case "xiaoxin": xiaoxin.setChecked(true); break;
+            case "vils": vils.setChecked(true); break;
+            case "soft": soft.setChecked(true); break;
+            case "affine": affine.setChecked(true); break;
+            case "sweet": sweet.setChecked(true); break;
+            case "lolita": lolita.setChecked(true); break;
+            case "natural": natural.setChecked(true); break;
+            case "serious": serious.setChecked(true); break;
+            case "zhejiang": zhejiang.setChecked(true); break;
+            case "manTwo": manTwo.setChecked(true); break;
+            case "manThree": manThree.setChecked(true); break;
+            case "manFour": manFour.setChecked(true); break;
         }
 
+        // 始终使用模式B（讯飞），模式A已彻底隐藏
+        SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_XF;
+        seekBarSpeed.setProgress(mXunFeiSpeechManager.getSpeechSpeed());
+        mXFButton.setChecked(true);
+        mLastSpeachModeRadioButton = mXFButton;
 
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            //所有都有
-            seekBarSpeed.setProgress(mXunFeiSpeechManager.getSpeechSpeed());
-            mXFButton.setChecked(true);
-            mLastSpeachModeRadioButton = mXFButton;
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-            seekBarSpeed.setProgress(mBaiduSpeechManager.getSpeechSpeed());
-            String speaker = PreferenceConfig.getSpeech(context);
-            if (!"xiaoyan".equals(speaker)
-                    && !"xiaoyu".equals(speaker)
-                    && !"nannan".equals(speaker)
-            ) {
-                xiaoyan.setChecked(true);
-                PreferenceConfig.saveSpeech(context, "xiaoyan");
-            }
-            mBaiduButton.setChecked(true);
-            mLastSpeachModeRadioButton = mBaiduButton;
-        }
-
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            soft.setVisibility(View.GONE);
-            affine.setVisibility(View.GONE);
-            sweet.setVisibility(View.GONE);
-            lolita.setVisibility(View.GONE);
-            natural.setVisibility(View.GONE);
-            serious.setVisibility(View.GONE);
-            zhejiang.setVisibility(View.GONE);
-            manTwo.setVisibility(View.GONE);
-            manThree.setVisibility(View.GONE);
-            manFour.setVisibility(View.GONE);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-            //百度
-            xiaomei.setVisibility(View.GONE);
-            xiaolin.setVisibility(View.GONE);
-            xiaorong.setVisibility(View.GONE);
-            xiaoqian.setVisibility(View.GONE);
-            xiaokun.setVisibility(View.GONE);
-            xiaoqiang.setVisibility(View.GONE);
-            vixying.setVisibility(View.GONE);
-            xiaoxin.setVisibility(View.GONE);
-            vils.setVisibility(View.GONE);
-
-            soft.setVisibility(View.GONE);
-            affine.setVisibility(View.GONE);
-            sweet.setVisibility(View.GONE);
-            lolita.setVisibility(View.GONE);
-            natural.setVisibility(View.GONE);
-            serious.setVisibility(View.GONE);
-            zhejiang.setVisibility(View.GONE);
-            manTwo.setVisibility(View.GONE);
-            manThree.setVisibility(View.GONE);
-            manFour.setVisibility(View.GONE);
-        }
+        // 隐藏百度（模式A）专属音色
+        soft.setVisibility(View.GONE);
+        affine.setVisibility(View.GONE);
+        sweet.setVisibility(View.GONE);
+        lolita.setVisibility(View.GONE);
+        natural.setVisibility(View.GONE);
+        serious.setVisibility(View.GONE);
+        zhejiang.setVisibility(View.GONE);
+        manTwo.setVisibility(View.GONE);
+        manThree.setVisibility(View.GONE);
+        manFour.setVisibility(View.GONE);
 
         radioGroupPlayer.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-
                 mLastRadioButton = mRootView.findViewById(checkedId);
                 if (checkedId == R.id.radio_woman) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF)
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaoyan");
-                    else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                        mBaiduSpeechManager.setSpeaker("xiaoyan");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaoyan");
                     PreferenceConfig.saveSpeech(context, "xiaoyan");
                 } else if (checkedId == R.id.radio_man) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaoyu");
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                        mBaiduSpeechManager.setSpeaker("xiaoyu");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaoyu");
                     PreferenceConfig.saveSpeech(context, "xiaoyu");
                 } else if (checkedId == R.id.radio_yueyu) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaomei");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaomei");
                     PreferenceConfig.saveSpeech(context, "xiaomei");
                 } else if (checkedId == R.id.radio_taiwan) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaolin");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaolin");
                     PreferenceConfig.saveSpeech(context, "xiaolin");
                 } else if (checkedId == R.id.radio_sichuan) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaorong");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaorong");
                     PreferenceConfig.saveSpeech(context, "xiaorong");
                 } else if (checkedId == R.id.radio_dongbei) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaoqian");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaoqian");
                     PreferenceConfig.saveSpeech(context, "xiaoqian");
                 } else if (checkedId == R.id.radio_henan) {
                     mXunFeiSpeechManager.setSpeechVoicer("xiaokun");
                     PreferenceConfig.saveSpeech(context, "xiaokun");
                 } else if (checkedId == R.id.radio_hunan) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("xiaoqiang");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("xiaoqiang");
                     PreferenceConfig.saveSpeech(context, "xiaoqiang");
                 } else if (checkedId == R.id.radio_shanxi) {
                     mXunFeiSpeechManager.setSpeechVoicer("vixying");
                     PreferenceConfig.saveSpeech(context, "vixying");
                 } else if (checkedId == R.id.radio_girl) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.setSpeechVoicer("nannan");
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                        mBaiduSpeechManager.setSpeaker("nannan");
-                    }
+                    mXunFeiSpeechManager.setSpeechVoicer("nannan");
                     PreferenceConfig.saveSpeech(context, "nannan");
                 } else if (checkedId == R.id.radio_boy) {
                     mXunFeiSpeechManager.setSpeechVoicer("xiaoxin");
@@ -377,18 +250,11 @@ public class SpeechPopupWindow extends PopupWindow
                     PreferenceConfig.saveSpeech(context, "vils");
                 }
                 XToast.showToast(context, chanageSuccess);
-                if (engineType == 0) {
-                    return;
-                }
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                if (engineType != 0) {
                     mXunFeiSpeechManager.resetSpeaking();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                    mBaiduSpeechManager.resetSpeaking();
                 }
-
             }
         });
-
 
         RadioGroup radioGroupClock = (RadioGroup) mRootView.findViewById(R.id.radioGroupClock);
         radioGroupClock.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -404,145 +270,24 @@ public class SpeechPopupWindow extends PopupWindow
                 } else if (checkedId == R.id.radio_90) {
                     time = 90;
                 } else if (checkedId == R.id.btn_clock_close) {
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.stopAutoFlowTimer();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                        mBaiduSpeechManager.stopAutoFlowTimer();
-                    }
+                    mXunFeiSpeechManager.stopAutoFlowTimer();
                     ll_time_list.setVisibility(View.GONE);
                     btn_clock.setText("定时");
                     return;
                 }
                 ll_time_list.setVisibility(View.GONE);
-                if (SystemConfig.Speech_Model == 1) {
-                    mXunFeiSpeechManager.startAutoFlowTimer(time);
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                    mBaiduSpeechManager.startAutoFlowTimer(time);
-                }
-
+                mXunFeiSpeechManager.startAutoFlowTimer(time);
             }
         });
+
+        // radio_group 的监听器保留，但因为 XML 中已隐藏该行，实际不会触发
         RadioGroup radioGroupEngine = (RadioGroup) mRootView.findViewById(R.id.radio_group);
         radioGroupEngine.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                switch (i) {
-                    case R.id.baidu_engine:
-                        xiaoyan.setVisibility(View.VISIBLE);
-                        xiaoyu.setVisibility(View.VISIBLE);
-                        xiaomei.setVisibility(View.GONE);
-                        xiaolin.setVisibility(View.GONE);
-                        xiaorong.setVisibility(View.GONE);
-                        xiaoqian.setVisibility(View.GONE);
-                        xiaokun.setVisibility(View.GONE);
-                        xiaoqiang.setVisibility(View.GONE);
-                        vixying.setVisibility(View.GONE);
-                        nannan.setVisibility(View.VISIBLE);
-                        xiaoxin.setVisibility(View.GONE);
-                        vils.setVisibility(View.GONE);
-                        //阿里特有的全部隐藏
-                        soft.setVisibility(View.GONE);
-                        affine.setVisibility(View.GONE);
-                        sweet.setVisibility(View.GONE);
-                        lolita.setVisibility(View.GONE);
-                        natural.setVisibility(View.GONE);
-                        serious.setVisibility(View.GONE);
-                        zhejiang.setVisibility(View.GONE);
-                        manTwo.setVisibility(View.GONE);
-                        manThree.setVisibility(View.GONE);
-                        manFour.setVisibility(View.GONE);
-
-                        String speaker = PreferenceConfig.getSpeech(context);
-                        if (!"xiaoyan".equals(speaker)
-                                && !"xiaoyu".equals(speaker)
-                                && !"nannan".equals(speaker)
-                        ) {
-                            xiaoyan.setChecked(true);
-                        }
-
-                        if (engineType == 1 && SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                            mXunFeiSpeechManager.stopSpeaking();
-                        }
-                        SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_BAIDU;
-                        SharedUtil.putInt(SystemConfig.SP_SPEACH_MODEL_KEY,SystemConfig.Speech_Model);
-                        if (mLastSpeachModeRadioButton != mBaiduButton) {
-                            XToast.showToast(mContext, chanageSuccess);
-                        }
-                        if (engineType == 0) {
-                            return;
-                        }
-                        mBaiduSpeechManager.setSpeechSpeed(mBaiduSpeechManager.getSpeechSpeed());
-                        mBaiduSpeechManager.speak(SystemConfig.readContent);
-                        break;
-                    case R.id.radio_engine:
-                        if (!NetworkUtils.isNetAvailable(mContext)) {
-                            mBaiduButton.setChecked(true);
-                            XToast.showToast(mContext,  "本模式暂不支持，离线播放");
-                            return;
-                        }
-
-                        xiaoyan.setVisibility(View.VISIBLE);
-                        xiaoyu.setVisibility(View.VISIBLE);
-                        xiaomei.setVisibility(View.VISIBLE);
-                        xiaolin.setVisibility(View.VISIBLE);
-                        xiaorong.setVisibility(View.VISIBLE);
-                        xiaoqian.setVisibility(View.VISIBLE);
-                        xiaokun.setVisibility(View.VISIBLE);
-                        xiaoqiang.setVisibility(View.VISIBLE);
-                        vixying.setVisibility(View.VISIBLE);
-                        nannan.setVisibility(View.VISIBLE);
-                        xiaoxin.setVisibility(View.VISIBLE);
-                        vils.setVisibility(View.VISIBLE);
-
-                        //阿里特有的全部隐藏
-                        soft.setVisibility(View.GONE);
-                        affine.setVisibility(View.GONE);
-                        sweet.setVisibility(View.GONE);
-                        lolita.setVisibility(View.GONE);
-                        natural.setVisibility(View.GONE);
-                        serious.setVisibility(View.GONE);
-                        zhejiang.setVisibility(View.GONE);
-                        manTwo.setVisibility(View.GONE);
-                        manThree.setVisibility(View.GONE);
-                        manFour.setVisibility(View.GONE);
-
-                        String currentSpeaker = PreferenceConfig.getSpeech(context);
-                        if ("soft".equals(currentSpeaker)
-                                || "affine".equals(currentSpeaker)
-                                || "sweet".equals(currentSpeaker)
-                                || "lolita".equals(currentSpeaker)
-                                || "natural".equals(currentSpeaker)
-                                || "serious".equals(currentSpeaker)
-                                || "zhejiang".equals(currentSpeaker)
-                                || "manTwo".equals(currentSpeaker)
-                                || "manThree".equals(currentSpeaker)
-                                || "manFour".equals(currentSpeaker)
-                                || "manFive".equals(currentSpeaker)
-                        ) {
-                            xiaoyan.setChecked(true);
-                        }
-
-                        if (engineType == 1 && SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                            mBaiduSpeechManager.stop();
-                        }
-                        SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_XF;
-                        SharedUtil.putInt(SystemConfig.SP_SPEACH_MODEL_KEY,SystemConfig.Speech_Model);
-                        XToast.showToast(mContext,  chanageSuccess);
-                        if (engineType == 0) {
-                            return;
-                        }
-//                        mBaiduSpeechManager.stop();
-
-                        mXunFeiSpeechManager.setSpeechSpeed(mXunFeiSpeechManager.getSpeechSpeed());
-                        if (!SystemConfig.readContent.contains("行(xing2)"))
-                            mXunFeiSpeechManager.startSpeaking(SystemConfig.readContent, mXunFeiSpeechManager.getTtsListener());
-                        else
-                            mXunFeiSpeechManager.startSpeaking(SystemConfig.readContent.replaceAll("行(xing2)", "行"), mXunFeiSpeechManager.getTtsListener());
-                        break;
-                }
+                // 模式A已隐藏，此处逻辑不会被触发
             }
         });
-
 
         mLocalButton = (Button) mRootView.findViewById(R.id.radio_local);
         mLocalButton.setOnClickListener(this);
@@ -554,7 +299,6 @@ public class SpeechPopupWindow extends PopupWindow
 
         mRootView.findViewById(R.id.btn_clock_close).setOnClickListener(this);
         mRootView.findViewById(R.id.btn_clock_arrow_down).setOnClickListener(this);
-        mRootView.findViewById(R.id.btn_clock_arrow_down).setOnClickListener(this);
         mRootView.findViewById(R.id.btn_previous_chapter).setOnClickListener(this);
         mRootView.findViewById(R.id.btn_next_chapter).setOnClickListener(this);
         mRootView.findViewById(R.id.btn_exit).setOnClickListener(this);
@@ -562,7 +306,7 @@ public class SpeechPopupWindow extends PopupWindow
         cbSpeakTitle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedUtil.putBoolean(PreferenceConfig.Preference_Speak_Title,isChecked);
+                SharedUtil.putBoolean(PreferenceConfig.Preference_Speak_Title, isChecked);
                 cbSpeakTitle.setText(isChecked ? "朗读" : "不朗读");
             }
         });
@@ -577,24 +321,17 @@ public class SpeechPopupWindow extends PopupWindow
     @Override
     public void dismiss() {
         super.dismiss();
-        if (engineType == 0 && mSpeechModel) {
-            // 修复：直接调用 startSpeaking 而不是 resetSpeaking
-            // resetSpeaking 依赖 readContent 已赋値，如果为空则不播放
-            // startSpeaking 直接发送開始事件，由 ChapterReaderActivity.startSpeech() 处理
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                mXunFeiSpeechManager.startSpeaking(
-                    SystemConfig.readContent.contains("行(xing2)")
-                        ? SystemConfig.readContent.replaceAll("行\\(xing2\\)", "行")
-                        : SystemConfig.readContent,
-                    mXunFeiSpeechManager.getTtsListener()
-                );
+        if (mSpeechModel) {
+            // 弹窗关闭后直接恢复朗读（弹窗打开时已 pause，关闭后 resume 即可）
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF
+                    && mXunFeiSpeechManager != null) {
+                mXunFeiSpeechManager.resumeSpeaking();
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
                     && mBaiduSpeechManager != null) {
-                mBaiduSpeechManager.speak(SystemConfig.readContent);
+                mBaiduSpeechManager.resume();
             }
             setButton(1);
         }
-        XToast.showToast(mContext,  "朗读加载中...");
     }
 
     public void dismiss(boolean speechModel) {
@@ -610,15 +347,6 @@ public class SpeechPopupWindow extends PopupWindow
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.radio_local:
-//            if (engineType == 1) {
-//                engineType = 0;
-//                mLocalButton.setText("开始");
-//                mSpeechManager.pauseSpeaking();
-//            } else {
-//                engineType = 1;
-//                mLocalButton.setText("暂停");
-//                mSpeechManager.resumeSpeaking();
-//            }
                 EventBus.getDefault().post(new PlayEvent(SystemConstants.SPEECH_TYPE, false));
                 break;
             case R.id.btn_clock_arrow_down:
@@ -636,7 +364,8 @@ public class SpeechPopupWindow extends PopupWindow
             case R.id.btn_exit:
                 if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
                     mXunFeiSpeechManager.stopSpeaking();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                        && mBaiduSpeechManager != null) {
                     mBaiduSpeechManager.stop();
                 }
                 setButton(1);
@@ -645,15 +374,6 @@ public class SpeechPopupWindow extends PopupWindow
             case R.id.space_bar:
                 dismiss();
                 break;
-//        case R.id.btn_clock_close:
-//            if (SystemConfig.Speech_Model == 1){
-//                mSpeechManager.stopAutoFlowTimer();
-//            }else{
-//                mBaiduSpeechManager.stopAutoFlowTimer();
-//            }
-//            ll_time_list.setVisibility(View.GONE);
-//            btn_clock.setText("定时");
-//            break;
         }
     }
 
@@ -667,11 +387,10 @@ public class SpeechPopupWindow extends PopupWindow
             return;
         }
         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            if (mXunFeiSpeechManager.isStopThread())
-                return;
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-            if (mBaiduSpeechManager.isStopThread())
-                return;
+            if (mXunFeiSpeechManager.isStopThread()) return;
+        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                && mBaiduSpeechManager != null) {
+            if (mBaiduSpeechManager.isStopThread()) return;
         }
         int second = (int) (playTime / 60);
         int mis = (int) (playTime % 60);
@@ -702,32 +421,30 @@ public class SpeechPopupWindow extends PopupWindow
     public void showAtLocation(View parent, int gravity, int x, int y) {
         super.showAtLocation(parent, gravity, x, y);
         engineType = 0;
+        // 弹窗打开时暂停朗读
         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
             mXunFeiSpeechManager.pauseSpeaking();
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
+                && mBaiduSpeechManager != null) {
             mBaiduSpeechManager.pause();
         }
-        boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title,false);
+        boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
         cbSpeakTitle.setChecked(isSpeakTitle);
         cbSpeakTitle.setText(isSpeakTitle ? "朗读" : "不朗读");
-        XToast.showToast(mContext,  "朗读暂停中...");
+        XToast.showToast(mContext, "朗读暂停中...");
     }
 
     /**
-     * 网络不可用
+     * 网络不可用时禁用讯飞按钮（模式A已隐藏，无需切换）
      */
     public void netUnAvailable() {
         if (mXFButton != null) {
             mXFButton.setEnabled(false);
         }
-
         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
             mXunFeiSpeechManager.stopSpeaking();
-            //切换到模式A
-            mBaiduButton.setChecked(true);
-            XToast.showToast(mContext,  "当前网络离线，已切换到“模式A”");
+            XToast.showToast(mContext, "当前网络离线，朗读已停止");
         }
-
     }
 
     public void netAvailable() {
