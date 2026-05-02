@@ -158,6 +158,25 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, SeekBar
                 .OnSeekBarChangeListener, Reader, MainHandlerConstant, FloatView.ListViewListener {
 
+    // 包级访问：停止朗读并取消通知栏，供 ChapterReaderSpeechDelegate 调用
+    void stopSpeechAndNotification() {
+        if (mSpeechModel) {
+            mSpeechModel = false;
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF && mXunFeiSpeechManager != null) {
+                mXunFeiSpeechManager.stopSpeaking();
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU && baiduSpeechManager != null) {
+                baiduSpeechManager.stop();
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
+            } else {
+                if (mNotificationManager != null) {
+                    mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
+                }
+            }
+        }
+    }
+
     // 包级访问：供 ChapterReaderSettingDelegate 调用 protected showToast
     void showToastPkg(String msg) {
         showToast(msg);
@@ -191,8 +210,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private TextView mOptionSelectNumTextView;
 
     // 章节内容翻页控件
-    private TouchInterceptSlidingView mSlidingLayout;//===========================================================
-    private ChapterReadSlidingAdapter mChapterReadSlidingAdapter;//===============================================
+    TouchInterceptSlidingView mSlidingLayout;//===========================================================
+    ChapterReadSlidingAdapter mChapterReadSlidingAdapter;//===============================================
 
     /**
      * 获取章节阅读滑动适配器
@@ -207,7 +226,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private int mTipsPostion;
     private String mTipsKeyword;
     private String mTipsContent;
-    private List<Chapter> mChapters;
+    List<Chapter> mChapters;
 
     /**
      * 获取章节列表
@@ -230,7 +249,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private ChapterReadMenuGvAdapter mChapterReadMenuGvAdapter;//=============================
     private ReadOptionsPopupWindow mReadOptionsPopupWindow;
     private SeleteTextSizePopupWindow mSeleteTextSizePopupWindow;
-    private SpeechPopupWindow mSpeechPopupWindow;
+    SpeechPopupWindow mSpeechPopupWindow;
 
     // 图片资源
     private List<Integer> mPictures = new ArrayList<>();
@@ -239,7 +258,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private ArrayList<String> mTitles = new ArrayList<>();
     private boolean mSelectModel = false;// 编辑模式
     private boolean mSpeechModel = false;// 朗读模式
-    private FloatView floatView;
+    FloatView floatView;
     private int oldIndex;
     private int oldPosition;
     private int currentCount = 0;
@@ -256,8 +275,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
     private String title = "";
 
-    private boolean SlideNextByBackground = false;
-    private boolean isBack = false;
+    boolean SlideNextByBackground = false;
+    boolean isBack = false;
     //百度语音参数
     protected Handler mainHandler;
     BaiduSpeechManager baiduSpeechManager;//===============================================
@@ -271,7 +290,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
     private int HUAI_ZHU_CHAPTER = 0;//怀著标致  2
 
-    private int HUAI_ZHU_CHAPTER_HAS_ZW = 0;//怀著还有中文标致 1
+    int HUAI_ZHU_CHAPTER_HAS_ZW = 0;//怀著还有中文标致 1
 
     private AudioPlayingView fl_view;
 
@@ -339,6 +358,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }).start();
         initActionBar();
         mSettingDelegate = new ChapterReaderSettingDelegate(this, mChapterReadSlidingAdapter, handler);
+        speechDelegate = new ChapterReaderSpeechDelegate(this); // 初始化语音模块
         mSettingDelegate.initSettingPop();
         mSettingDelegate.initMarginPop();
         mSettingDelegate.initColorPop();
@@ -495,7 +515,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         showTabbarBackgroundColor();
     }
 
-    private boolean isLuoJiShengJing(List<Chapter> mChapters) {
+    boolean isLuoJiShengJing(List<Chapter> mChapters) {
         if (mChapters != null && !mChapters.isEmpty()) {
             Chapter chapter = mChapters.get(0);
             String zjContent = chapter.getContent();
@@ -1771,208 +1791,60 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     }
 
     ////////////////////////////////////////////////////////
-    private XunFeiSpeechManager mXunFeiSpeechManager;
+    XunFeiSpeechManager mXunFeiSpeechManager;
 
     // ================================================================
     // REGION: 语音朗读（讯飞 TTS / 百度 TTS / 朗读进度）
     // 文件位置：第 1745 行 — 第 2260 行
     // 关联文件：ChapterReaderSpeechHelper.java（已抽取核心逻辑）
     // ================================================================
-    private final HashMap<Integer, List<String>> mSpeechTextMap = new HashMap<Integer, List<String>>();
+    final HashMap<Integer, List<String>> mSpeechTextMap = new HashMap<Integer, List<String>>();
 
     // 缓冲进度
-    private int mPercentForBuffering = 0;
+    int mPercentForBuffering = 0;
 
     // 播放进度
-    private int mPercentForPlaying = 0;
+    int mPercentForPlaying = 0;
 
-    private int mSpeechPosition = 0;
+    int mSpeechPosition = 0;
 
-    private int mSpeechIndex = 0;
+    int mSpeechIndex = 0;
 
-    private int mSpeechTxtNums;
+    int mSpeechTxtNums;
 
-    private int mSpeechTxtNumIndex;
+    int mSpeechTxtNumIndex;
 
     private boolean longClick;
 
     private void initSpeechTts() {
-        if (mSettingDelegate != null && mSettingDelegate.return_default != null) {
-            mSettingDelegate.return_default.performLongClick();//格式 初始化
-        }
-        mSpeechPosition = 0;
-        mSpeechIndex = 0;
-        mSpeechTxtNumIndex = 0;
-        final ListView listView = mChapterReadSlidingAdapter.getCurrentListView();
-        final int firstView = listView.getFirstVisiblePosition();
-        mSpeechIndex = firstView;
-
-        // 初始化合成对象
-        if (mXunFeiSpeechManager == null) {
-            showProgressDialog("加载中。。。。");
-            baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mXunFeiSpeechManager.setTtsListener(mTtsListener);
-            if (floatView != null) {
-                floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
-                floatView.setBaiduSpeechManager(baiduSpeechManager);
-            }
-            mXunFeiSpeechManager.init(mTtsInitListener);
-            //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
-            mSpeechPopupWindow.setOnClickListener(this);
-        } else {
-            startSpeech();
-        }
-
+        speechDelegate.initSpeechTts();
     }
 
-    private final InitListener mTtsInitListener = new InitListener() {
+    // mTtsInitListener 已移至 ChapterReaderSpeechDelegate
 
-        @Override
-        public void onInit(final int code) {
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                dismissProgressDialog();
-            }
-            if (code == ErrorCode.SUCCESS) {
-                // 初始化成功，之后可以调用startSpeaking方法
-                // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
-                // 正确的做法是将onCreate中的startSpeaking调用移至这里
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF)
-                    startSpeech();
-            } else {
-                showToast("语音初始化失败,错误码：" + code);
-            }
-        }
-    };
-
-        //开始朗读 =======================================================================================================================================
+    //开始朗读 =======================================================================================================================================
     private void startSpeech() {
-        try {
-            mSpeechTextMap.clear();
-            mSpeechTxtNums = 0;
-            final ChapterReadAdapter adapter = mChapterReadSlidingAdapter.getCurrentListView() != null ? 
-                mChapterReadSlidingAdapter.getCurrentChapterReadAdapter() : null;
-            
-            if (adapter == null) {
-                showToastMsg("页面未准备好，请稍后重试");
-                return;
-            }
-            
-            final List<String> contentNodes = adapter.getList();
-            if (contentNodes == null || contentNodes.isEmpty()) {
-                showToastMsg("暂无章节内容");
-                return;
-            }
-            
-            for (int i = 0; i < contentNodes.size(); i++) {
-                List<String> splits = new ArrayList<>();
-                String[] ssss = MTextUtil.takeOutSymbol(contentNodes.get(i)).split("。");
-                splits.addAll(Arrays.asList(ssss));
-                String[] news = new String[splits.size()];
-                int position = 0;
-                for (String s : splits) {
-                    String head = CharUtils.match("[\\u4e00-\\u9fa5]+\\d+:\\d+", s);
-                    if (!TextUtils.isEmpty(head) && position == 0) {//如果有head
-                        char c = head.charAt(0);
-                        if (s.indexOf(c) == 0) {//说明是第一个
-                            s = s.replace(head, "");//去掉head
-                        }
-                    }
-                    news[position] = s;//s.replace("<b>", "").replace("</b>", "");
-                    position++;
-                }
-
-                mSpeechTxtNums += news.length;
-                mSpeechTextMap.put(i, Arrays.asList(news));
-            }
-
-            if ((mSpeechTextMap == null) || (mSpeechTextMap.size() == 0)) {
-                showToastMsg("暂无章节内容");
-                return;
-            }
-
-            String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
-            if (TextUtils.isEmpty(remarkTxt)) {
-                showToastMsg("无法获取朗读内容");
-                return;
-            }
-            
-            boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
-            if (!isSpeakTitle && (remarkTxt.contains("<b") || remarkTxt.contains("<h"))) {
-                //不读标题
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mTtsListener.onCompleted(null);
-                } else {
-                    mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-                }
-                return;
-            }
-            remarkTxt = remarkTxt.replace("<b>", "").replace("</b>", "");
-            refreshChapterRemark(true, remarkTxt);
-            remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
-            SystemConfig.readContent = remarkTxt;
-            if (!NetworkUtils.isNetAvailable(getApplicationContext()) && SystemConfig.Speech_Model != SystemConfig.SPEECH_MODEL_BAIDU) {
-                if (mSpeechPopupWindow != null) {
-                    mSpeechPopupWindow.netUnAvailable();
-                    return;
-                } else {
-                    SystemConfig.Speech_Model = SystemConfig.SPEECH_MODEL_BAIDU;
-                    SharedUtil.putInt(SystemConfig.SP_SPEACH_MODEL_KEY, SystemConfig.Speech_Model);
-                }
-            }
-
-            String p = "(?<=\\[)(.*?)(?=])";
-            Pattern P = Pattern.compile(p);
-            Matcher matcher = P.matcher(remarkTxt);
-            if (matcher.find()) {
-                String group = matcher.group();
-                if (group.length() < 10) {
-                    remarkTxt = remarkTxt.replaceAll(p, "");
-                }
-            }
-            
-            // 修复：添加朗读引擎的空指针检查和异常处理
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                if (mXunFeiSpeechManager == null) {
-                    showToast("讯飞语音未初始化，请重试");
-                    return;
-                }
-                mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
-            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                if (baiduSpeechManager == null) {
-                    showToast("百度语音未初始化，请重试");
-                    return;
-                }
-                String txt = remarkTxt.replaceAll("行", "行(xing2)");
-                baiduSpeechManager.speak(txt);
-            }
-            mSlidingLayout.setIsPagingEnabled(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("Speech", "startSpeech error: " + e.getMessage());
-            showToast("朗读启动失败：" + e.getMessage());
-        }
+        speechDelegate.startSpeech();
     }
 
-    private String getSpeechContent(final int index, final int position) {
+    String getSpeechContent(final int index, final int position) {
         try {
             if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) {
                 Log.e("Speech", "mSpeechTextMap is null or empty");
                 return "";
             }
-            
+
             List<String> textList = mSpeechTextMap.get(index);
             if (textList == null || textList.isEmpty()) {
                 Log.e("Speech", "textList is null or empty for index: " + index);
                 return "";
             }
-            
+
             if (position < 0 || position >= textList.size()) {
                 Log.e("Speech", "position out of range: " + position + ", size: " + textList.size());
                 return "";
             }
-            
+
             String remarkTxt = textList.get(position);
             return remarkTxt != null ? remarkTxt : "";
         } catch (Exception e) {
@@ -1994,258 +1866,10 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     /**
      * 合成回调监听。
      */
-    private final SynthesizerListener mTtsListener = new SynthesizerListener() {
-        @Override
-        public void onSpeakBegin() {
-            mChapterReadSlidingAdapter.getCurrentListView().smoothScrollToPosition(mSpeechIndex);
-        }
-
-        @Override
-        public void onSpeakPaused() {
-        }
-
-        @Override
-        public void onSpeakResumed() {
-        }
-
-        @Override
-        public void onBufferProgress(final int percent, final int beginPos, final int endPos,
-                                     final String info) {
-            // 合成进度
-            mPercentForBuffering = percent;
-        }
-
-        @Override
-        public void onSpeakProgress(final int percent, final int beginPos, final int endPos) {
-            // 播放进度
-            mPercentForPlaying = percent;
-            if (percent > 99) {
-                this.onCompleted(null);
-            }
-        }
-
-        @Override
-        public void onCompleted(final SpeechError error) {
-            if (error == null) {
-                speakerNext();
-            } else if (error != null) {
-                showToastMsg(error.getPlainDescription(true));
-            }
-        }
-
-        @Override
-        public void onEvent(final int eventType, final int arg1, final int arg2, final Bundle obj) {
-        }
-    };
+    // mTtsListener 已移至 ChapterReaderSpeechDelegate，通过 speechDelegate.mTtsListener 访问
 
     private void speakerNext() {
-        if (mSpeechTextMap.get(mSpeechIndex) == null) {
-            showToastMsg("播放完成");
-            return;
-        }
-        mSpeechTxtNumIndex++;
-        //todo 设置朗读下一章
-        if (mSpeechTextMap.size() - 1 == mSpeechIndex && mSpeechPosition + 1 == mSpeechTextMap.get(mSpeechIndex).size()) {//已经读完本章了
-            refreshChapterRemark(true, null);
-            if (isBack) {
-                UpdateReadBackground();
-                SlideNextByBackground = true;
-            } else {
-                mSlidingLayout.slideNext();
-                if (mChapters.size() - 1 <= mChapterReadSlidingAdapter.getPageIndex()) {
-                    showToastMsg("播放完成");
-                    //退出朗读
-                    if (mSpeechModel) {
-                        mSpeechModel = false;
-                        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                            mXunFeiSpeechManager.stopSpeaking();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                            baiduSpeechManager.stop();
-                        }
-                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                            HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-                        } else {
-                            if (mNotificationManager == null) {
-                                return;
-                            }
-                            mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                        }
-                    }
-                    if (floatView != null) {
-                        floatView.hide();
-                    }
-                }
-            }
-            return;
-        }
-
-
-        // 什么时候拦截 翻页(这种是自然读的过程)
-        ListView lv = mChapterReadSlidingAdapter.getCurrentListView();
-
-        //圣经的滚动规则
-        if (isLuoJiShengJing(mChapters) && HUAI_ZHU_CHAPTER_HAS_ZW != 1) {
-            if (mSpeechIndex + 1 == lv.getLastVisiblePosition()) {//读到了屏幕的最后一个item
-                //如何计算高度
-                int lastIndex = lv.getChildCount() - 1;//最后一个
-                View lastview = lv.getChildAt(lastIndex);
-                final TextView tv_title = lastview.findViewById(R.id.tv_title); //文字控件
-
-                //行数的计算
-                Layout tv_layout = tv_title.getLayout();
-                int hangNum = tv_layout.getLineCount();//行数
-                float hangh = tv_title.getMeasuredHeight() / hangNum;//每行的高度
-
-                float hash = mSlidingLayout.getHeight() - lastview.getTop();//最后一个控件的高度
-
-                if (hash < hangh / 2) { //都小于了 看不到了 那么 直接滚下一页
-                    mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                } else if (Math.abs(hash - hangh) < hangh / 2) { //高度差10以内
-                    //读完第一行再滚动 2s
-                    mSlidingLayout.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                        }
-                    }, 2000);
-                } else {
-                    //平均一行 多少个字
-                    float total = tv_title.getPaint().measureText(tv_title.getText().toString(), 0, tv_title.getText().toString().length());
-                    float viewH = lastview.getMeasuredHeight();
-                    float mHangheight = viewH / hangNum;//每行的高度
-                    float hangDuoshaoMeidu = hash / mHangheight;
-                    int hangNumletter = tv_title.getText().toString().length() / hangNum;
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i <= mSpeechPosition; i++) {
-                        if (!TextUtils.isEmpty(mSpeechTextMap.get(mSpeechIndex).get(i))) {
-                            sb.append(mSpeechTextMap.get(mSpeechIndex).get(i));
-                        }
-                        if (sb.toString().length() > hangNumletter * hangDuoshaoMeidu) {
-                            mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (mSpeechIndex == lv.getLastVisiblePosition()) {//读到了屏幕的最后一个item
-                //如何计算高度
-                int lastIndex = lv.getChildCount() - 1;//最后一个
-                View lastview = lv.getChildAt(lastIndex);
-                final TextView tv_title = lastview.findViewById(R.id.tv_title); //文字控件
-
-                //行数的计算
-                Layout tv_layout = tv_title.getLayout();
-                int hangNum = tv_layout.getLineCount();//行数
-                float hangh = tv_title.getMeasuredHeight() / hangNum;//每行的高度
-                float hash = mSlidingLayout.getHeight() - lastview.getTop();//最后一个控件的高度
-
-                if (hash < hangh / 2) { //都小于了 看不到了 那么 直接滚下一页
-                    mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                } else if (Math.abs(hash - hangh) < hangh / 2) { //高度差10以内
-                    //读完第一行再滚动 2s
-                    mSlidingLayout.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                        }
-                    }, 2000);
-                } else {
-                    //平均一行 多少个字
-                    float viewH = lastview.getMeasuredHeight();
-                    float mHangheight = viewH / hangNum;//每行的高度
-                    float hangDuoshaoMeidu = hash / mHangheight;
-                    int hangNumletter = tv_title.getText().toString().length() / hangNum;
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i <= mSpeechPosition; i++) {
-                        if (!TextUtils.isEmpty(mSpeechTextMap.get(mSpeechIndex).get(i))) {
-                            sb.append(mSpeechTextMap.get(mSpeechIndex).get(i));
-                        }
-                        if (sb.toString().length() > hangNumletter * hangDuoshaoMeidu) {
-                            mChapterReadSlidingAdapter.getCurrentListView().smoothScrollBy(mSlidingLayout.getHeight(), 500);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if ((mSpeechTextMap.get(mSpeechIndex).size() - 1) <= mSpeechPosition) {
-            mSpeechIndex++;
-            mSpeechPosition = 0;
-        } else {
-            mSpeechPosition++;
-        }
-
-        String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
-        if (TextUtils.isEmpty(remarkTxt)) {
-            showToastMsg("参数读取错误！");
-            return;
-        }
-
-        boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
-        if (!isSpeakTitle && (remarkTxt.contains("<b") || remarkTxt.contains("<h") || remarkTxt.contains("</b>") || remarkTxt.contains("</h>"))) {
-            if (remarkTxt.startsWith("<b>") && remarkTxt.endsWith("</b>") || remarkTxt.startsWith("<h") && remarkTxt.endsWith("</h>")) {
-                //不读标题
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mTtsListener.onCompleted(null);
-                } else {
-                    mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-                }
-                return;
-            } else if ((remarkTxt.startsWith("<b") && remarkTxt.indexOf("</b>") == -1) || (remarkTxt.startsWith("<h") && remarkTxt.indexOf("</h>") == -1)) {
-                //不读标题
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mTtsListener.onCompleted(null);
-                } else {
-                    mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-                }
-                return;
-            } else if ((remarkTxt.indexOf("<b") != -1 && remarkTxt.endsWith("</b>")) || (remarkTxt.indexOf("<h") != -1 && remarkTxt.endsWith("</h>"))) {
-                //不读标题
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mTtsListener.onCompleted(null);
-                } else {
-                    mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-                }
-                return;
-            } else if (remarkTxt.contains("</b>")) {
-                remarkTxt = remarkTxt.substring(remarkTxt.indexOf("</b>") + "</b>".length());
-            } else if (remarkTxt.contains("</h>")) {
-                remarkTxt = remarkTxt.substring(remarkTxt.indexOf("</h>") + "</h>".length());
-            }
-
-        }
-
-        remarkTxt = remarkTxt.replaceAll("<b>", "").replaceAll("</b>", "");
-
-        final String result = SearchTextUtil.replaceTag("<.+?>", remarkTxt);
-        String result2 = SearchTextUtil.replaceTag("\\(.+?\\)", result);
-        result2 = SearchTextUtil.replaceTag("\\{.+\\}", result2);
-        String result3 = SearchTextUtil.replaceTag("（.+）", result2);
-        result3 = StringUtil.getRealSpeekText(result3);
-
-        if (TextUtils.isEmpty(result3)) {
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                mTtsListener.onCompleted(null);
-            } else {
-                mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-            }
-            return;
-        }
-
-        //        refreshChapterRemark(true, remarkTxt);
-        refreshChapterRemark(true, remarkTxt);
-
-        result3 = result3.replaceAll("(?<=\\[)(.*?)(?=])", "");
-        SystemConfig.readContent = result3;
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-            String txt = result3.replaceAll("行", "行(xing2)");
-            baiduSpeechManager.speak(txt);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            mXunFeiSpeechManager.startSpeaking(result3, mTtsListener);
-        }
-
+        speechDelegate.speakerNext();
     }
 
     @Override
@@ -2416,7 +2040,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     /**
      * 保存历史信息
      */
-    private void saveHistoryInfo() {
+    void saveHistoryInfo() {
         if (mChapter == null) {
             return;
         }
@@ -2566,6 +2190,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     // 阅读设置模块已迁移到 ChapterReaderSettingDelegate.java
     // 包含：字体大小、背景颜色、文字颜色、边距设置（共 783 行 → 已精简）
     ChapterReaderSettingDelegate mSettingDelegate;
+    ChapterReaderSpeechDelegate speechDelegate; // 语音朗读模块
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -2749,7 +2374,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     // REGION: 滚动背景更新 / 章节名显示 / 習第翻章
     // 文件位置：第 3490 行 — 第 3680 行
     // ================================================================
-    private void UpdateReadBackground() {
+    void UpdateReadBackground() {
         mSlidingLayout.slideNext();
         mChapterReadSlidingAdapter.setPageIndex(mChapterReadSlidingAdapter.getPageIndex() + 1);
         if (mChapter != null) {
@@ -2849,97 +2474,12 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
 
     private void startNextSpeech(Chapter chapter) {
-        mSpeechTextMap.clear();
-        mSpeechTxtNums = 0;
-        final List<String> contentNodes = SearchTextUtil.queryChaptreContent(ATHIS, chapter, mChapterReadSlidingAdapter.getTextModel());
-        for (int i = 0; i < contentNodes.size(); i++) {
-//            String sss = MTextUtil.match(MTextUtil.pattern, contentNodes.get(i));//去掉<h></h> 创2：2创3:2
-//            if (sss != null && sss.contains("<")&& sss.contains("</")) {
-//                sss = sss.trim().replaceAll(MTextUtil.pattern1, "");
-//            }
-            String[] ssss = MTextUtil.takeOutSymbol(contentNodes.get(i)).split("。");
-            String[] news = new String[ssss.length];
-            int position = 0;
-            for (String s : ssss) {
-                String head = CharUtils.match("[\\u4e00-\\u9fa5]{1,2}\\d+:\\d+", s);
-                if (!TextUtils.isEmpty(head)) {//如果有head
-                    char c = head.charAt(0);
-                    if (s.indexOf(c) == 0) {//说明是第一个
-                        s = s.replace(head, "");//去掉head
-                    }
-                }
-                news[position] = s;//s.replace("<b>", "").replace("</b>", "");
-                position++;
-            }
-
-            mSpeechTxtNums += news.length;
-            mSpeechTextMap.put(i, Arrays.asList(news));
-        }
-
-        if ((mSpeechTextMap == null) || (mSpeechTextMap.size() == 0)) {
-            showToastMsg("暂无章节内容");
-            return;
-        }
-
-        String remarkTxt = getSpeechContent(mSpeechIndex, mSpeechPosition);
-        boolean isSpeakTitle = SharedUtil.getBoolean(PreferenceConfig.Preference_Speak_Title, false);
-        if (!isSpeakTitle && (remarkTxt.contains("<b") || remarkTxt.contains("<h"))) {
-            //不读标题
-            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                mTtsListener.onCompleted(null);
-            } else {
-                mainHandler.sendMessage(mainHandler.obtainMessage(UI_FINISH_TEXT_SELECTION, 0, 0));
-            }
-            return;
-        }
-        remarkTxt = remarkTxt.replace("<b>", "").replace("</b>", "");
-        refreshChapterRemark(true, remarkTxt);
-        SystemConfig.readContent = remarkTxt;
-        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-            mXunFeiSpeechManager.startSpeaking(remarkTxt, mTtsListener);
-        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-//            baiduSpeechManager.batchSpeak(remarkTxt);
-            String txt = remarkTxt.replaceAll("行", "行(xing2)");
-            baiduSpeechManager.speak(txt);
-        }
-        mSlidingLayout.setIsPagingEnabled(true);
-
-        saveHistoryInfo();
+        speechDelegate.startNextSpeech(chapter);
     }
 
 
     private void initBaiduSpeech() {
-        mSpeechPosition = 0;
-        mSpeechIndex = 0;
-        mSpeechTxtNumIndex = 0;
-        ListView listView = mChapterReadSlidingAdapter.getCurrentListView();
-        int firstView = listView.getFirstVisiblePosition();
-        mSpeechIndex = firstView;
-
-        //初始化阅读的位置  因为可能读的地方在中间 全部第一行
-        int top = listView.getChildAt(0).getTop();
-        if (top <= 0) {
-            listView.smoothScrollBy(top, 100);
-        }
-
-        // 初始化合成对象
-        if (baiduSpeechManager == null) {
-            showProgressDialog("加载中。。。。");
-            baiduSpeechManager = new BaiduSpeechManager(this, mainHandler);
-            mXunFeiSpeechManager = new XunFeiSpeechManager(this);
-            mXunFeiSpeechManager.setTtsListener(mTtsListener);
-            if (floatView != null) {
-                floatView.setmXunFeiSpeechManager(mXunFeiSpeechManager);
-                floatView.setBaiduSpeechManager(baiduSpeechManager);
-            }
-            mXunFeiSpeechManager.init(mTtsInitListener);
-            //先初始化，避免notifa报空指针
-            mSpeechPopupWindow = new SpeechPopupWindow(this, mXunFeiSpeechManager, baiduSpeechManager, this);
-            mSpeechPopupWindow.setOnClickListener(this);
-        } else {
-            startSpeech();
-        }
-
+        speechDelegate.initBaiduSpeech();
     }
 
 
