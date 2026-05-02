@@ -17,13 +17,10 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -45,8 +42,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.SeekBar;
@@ -54,17 +49,9 @@ import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.iflytek.cloud.ErrorCode;
-import com.iflytek.cloud.InitListener;
-import com.iflytek.cloud.SpeechError;
-import com.iflytek.cloud.SynthesizerListener;
 import com.music.player.lib.manager.MusicPlayerManager;
 import com.read.scriptures.EIUtils.ActivityUtil;
 import com.read.scriptures.EIUtils.DateUtil;
@@ -93,14 +80,11 @@ import com.read.scriptures.model.Category;
 import com.read.scriptures.model.Chapter;
 import com.read.scriptures.model.Volume;
 import com.read.scriptures.net.NetObserver;
-import com.read.scriptures.net.NetworkUtils;
 import com.read.scriptures.service.NotifacationService;
 import com.read.scriptures.ui.activity.base.BaseActivity;
-import com.read.scriptures.ui.adapter.BackgroundColorAdapter;
 import com.read.scriptures.ui.adapter.ChapterReadAdapter;
 import com.read.scriptures.ui.adapter.ChapterReadMenuGvAdapter;
 import com.read.scriptures.ui.adapter.ChapterReadSlidingAdapter;
-import com.read.scriptures.ui.adapter.TextColorAdapter;
 import com.read.scriptures.ui.fragment.BaseFullBottomSheetFragment;
 import com.read.scriptures.util.CharUtils;
 import com.read.scriptures.util.CollectionUtil;
@@ -124,7 +108,6 @@ import com.read.scriptures.widget.QSelectDialog;
 import com.read.scriptures.widget.ReadOptionsPopupWindow;
 import com.read.scriptures.widget.SelectDialogShowItem;
 import com.read.scriptures.widget.SeleteTextSizePopupWindow;
-import com.read.scriptures.widget.SpacesItemDecoration;
 import com.read.scriptures.widget.SpeechPopupWindow;
 import com.read.scriptures.widget.TouchInterceptSlidingView;
 import com.read.scriptures.widget.VersionSettingDialog;
@@ -148,9 +131,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -167,13 +147,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU && baiduSpeechManager != null) {
                 baiduSpeechManager.stop();
             }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            } else {
-                if (mNotificationManager != null) {
-                    mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                }
-            }
+            if (notificationHelper != null) notificationHelper.cancelNotification();
         }
     }
 
@@ -221,7 +195,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         return mChapterReadSlidingAdapter;
     }
 
-    private Chapter mChapter;
+    Chapter mChapter;
     private String enter = "";
     private int mTipsPostion;
     private String mTipsKeyword;
@@ -257,7 +231,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     // 文字资源
     private ArrayList<String> mTitles = new ArrayList<>();
     private boolean mSelectModel = false;// 编辑模式
-    private boolean mSpeechModel = false;// 朗读模式
+    boolean mSpeechModel = false;// 朗读模式
     FloatView floatView;
     private int oldIndex;
     private int oldPosition;
@@ -266,6 +240,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
 
     private Notification notification;
+    ReadingNotificationHelper notificationHelper; // 通知栏管理模块
     //8.0及以上版本使用
     private NotificationCompat.Builder notificationCompat;
     private NotificationManagerCompat mNotificationManager;
@@ -273,7 +248,7 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     private IntentFilter mIntentFilter = null;
     private PlayBroadcastReceiver playBroadcastReceiver = null;
 
-    private String title = "";
+    String title = "";
 
     boolean SlideNextByBackground = false;
     boolean isBack = false;
@@ -358,7 +333,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         }).start();
         initActionBar();
         mSettingDelegate = new ChapterReaderSettingDelegate(this, mChapterReadSlidingAdapter, handler);
-        speechDelegate = new ChapterReaderSpeechDelegate(this); // 初始化语音模块
+        speechDelegate = new ChapterReaderSpeechDelegate(this);
+        notificationHelper = new ReadingNotificationHelper(this);
         mSettingDelegate.initSettingPop();
         mSettingDelegate.initMarginPop();
         mSettingDelegate.initColorPop();
@@ -676,11 +652,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                         }
                     }
                     if (mSpeechModel) {
-                        if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                            mXunFeiSpeechManager.stopSpeaking();
-                        } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                            baiduSpeechManager.stop();
-                        }
+                        stopSpeechAndNotification();
+                        mSpeechModel = true; // 翻章继续朗读
                         mSpeechIndex = 0;
                         mSpeechPosition = 0;
                         startSpeech();
@@ -1727,21 +1700,12 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         if (mXunFeiSpeechManager != null) {
             mXunFeiSpeechManager.stopSpeaking();
             mXunFeiSpeechManager.destroy();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            } else {
-                mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-            }
         }
         if (baiduSpeechManager != null) {
             baiduSpeechManager.stop();
             baiduSpeechManager.destory();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            } else {
-                mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-            }
         }
+        if (notificationHelper != null) notificationHelper.cancelNotification();
 
         if (floatView != null) {
             floatView.hide();
@@ -1828,28 +1792,14 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     }
 
     String getSpeechContent(final int index, final int position) {
+        // 委托给 ChapterReaderSpeechDelegate 处理
         try {
-            if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) {
-                Log.e("Speech", "mSpeechTextMap is null or empty");
-                return "";
-            }
-
+            if (mSpeechTextMap == null || mSpeechTextMap.isEmpty()) return "";
             List<String> textList = mSpeechTextMap.get(index);
-            if (textList == null || textList.isEmpty()) {
-                Log.e("Speech", "textList is null or empty for index: " + index);
-                return "";
-            }
-
-            if (position < 0 || position >= textList.size()) {
-                Log.e("Speech", "position out of range: " + position + ", size: " + textList.size());
-                return "";
-            }
-
-            String remarkTxt = textList.get(position);
-            return remarkTxt != null ? remarkTxt : "";
+            if (textList == null || position < 0 || position >= textList.size()) return "";
+            String txt = textList.get(position);
+            return txt != null ? txt : "";
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("Speech", "getSpeechContent error: " + e.getMessage());
             return "";
         }
     }
@@ -1942,20 +1892,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             builder.setPositiveButton("是", new DialogInterface.OnClickListener() { //设置确定按钮
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mSpeechModel = false;
-                    if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                        mXunFeiSpeechManager.stopSpeaking();
-                    } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                        baiduSpeechManager.stop();
-                    }
-                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                        HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-                    } else {
-                        mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                    }
-                    if (floatView != null) {
-                        floatView.hide();
-                    }
+                    stopSpeechAndNotification();
+                    if (floatView != null) floatView.hide();
                     refreshChapterRemark(false, "");
                     showToast("恭喜！成功退出");
                 }
@@ -1999,22 +1937,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
     @Override
     public void finish() {
         try {
-            if (mSpeechModel) {
-                mSpeechModel = false;
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mXunFeiSpeechManager.stopSpeaking();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                    baiduSpeechManager.stop();
-                }
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                    HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-                } else {
-                    mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                }
-            }
-            if (floatView != null) {
-                floatView.hide();
-            }
+            stopSpeechAndNotification();
+            if (floatView != null) floatView.hide();
         } catch (Exception e) {
             LogUtil.error("floatView.removeView", e);
         }
@@ -2110,13 +2034,11 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                 break;
             case R.id.btn_exit:
                 // 停止朗读
-                mSpeechModel = false;
+                stopSpeechAndNotification();
                 refreshChapterRemark(false, null);
                 mSlidingLayout.setIsPagingEnabled(false);
-                mSpeechPopupWindow.dismiss(mSpeechModel);
-                if (floatView != null) {
-                    floatView.hide();
-                }
+                if (mSpeechPopupWindow != null) mSpeechPopupWindow.dismiss(false);
+                if (floatView != null) floatView.hide();
                 break;
             case R.id.btn_previous_chapter:
                 mSlidingLayout.slidePrevious();
@@ -2318,17 +2240,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
                 baiduSpeechManager.stop();
             }
-            //取消通知栏
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-            } else {
-                if (mNotificationManager != null) {
-                    mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                }
-            }
-            if (floatView != null) {
-                floatView.hide();
-            }
+            if (notificationHelper != null) notificationHelper.cancelNotification();
+            if (floatView != null) floatView.hide();
             refreshChapterRemark(true, "");
             showToast("已退出朗读模式");
             return;
@@ -2385,25 +2298,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
             //最后一章
             showToast("阅读完毕");
             //退出朗读
-            if (mSpeechModel) {
-                mSpeechModel = false;
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-                    mXunFeiSpeechManager.stopSpeaking();
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-                    baiduSpeechManager.stop();
-                }
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                    HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-                } else {
-                    if (mNotificationManager == null) {
-                        return;
-                    }
-                    mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                }
-            }
-            if (floatView != null) {
-                floatView.hide();
-            }
+            stopSpeechAndNotification();
+            if (floatView != null) floatView.hide();
             return;
         }
         mChapter = mChapters.get(mChapterReadSlidingAdapter.getPageIndex());
@@ -2504,17 +2400,8 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
                     mXunFeiSpeechManager = null;
                     baiduSpeechManager.release();
                     baiduSpeechManager = null;
-                    if (floatView != null) {
-                        floatView.hide();
-                    }
-                    //取消通知栏
-                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-                        HuDongApplication.getInstance().notManager.cancel(SystemConstants.Notification_ID_BASE);
-                    } else {
-                        if (mNotificationManager != null) {
-                            mNotificationManager.cancel(SystemConstants.Notification_ID_BASE);
-                        }
-                    }
+                    if (floatView != null) floatView.hide();
+                    if (notificationHelper != null) notificationHelper.cancelNotification();
                 }
                 msg.what = PRINT;
                 break;

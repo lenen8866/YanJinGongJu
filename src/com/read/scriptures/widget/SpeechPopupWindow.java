@@ -25,7 +25,6 @@ import com.read.scriptures.constants.SystemConstants;
 import com.read.scriptures.control.BaiduSpeechManager;
 import com.read.scriptures.event.PlayEvent;
 import com.read.scriptures.manager.XunFeiSpeechManager;
-import com.read.scriptures.net.NetworkUtils;
 import com.read.scriptures.util.SharedUtil;
 
 import org.greenrobot.eventbus.EventBus;
@@ -90,7 +89,6 @@ public class SpeechPopupWindow extends PopupWindow
         mXunFeiSpeechManager = xunFeiSpeechManager;
         mXunFeiSpeechManager.setPlayTimeChangeListener(this);
         mBaiduSpeechManager = baiduSpeechManager;
-        // 模式A（百度）已隐藏，baiduSpeechManager 可能为 null，加判空保护
         if (mBaiduSpeechManager != null) {
             mBaiduSpeechManager.setPlayTimeChangeListener(this);
         }
@@ -164,7 +162,6 @@ public class SpeechPopupWindow extends PopupWindow
 
         cbSpeakTitle = (CheckBox) mRootView.findViewById(R.id.cb_speak_title);
 
-        // 根据当前保存的音色初始化选中状态
         switch (PreferenceConfig.getSpeech(context)) {
             case "xiaoyan": xiaoyan.setChecked(true); break;
             case "xiaoyu": xiaoyu.setChecked(true); break;
@@ -280,7 +277,6 @@ public class SpeechPopupWindow extends PopupWindow
             }
         });
 
-        // radio_group 的监听器保留，但因为 XML 中已隐藏该行，实际不会触发
         RadioGroup radioGroupEngine = (RadioGroup) mRootView.findViewById(R.id.radio_group);
         radioGroupEngine.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -322,7 +318,6 @@ public class SpeechPopupWindow extends PopupWindow
     public void dismiss() {
         super.dismiss();
         if (mSpeechModel) {
-            // 弹窗关闭后直接恢复朗读（弹窗打开时已 pause，关闭后 resume 即可）
             if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF
                     && mXunFeiSpeechManager != null) {
                 mXunFeiSpeechManager.resumeSpeaking();
@@ -421,7 +416,6 @@ public class SpeechPopupWindow extends PopupWindow
     public void showAtLocation(View parent, int gravity, int x, int y) {
         super.showAtLocation(parent, gravity, x, y);
         engineType = 0;
-        // 弹窗打开时暂停朗读
         if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
             mXunFeiSpeechManager.pauseSpeaking();
         } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU
@@ -434,9 +428,6 @@ public class SpeechPopupWindow extends PopupWindow
         XToast.showToast(mContext, "朗读暂停中...");
     }
 
-    /**
-     * 网络不可用时禁用讯飞按钮（模式A已隐藏，无需切换）
-     */
     public void netUnAvailable() {
         if (mXFButton != null) {
             mXFButton.setEnabled(false);
