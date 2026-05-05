@@ -1,0 +1,8 @@
+
+1.数据库文件准备好
+scripture\com.lgmshare.hudong\assets\hudong.db
+
+2.双击运行：生成章节介绍JSON文件.bat  成功后关闭窗口即可
+
+3.生成书籍介绍文件
+scripture\com.lgmshare.hudong\assets\getIntroList.json
