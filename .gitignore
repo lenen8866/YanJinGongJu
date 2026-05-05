@@ -86,3 +86,4 @@ fastlane/screenshots/
 # NDK
 # ========================
 obj/
+!研经工具文件生成/**/*.jar
