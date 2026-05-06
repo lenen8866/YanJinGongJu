@@ -92,7 +92,6 @@ import com.read.scriptures.widget.BatteryView;
 import com.read.scriptures.widget.FloatView;
 import com.read.scriptures.widget.FloatView.Reader;
 import com.read.scriptures.widget.ReadOptionsPopupWindow;
-import com.read.scriptures.widget.SeleteTextSizePopupWindow;
 import com.read.scriptures.widget.SpacesItemDecoration;
 import com.read.scriptures.widget.SpeechPopupWindow;
 import com.read.scriptures.widget.TouchInterceptSlidingView;
@@ -111,7 +110,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.read.scriptures.listener.MainHandlerConstant.INIT_ALI_SUCCESS;
 import static com.read.scriptures.listener.MainHandlerConstant.INIT_BAIDU_ERROR;
 import static com.read.scriptures.listener.MainHandlerConstant.INIT_BAIDU_SUCCESS;
 import static com.read.scriptures.listener.MainHandlerConstant.PRINT;
@@ -184,8 +182,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
     private ReadOptionsPopupWindow mReadOptionsPopupWindow;
 
-    private SeleteTextSizePopupWindow mSeleteTextSizePopupWindow;
-
     private SpeechPopupWindow mSpeechPopupWindow;
 
     private boolean mSelectModel = false;
@@ -239,9 +235,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-//        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//保持屏幕唤醒
@@ -331,7 +324,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         iv_back.setOnClickListener(this);
         dex = (View) findViewById(R.id.dex_line);
         mTitleLayout = (RelativeLayout) findViewById(R.id.layout_title);
-        findViewById(R.id.btn_back).setOnClickListener(this);
         mTitleVolumeTextView = (TextView) findViewById(R.id.tv_volume);
         mTitleChapterTextView = (TextView) findViewById(R.id.tv_chapter);
 
@@ -432,35 +424,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
             @Override
             public void onSlideSelected(final Object obj) {
-//                final ListView listView = mLinXiuReadSlidingAdapter.getCurrentListView();
-//                listView.setOnScrollListener(new OnScrollListener() {
-//                    @Override
-//                    public void onScrollStateChanged(final AbsListView view, final int
-//                            scrollState) {
-//                        // LogUtil.test("scrollState：" + scrollState);
-//                        // mStatusTimeTextView.setText(DateUtil.getStringDate("HH:mm")
-//                        // + "" + getReadProgress());
-//                    }
-//
-//                    @Override
-//                    public void onScroll(final AbsListView view, final int firstVisibleItem,
-//                                         final int visibleItemCount,
-//                                         final int totalItemCount) {
-//                        // LogUtil.test("getScollY:" +
-//                        // mSlidingLayout.getScollY() +
-//                        // ",view.getLastVisiblePosition()："
-//                        // + view.getLastVisiblePosition() + ",totalItemCount:"
-//                        // + totalItemCount);
-//                        if ((view.getLastVisiblePosition() + 1) >= totalItemCount) {
-//                            mStatusTimeTextView.setText(DateUtil.getStringDate("HH:mm") + "" + " " +
-//                                    "已阅100%");
-//                        } else {
-//                            mStatusTimeTextView.setText(DateUtil.getStringDate("HH:mm") + "" +
-//                                    getReadProgress());
-//                        }
-//                    }
-//                });
-                Log.e("ADASDXZC", "onSlideSelected: " + mLinXiuReadSlidingAdapter.getPageIndex());
                 mSpirituality = mSpiritualityList.get(mLinXiuReadSlidingAdapter.getPageIndex());
                 mTitleChapterTextView.setText(mSpirituality.getDaytime() + "   " + mSpirituality.getShowName
                         ());
@@ -530,28 +493,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 ViewGroup.LayoutParams.MATCH_PARENT);
         floatView.setLayoutParams(params);
         floatView.setListViewListenner(this);
-        mParentView.addView(floatView);
-    }
-
-    public void initBaiduFloatView() {
-        if (floatView != null) {
-            return;
-        }
-        floatView = new FloatView(getApplicationContext());
-        floatView.hide();
-        floatView.setReader(this);
-        floatView.setSlidingLayout(mSlidingLayout);
-        floatView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                showSpeechPopupWindow();
-                floatView.hide();
-            }
-        });
-
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
-        floatView.setLayoutParams(params);
         mParentView.addView(floatView);
     }
 
@@ -697,28 +638,10 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 mSpeechPopupWindow.dismiss(mSpeechModel);
                 floatView.hide();
                 break;
-            case R.id.btn_previous_chapter:
-                break;
-            case R.id.btn_next_chapter:
-                break;
             //阅读设置
             case R.id.tv_traditional:
                 changeTextModel();
                 break;
-//            case R.id.tv_size_small:
-//                textSize--;
-//                tv_size.setText(String.valueOf(textSize));
-//                HuDongApplication.getInstance().setTextSize(textSize);
-//                mLinXiuReadSlidingAdapter.setTextSize(textSize);
-//                mLinXiuReadSlidingAdapter.notifyDataSetChanged();
-//                break;
-//            case R.id.tv_size_big:
-//                textSize++;
-//                tv_size.setText(String.valueOf(textSize));
-//                HuDongApplication.getInstance().setTextSize(textSize);
-//                mLinXiuReadSlidingAdapter.setTextSize(textSize);
-//                mLinXiuReadSlidingAdapter.notifyDataSetChanged();
-//                break;
             case R.id.iv_2_hor:
                 setBackground(R.id.iv_2_hor);
                 HuDongApplication.getInstance().setTextMagin(40);
@@ -824,7 +747,7 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
      * @param id
      */
     private void onItemClickOfSlidingListView(final AdapterView<?> parent, final View view, final
-    int position,
+                                              int position,
                                               final long id) {
         if (longClick) {
             return;
@@ -861,7 +784,7 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
      * @param id
      */
     private void onItemClickOfOptionsGridView(final AdapterView<?> parent, final View view, final
-    int position,
+                                              int position,
                                               final long id) {
         switch (position) {
             case 0:
@@ -897,8 +820,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 break;
             case 2:
                 // 分享
-                // final List<String> lists2 =
-                // mSpiritualityReadAdapter.getChecked();
                 final List<String> lists2 = mLinXiuReadSlidingAdapter
                         .getCurrentChapterReadAdapter().getChecked();
                 if (CollectionUtil.isEmpty(lists2)) {
@@ -927,10 +848,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 String content = StringUtil.replaceTags(sb2.toString(), tags);
                 UmShareUtils.shareText(this,content);
                 break;
-            case 3:
-                break;
-            case 4:
-                break;
             case 5:
                 mSelectModel = false;
                 final List<String> lists3 = mLinXiuReadSlidingAdapter
@@ -958,8 +875,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 }
                 CommonUtil.copy(ATHIS, sb3.toString());
                 break;
-            case 6:
-                break;
         }
         showReadOptionsPopupWindow(false);
     }
@@ -973,14 +888,11 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
      * @param id
      */
     private void onItemClickOfSettingGridView(final AdapterView<?> parent, final View view, final
-    int position,
+                                              int position,
                                               final long id) {
         mSettingOptionDialog.dismiss();
         showReadOptionsPopupWindow(false);
-//        if (position == 0) {
-//            changeRealModel();
-//        } else
-            if (position == 0) {
+        if (position == 0) {
             if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
                 CommonUtil.showActivateDialogWithCancelAction(ATHIS, UserInfo.VIP_NORMAL, new Runnable() {
                     public void run() {
@@ -999,12 +911,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
             }
             tv_size.setText(String.valueOf(textSize));
             popSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
-//            mSeleteTextSizePopupWindow = new SeleteTextSizePopupWindow
-//                    (SpiritualityContentActivity.this,
-//                            HuDongApplication.getInstance().getTextSize(), SpiritualityContentActivity
-//                            .this);
-//            mSeleteTextSizePopupWindow.showAtLocation(getWindow().getDecorView(),
-//                    Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
         } else if (position == 2) {
             final Bundle bundle = new Bundle();
             bundle.putParcelable(BundleConstants.PARAM_SPIRITUALITY, mSpirituality);
@@ -1012,25 +918,7 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                     bundle, -1);
         } else if (position == 3) {
             goBookmarkListActivity(false);
-        }
-//        else if (position == 5) {
-//            final int color = PreferenceConfig.getBackgroudColor(ATHIS);
-//            final ColorPickerDialog dialog = new ColorPickerDialog(ATHIS, color);
-//            dialog.setOnColorChangedListener(new ColorPickerDialog.OnColorChangedListener() {
-//                @Override
-//                public void onColorChanged(final int color) {
-//                    HuDongApplication.getInstance().setBackgroudColor(color);
-//                    showTabbarBackgroundColor();
-//                    resetListViewBackgroundColor();
-//                }
-//            });
-//            dialog.show();
-//        } else if (position == 6) {
-//            changeTextModel();
-//            // mSpiritualityReadAdapter.setList(lists);
-//            // mSpiritualityReadAdapter.notifyDataSetChanged();
-//        }
-        else if (position == 4) {
+        } else if (position == 4) {
             final int mCurrentOrientation = getResources().getConfiguration().orientation;
             if (mCurrentOrientation == Configuration.ORIENTATION_PORTRAIT) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -1047,13 +935,11 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
             HuDongApplication.getInstance().setReadModel(SystemConfig.READ_MODEL_NORMAL);
         }
         showTabbarBackgroundColor();
-//        resetListViewBackgroundColor();
         mLinXiuReadSlidingAdapter.setReadModel(HuDongApplication.getInstance().getReadModel());
         mLinXiuReadSlidingAdapter.notifyDataSetChanged();
     }
 
     private void changeTextModel() {
-        Log.w("TTT","changeTextModel 1111111111111");
         if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
             CommonUtil.showActivateDialog(ATHIS,UserInfo.VIP_NORMAL);
             return;
@@ -1061,13 +947,11 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         if (HuDongApplication.getInstance().getTextModel() == SystemConfig.TEXT_MODEL_FANTI) {
             HuDongApplication.getInstance().setTextModel(SystemConfig.TEXT_MODEL_NORMAL);
             tv_traditional.setText("繁");
-            Log.w("TTT","changeTextModel 222222222222");
             mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().setTipsKeyword(mTipsKeyword);
             mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().setChapterContent(mChapterContent);
         } else {
             HuDongApplication.getInstance().setTextModel(SystemConfig.TEXT_MODEL_FANTI);
             tv_traditional.setText("简");
-            Log.w("TTT","changeTextModel 3333333333333");
             mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().setTipsKeyword(SearchTextUtil.jian2fan(mTipsKeyword));
             mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().setChapterContent(SearchTextUtil.jian2fan(mChapterContent));
         }
@@ -1082,56 +966,47 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
      */
     private void changeSpeech() {
         if (HuDongApplication.getInstance().isAppNormalLevelActivate()) {
-//            if (SystemsUtils.checkFloatPermission(this)) {
-                if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
-//                    initFloatView();
-                    if (!mSpeechModel) {
-                        mainHandler = new Handler() {
-                            /*
-                             * @param msg
-                             */
-                            @Override
-                            public void handleMessage(Message msg) {
-                                super.handleMessage(msg);
-                                handle(msg);
-                            }
-
-                        };
-                        mSpeechModel = true;
-                        if (floatView != null) {
-                            floatView.show();
+            if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
+                if (!mSpeechModel) {
+                    mainHandler = new Handler() {
+                        /*
+                         * @param msg
+                         */
+                        @Override
+                        public void handleMessage(Message msg) {
+                            super.handleMessage(msg);
+                            handle(msg);
                         }
-                        initSpeechTts();
-                        initNotificationBar();
-                    }
-                } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
-//                    initBaiduFloatView();
-                    if (!mSpeechModel) {
-                        mainHandler = new Handler() {
-                            /*
-                             * @param msg
-                             */
-                            @Override
-                            public void handleMessage(Message msg) {
-                                super.handleMessage(msg);
-                                handle(msg);
-                            }
 
-                        };
-                        mSpeechModel = true;
-                        if (floatView != null) {
-                            floatView.show();
-                        }
-                        initBaiduSpeech();
-                        initNotificationBar();
+                    };
+                    mSpeechModel = true;
+                    if (floatView != null) {
+                        floatView.show();
                     }
+                    initSpeechTts();
+                    initNotificationBar();
                 }
+            } else if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_BAIDU) {
+                if (!mSpeechModel) {
+                    mainHandler = new Handler() {
+                        /*
+                         * @param msg
+                         */
+                        @Override
+                        public void handleMessage(Message msg) {
+                            super.handleMessage(msg);
+                            handle(msg);
+                        }
 
-//            } else {
-//                ToastCenterUtil.showMessage(ATHIS, "您好，请开启悬浮窗口权限，朗读可以拖动喔…");
-//                PermissionPageUtils permissionPageUtils = new PermissionPageUtils(this);
-//                permissionPageUtils.jumpPermissionPage();
-//            }
+                    };
+                    mSpeechModel = true;
+                    if (floatView != null) {
+                        floatView.show();
+                    }
+                    initBaiduSpeech();
+                    initNotificationBar();
+                }
+            }
         } else {
             CommonUtil.showActivateDialog(ATHIS,UserInfo.VIP_NORMAL);
         }
@@ -1146,8 +1021,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
 
         mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().setSelectModel(model);
         mLinXiuReadSlidingAdapter.getCurrentChapterReadAdapter().notifyDataSetChanged();
-        // mSpiritualityReadAdapter.setSelectModel(model);
-        // mSpiritualityReadAdapter.notifyDataSetChanged();
     }
 
     private void showReadOptionsPopupWindow(final boolean show) {
@@ -1275,32 +1148,22 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
             fromUser) {
         switch (seekBar.getId()) {
             case R.id.line_seek_bar:
-                Log.e("onProgressChangedASDASD", "行间距:" + progress);
                 HuDongApplication.getInstance().setmLineMargin(progress);
                 tv_line.setText(progress + "");
                 mLinXiuReadSlidingAdapter.setLineMargin(progress);
                 mLinXiuReadSlidingAdapter.notifyDataSetChanged();
                 break;
             case R.id.section_seek_bar:
-                Log.e("onProgressChangedASDASD", "段间距:" + progress);
                 HuDongApplication.getInstance().setTextMagin(progress);
                 tv_section.setText(progress + "");
                 mLinXiuReadSlidingAdapter.setTextMargin(progress);
                 mLinXiuReadSlidingAdapter.notifyDataSetChanged();
-                Log.e("onProgressChangedASDASD", "左右间距:" + progress);
                 break;
-//            case R.id.top_down_seek_bar:
-//                Log.e("onProgressChangedASDASD", "上下间距:"+progress );
-////                HuDongApplication.getInstance().setTextMagin(progress);
-//                mChapterReadSlidingAdapter.setTopAndBottomMargin(progress);
-//                mChapterReadSlidingAdapter.notifyDataSetChanged();
-//                break;
             case R.id.left_right_seek_bar:
                 HuDongApplication.getInstance().setTextAround(progress);
                 tv_left_right.setText(progress + "");
                 mLinXiuReadSlidingAdapter.setTextAroundMargin(progress);
                 mLinXiuReadSlidingAdapter.notifyDataSetChanged();
-                Log.e("onProgressChangedASDASD", "左右间距:" + progress);
                 break;
         }
     }
@@ -1457,7 +1320,7 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         refreshChapterRemark(true, remarkTxt);
         remarkTxt = StringUtil.getRealSpeekText(remarkTxt);
         SystemConfig.readContent = remarkTxt;
-        
+
         // 修复：添加朗读引擎的空指针检查
         try {
             if (SystemConfig.Speech_Model == SystemConfig.SPEECH_MODEL_XF) {
@@ -1471,7 +1334,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                     showToast("百度语音未初始化");
                     return;
                 }
-//            baiduSpeechManager.batchSpeak(remarkTxt);
                 String txt = remarkTxt.replaceAll("行", "行(xing2)");
                 baiduSpeechManager.speak(txt);
             }
@@ -1488,18 +1350,18 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
                 Log.e("SpiritualitySpeech", "mSpeechTextMap is null or empty");
                 return "";
             }
-            
+
             List<String> textList = mSpeechTextMap.get(index);
             if (textList == null || textList.isEmpty()) {
                 Log.e("SpiritualitySpeech", "textList is null or empty for index: " + index);
                 return "";
             }
-            
+
             if (position < 0 || position >= textList.size()) {
                 Log.e("SpiritualitySpeech", "position out of range: " + position + ", size: " + textList.size());
                 return "";
             }
-            
+
             final String remarkTxt = textList.get(position);
             return remarkTxt != null ? remarkTxt : "";
         } catch (Exception e) {
@@ -1830,8 +1692,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         } else {
             tv_traditional.setText("繁");
         }
-//        tv_size_small.setOnClickListener(this);
-//        tv_size_big.setOnClickListener(this);
         tv_size_small.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -2083,10 +1943,6 @@ public class SpiritualityContentActivity extends BaseActivity implements OnClick
         iv_back_color = (ImageView) view.findViewById(R.id.iv_back_color);
         rv_text = (RecyclerView) view.findViewById(R.id.rv_text_color);
         rv_background = (RecyclerView) view.findViewById(R.id.rv_background_color);
-//        LayoutAdapter layoutAdapter = new LayoutAdapter(this,rv_text);
-//        rv_text.setAdapter(layoutAdapter);
-//        rv_text.setLayoutMode(GridLayoutManager);
-//        layoutAdapter.setList(Arrays.asList(toast));
         SpacesItemDecoration decoration = new SpacesItemDecoration(8);
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
         StaggeredGridLayoutManager staggeredGridLayoutManager1 = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);

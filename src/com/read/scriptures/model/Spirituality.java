@@ -13,9 +13,6 @@ import java.io.Serializable;
 @Table(name = "spirituality")
 public class Spirituality implements Parcelable, Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -2699500033826604808L;
     private int id;
     private String daytime;
@@ -106,6 +103,7 @@ public class Spirituality implements Parcelable, Serializable {
         dest.writeString(this.name);
         dest.writeString(this.content);
         dest.writeString(this.path);
+        dest.writeString(this.patrent);
     }
 
     public Spirituality() {
@@ -127,6 +125,7 @@ public class Spirituality implements Parcelable, Serializable {
         this.name = in.readString();
         this.content = in.readString();
         this.path = in.readString();
+        this.patrent = in.readString();
     }
 
     public static final Creator<Spirituality> CREATOR = new Creator<Spirituality>() {

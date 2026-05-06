@@ -289,7 +289,9 @@ public class SearchActivity extends BaseActivity implements OnClickListener {
         });
         mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_SEND
+                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                     clickSearch(true);
                     return true;
                 }
@@ -607,6 +609,9 @@ public class SearchActivity extends BaseActivity implements OnClickListener {
                     bd.putInt(BundleConstants.PARAM_TIPS_POSTION, bookmark.getIndex());
                 }
                 bd.putString(BundleConstants.PARAM_TIPS_KEYWORD, mKeyword);
+                if (!TextUtils.isEmpty(bookmark.getContent())) {
+                    bd.putString(BundleConstants.PARAM_TIPS_CONTENT, bookmark.getReplaceContent());
+                }
                 String showName = chapter.getName() != null ? chapter.getName().replaceAll("^\\d{1,}-", "") :chapter.getName();
                 LinkedHashMap<String, String> annMap = new ChapterDatabaseHepler(SearchActivity.this)
                         .getChapterAnnotationList(chapter.getVolumeId(), showName);

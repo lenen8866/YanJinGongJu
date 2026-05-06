@@ -230,6 +230,14 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
     // 文字资源
     private ArrayList<String> mTitles = new ArrayList<>();
+    private ArrayList<Integer> mMenuActions = new ArrayList<>();
+    private static final int MENU_ACTION_ANNOTATION = 1;
+    private static final int MENU_ACTION_SPEECH = 2;
+    private static final int MENU_ACTION_FONT = 3;
+    private static final int MENU_ACTION_SEARCH_VOLUME = 4;
+    private static final int MENU_ACTION_BOOKMARK = 5;
+    private static final int MENU_ACTION_ORIENTATION = 6;
+    private static final int MENU_ACTION_VERSION = 7;
     private boolean mSelectModel = false;// 编辑模式
     boolean mSpeechModel = false;// 朗读模式
     FloatView floatView;
@@ -387,23 +395,36 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
 
         String[] titles = getResources().getStringArray(R.array.chapter_read_8option);
         Integer[] pictures = new Integer[]{R.drawable.ic_menu_option_6, R.drawable.ic_menu_option_2, R.drawable.ic_menu_option_3, R.drawable.ic_menu_option_4, R.drawable.ic_menu_option_5, R.drawable.ic_menu_option_8, R.drawable.ic_menu_option_22};//, R.drawable.ic_menu_option_1
+        Integer[] actions = new Integer[]{MENU_ACTION_ANNOTATION, MENU_ACTION_SPEECH, MENU_ACTION_FONT, MENU_ACTION_SEARCH_VOLUME, MENU_ACTION_BOOKMARK, MENU_ACTION_ORIENTATION, MENU_ACTION_VERSION};
         mTitles.clear();
         mPictures.clear();
+        mMenuActions.clear();
         mTitles.addAll(Arrays.asList(titles));
         mPictures.addAll(Arrays.asList(pictures));
+        mMenuActions.addAll(Arrays.asList(actions));
         if (mChapter != null) {
             int categoryLevelOneId = new VolumeDatabaseHepler(getApplicationContext()).getCategoryLeve1IdByVolumeID(mChapter.getVolumeId());
             if (categoryLevelOneId != 1) {
                 //不是圣经则不显示注释按钮
                 mTitles.remove(0);
                 mPictures.remove(0);
+                mMenuActions.remove(0);
             }
         }
         if (!isLuoJiShengJing(mChapters)) {
-            mTitles.remove("版本对照");
-            mPictures.remove(new Integer(R.drawable.ic_menu_option_22));
+            removeMenuAction(MENU_ACTION_VERSION);
         }
 
+    }
+
+    private void removeMenuAction(int action) {
+        int index = mMenuActions.indexOf(action);
+        if (index < 0) {
+            return;
+        }
+        mMenuActions.remove(index);
+        mTitles.remove(index);
+        mPictures.remove(index);
     }
 
     @Override
@@ -1117,48 +1138,54 @@ public class ChapterReaderActivity extends BaseActivity implements OnClickListen
         // mOptionLayout.setVisibility(View.GONE);
         showReadOptionsPopupWindow(false);
 
-        if (mTitles.get(position).equals("显示注释")) {//显示注释
-            if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
-                CommonUtil.showActivateDialog(this, UserInfo.VIP_NORMAL);
-                return;
-            }
-            BaseFullBottomSheetFragment sheetFragment = new BaseFullBottomSheetFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("rootHeight", mParentView.getHeight());
-            sheetFragment.setArguments(bundle);
-            sheetFragment.show(getSupportFragmentManager(), "dialog");
-        } else if (mTitles.get(position).equals("内容朗读")) {// 朗读
-            if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
-                CommonUtil.showActivateDialogWithCancelAction(ATHIS, UserInfo.VIP_NORMAL, new Runnable() {
-                    public void run() {
-                    }
-                });
-                return;
-            }
-            changeSpeech();
-            MusicPlayerManager.getInstance().pause();
-            fl_view.hide();
-        } else if (mTitles.get(position).equals("字体设置")) {//字体
-            if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
-                CommonUtil.showActivateDialogWithCancelAction(ATHIS, UserInfo.VIP_NORMAL, new Runnable() {
-                    public void run() {
-                    }
-                });
-                return;
-            }
-            if (mSettingDelegate != null) mSettingDelegate.updateTextSizeTv(textSize);
-            popSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
+        switch (mMenuActions.get(position)) {
+            case MENU_ACTION_ANNOTATION:
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
+                    CommonUtil.showActivateDialog(this, UserInfo.VIP_NORMAL);
+                    return;
+                }
+                BaseFullBottomSheetFragment sheetFragment = new BaseFullBottomSheetFragment();
+                Bundle bundle = new Bundle();
+                bundle.putInt("rootHeight", mParentView.getHeight());
+                sheetFragment.setArguments(bundle);
+                sheetFragment.show(getSupportFragmentManager(), "dialog");
+                break;
+            case MENU_ACTION_SPEECH:
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
+                    CommonUtil.showActivateDialogWithCancelAction(ATHIS, UserInfo.VIP_NORMAL, new Runnable() {
+                        public void run() {
+                        }
+                    });
+                    return;
+                }
+                changeSpeech();
+                MusicPlayerManager.getInstance().pause();
+                fl_view.hide();
+                break;
+            case MENU_ACTION_FONT:
+                if (!HuDongApplication.getInstance().isAppNormalLevelActivate()) {
+                    CommonUtil.showActivateDialogWithCancelAction(ATHIS, UserInfo.VIP_NORMAL, new Runnable() {
+                        public void run() {
+                        }
+                    });
+                    return;
+                }
+                if (mSettingDelegate != null) mSettingDelegate.updateTextSizeTv(textSize);
+                popSetting.showAtLocation(mParentView, Gravity.BOTTOM, 0, 0);
 //            changeTextSizePopWindow();
-        } else if (mTitles.get(position).equals("搜索本书")) {//搜索
-            searchVolumeContent();
-        } else if (mTitles.get(position).equals("书签目录")) {//书签
-            goBookmarkListActivity(false);
-        } else if (mTitles.get(position).equals("横竖阅读")) {//横竖屏
-            changeSreenOrientation();
-        } else if (mTitles.get(position).equals("夜间模式") || mTitles.get(position).equals("普通模式")) {//夜间
-            changeReadModel();
-        } else if (mTitles.get(position).equals("版本对照")) {//版本对照
-            versionSetting();
+                break;
+            case MENU_ACTION_SEARCH_VOLUME:
+                searchVolumeContent();
+                break;
+            case MENU_ACTION_BOOKMARK:
+                goBookmarkListActivity(false);
+                break;
+            case MENU_ACTION_ORIENTATION:
+                changeSreenOrientation();
+                break;
+            case MENU_ACTION_VERSION:
+                versionSetting();
+                break;
         }
     }
 

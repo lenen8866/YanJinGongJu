@@ -2,11 +2,11 @@ package com.read.scriptures.ui.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.read.scriptures.R;
@@ -24,11 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by LGM.
- * Datetime: 2015/7/5.
- * Email: lgmshare@mgail.com
- */
 public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private Context mCcontext;
@@ -45,28 +40,16 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
     public boolean mTipsValidate = true;
     private AdapterView.OnItemClickListener mOnItemClickListener;
     private AdapterView.OnItemLongClickListener mOnItemLongClickListener;
-    //阅读模式
     private int mReadModel = 0;
-    //文字大小
     private int mTextSize = 24;
-    //简繁模式
     private int mTextModel = 0;
-    //阅读背景色
     private int mBackgroudColor = 0;
-    //阅读字段行间距
     private int mTextMagin = 0;
-
     private int mTextAround = 10;
-
-    private int mTopAndBottomMargin = 0;
-
     private boolean isSJmode;
-
     private int mLineMargin = 0;
-
-    private int HUAI_ZHU_CHAPTER = 0; //怀著标致
-    private int HUAI_ZHU_CHAPTER_HAS_ZW = 0; //怀著标致中文  1
-    //文字颜色
+    private int HUAI_ZHU_CHAPTER = 0;
+    private int HUAI_ZHU_CHAPTER_HAS_ZW = 0;
     private int mTextColor = Color.parseColor(SystemConfig.DEFAULT_READ_TEXT_COLOR_DEFAULT);
 
     public ChapterReadSlidingAdapter(Context context, List<Chapter> chapterList, int pageIndex, boolean isSJmode, int flag, int flag1) {
@@ -134,9 +117,6 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
     public void setTextMargin(int textMargin) {
         this.mTextMagin = textMargin;
     }
-//    public void setTopAndBottomMargin(int mTopAndBottomMargin) {
-//        this.mTopAndBottomMargin = mTopAndBottomMargin;
-//    }
 
     public void setTextColor(int textColor) {
         this.mTextColor = textColor;
@@ -173,8 +153,7 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
     @Override
     public View getView(View contentView, List<String> lists) {
         FlexiListView listView;
-        LinearLayout linearLayout;
-        ChapterReadAdapter chapterReadAdapter;//===========================================================================
+        ChapterReadAdapter chapterReadAdapter;
         if (contentView == null) {
             contentView = LayoutInflater.from(mCcontext).inflate(R.layout.adapter_chapter_read_sliding_item, null);
             chapterReadAdapter = new ChapterReadAdapter(mCcontext);
@@ -189,40 +168,22 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         }
 
         int srollSetting = SharedUtil.getInt(PreferenceConfig.Preference_read_sroll_setting, 0);
-        if (srollSetting == 0) {
-            listView.setVerticalScrollbarPosition(1);
-        } else {
-            listView.setVerticalScrollbarPosition(2);
-        }
+        listView.setVerticalScrollbarPosition(srollSetting == 0 ? 1 : 2);
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if (onMoveEventlister != null) {
-                    onMoveEventlister.onMove();
-                }
+                if (onMoveEventlister != null) onMoveEventlister.onMove();
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 long curtime = System.currentTimeMillis();
-                if (curtime - saveTime < 20) {
-                    return;
-                }
+                if (curtime - saveTime < 20) return;
                 saveTime = curtime;
-
-                if (onMoveEventlister != null) {
-                    onMoveEventlister.onMove();
-                }
+                if (onMoveEventlister != null) onMoveEventlister.onMove();
             }
         });
-
-
-//        LinearLayout.LayoutParams lp1 =new LinearLayout.LayoutParams( listView.getLayoutParams());
-//        lp1.setMargins(0,mTopAndBottomMargin,0,mTopAndBottomMargin);
-//        listView.setLayoutParams(lp1);
-//        listView.setPadding(0,mTopAndBottomMargin,0,mTopAndBottomMargin);
-//        linearLayout.setBackgroundColor(mBackgroudColor);
 
         chapterReadAdapter.setList(lists);
         chapterReadAdapter.setShengJing(isSJmode);
@@ -230,44 +191,45 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         chapterReadAdapter.setTextSize(mTextSize);
         chapterReadAdapter.setTextMargin(mTextMagin);
         chapterReadAdapter.setLineMargin(mLineMargin);
-//        chapterReadAdapter.setTopAndBottomMargin(mTopAndBottomMargin);
         chapterReadAdapter.setTextAroundMargin(mTextAround);
         chapterReadAdapter.setTextColor(mTextColor);
-        //关键字提示
+
+        // 当前页是目标章节页时，传递搜索高亮信息
         if (mPageIndex == mInitPageIndex && mTipsValidate) {
-//            mTipsValidate = false;
-            chapterReadAdapter.setTipsPostion(mTipsPostion);
-            if (mTextModel == SystemConfig.TEXT_MODEL_NORMAL) {
-                chapterReadAdapter.setTipsKeyword(mTipsKeyword);
-                chapterReadAdapter.setChapterContent(mChapterContent);
-            } else {
-                chapterReadAdapter.setTipsKeyword(SearchTextUtil.jian2fan(mTipsKeyword));
-                chapterReadAdapter.setChapterContent(SearchTextUtil.jian2fan(mChapterContent));
-            }
+            String keyword = mTextModel == SystemConfig.TEXT_MODEL_NORMAL
+                    ? mTipsKeyword
+                    : SearchTextUtil.jian2fan(mTipsKeyword);
+            String chapterContent = mTextModel == SystemConfig.TEXT_MODEL_NORMAL
+                    ? mTipsContent          // 用 tipsContent（命中行内容）做定位依据
+                    : SearchTextUtil.jian2fan(mTipsContent);
+
+            chapterReadAdapter.setTipsKeyword(keyword);
+            // 用命中行内容在渲染列表里找到精确行号，传给 adapter
+            int targetPosition = findTargetPosition(lists, chapterContent, keyword);
+            chapterReadAdapter.setTipsPostion(targetPosition);
             chapterReadAdapter.setSearchType(mSearchType);
             chapterReadAdapter.setChapterName(mChapterName);
             chapterReadAdapter.setChapterNameKeyWord(mChapterNameKeyWord);
             chapterReadAdapter.setTipsContent(mTipsContent);
-            if (HUAI_ZHU_CHAPTER_HAS_ZW == 1) {
-//                if (HuDongApplication.mVersions_HZ.size() == 2) {
-//                    listView.setSelection(mTipsPostion);
-//                } else {
-//                    listView.setSelection(mTipsPostion / 2);
-//                }
-                listView.setSelection(mTipsPostion);
-            } else {
-                ;
-                listView.setSelection(mTipsPostion);
-            }
+
+            // 滚动到目标行
+            final int scrollTo = targetPosition >= 0 ? targetPosition : 0;
+            final FlexiListView finalListView = listView;
+            finalListView.post(new Runnable() {
+                @Override
+                public void run() {
+                    finalListView.setSelection(scrollTo);
+                }
+            });
         } else {
             chapterReadAdapter.setTipsPostion(-1);
             chapterReadAdapter.setTipsKeyword(null);
             listView.setSelection(0);
         }
+
         chapterReadAdapter.setTextModel(getTextModel());
         chapterReadAdapter.notifyDataSetChanged();
 
-        //阅读模式
         if (mReadModel == SystemConfig.READ_MODEL_NIGHT) {
             listView.setBackgroundColor(Color.parseColor(SystemConfig.DEFAULT_READ_BACKGROUND_NIGHT));
         } else {
@@ -276,10 +238,57 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         return contentView;
     }
 
+    /**
+     * 在渲染后的行列表里，用命中行内容找到精确的 position。
+     * 先用 tipsContent 完整匹配，找不到再用 keyword 找第一个命中行。
+     */
+    private int findTargetPosition(List<String> lists, String tipsContent, String keyword) {
+        if (lists == null || lists.isEmpty()) return 0;
+
+        // 1. 用命中行内容精确定位
+        if (!TextUtils.isEmpty(tipsContent)) {
+            String normalTips = normalize(tipsContent);
+            for (int i = 0; i < lists.size(); i++) {
+                String normalLine = normalize(lists.get(i));
+                if (normalLine.contains(normalTips) || normalTips.contains(normalLine)) {
+                    return i;
+                }
+            }
+        }
+
+        // 2. 退化：找第一个包含关键词的行
+        if (!TextUtils.isEmpty(keyword)) {
+            String[] keys = keyword.split(" ");
+            for (int i = 0; i < lists.size(); i++) {
+                String line = lists.get(i);
+                boolean allMatch = true;
+                for (String k : keys) {
+                    if (!TextUtils.isEmpty(k) && !line.contains(k)) {
+                        allMatch = false;
+                        break;
+                    }
+                }
+                if (allMatch) return i;
+            }
+        }
+
+        return 0;
+    }
+
+    private String normalize(String s) {
+        if (TextUtils.isEmpty(s)) return "";
+        return s.replaceAll("<.+?>", "")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("\u3000", "")
+                .replace(" ", "")
+                .trim();
+    }
+
     private long saveTime;
 
     public interface OnMoveEventlister {
-        public void onMove();
+        void onMove();
     }
 
     public OnMoveEventlister getOnMoveEventlister() {
@@ -292,7 +301,6 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
     }
 
     private OnMoveEventlister onMoveEventlister;
-
 
     @Override
     public boolean hasNext() {
@@ -329,14 +337,10 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
         return getContentList(mPageIndex);
     }
 
-    // 修复：缓存章节内容，避免每次 notifyDataSetChanged 都重新解析
-    // 原来每次刷新都调用 queryChaptreContent 全量重新解析每一行，包含 jian2fan 繁体转换（IO 操作）
-    // 现改为：版本列表变化时才重新计算，相同版本状态下直接返回缓存
     private final HashMap<Integer, List<String>> mContentCache = new HashMap<>();
     private String mLastVersionsKey = "";
 
     private String buildVersionsKey() {
-        // 用版本列表拼接成一个 key，判断版本是否发生变化
         List<String> v = HuDongApplication.mVersions;
         if (HUAI_ZHU_CHAPTER_HAS_ZW == 1) v = HuDongApplication.mVersions_HZ;
         if (v == null) return "";
@@ -346,17 +350,14 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
     }
 
     private List<String> getContentList(int index) {
-        // 版本发生变化时清除缓存
         String currentKey = buildVersionsKey();
         if (!currentKey.equals(mLastVersionsKey)) {
             mContentCache.clear();
             mLastVersionsKey = currentKey;
         }
-        // 命中缓存直接返回
         if (mContentCache.containsKey(index)) {
             return mContentCache.get(index);
         }
-        // 未命中才真正计算
         List<String> content = null;
         if (mChapters != null) {
             if (index >= mChapters.size()) {
@@ -369,7 +370,7 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
             }
         }
         if (content == null) {
-            content = new ArrayList<String>();
+            content = new ArrayList<>();
         }
         mContentCache.put(index, content);
         return content;
@@ -377,15 +378,13 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
 
     public ListView getCurrentListView() {
         View view = getCurrentView();
-        ListView listView = (ListView) view.findViewById(R.id.sliding_listview);
-        return listView;
+        return (ListView) view.findViewById(R.id.sliding_listview);
     }
 
     public ChapterReadAdapter getCurrentChapterReadAdapter() {
         View view = getCurrentView();
         ListView listView = (ListView) view.findViewById(R.id.sliding_listview);
-        ChapterReadAdapter adapter = (ChapterReadAdapter) listView.getAdapter();
-        return adapter;
+        return (ChapterReadAdapter) listView.getAdapter();
     }
 
     @Override
@@ -401,6 +400,4 @@ public class ChapterReadSlidingAdapter extends SlidingAdapter<List<String>> impl
 
     public void setShengJing(boolean isSJmode) {
     }
-
-
 }

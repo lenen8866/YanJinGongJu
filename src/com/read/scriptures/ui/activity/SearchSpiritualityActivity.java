@@ -64,18 +64,16 @@ public class SearchSpiritualityActivity extends BaseActivity {
         initViews();
     }
 
-
     private void initIntentExtra() {
         mSpirituality = getIntent().getParcelableExtra(BundleConstants.PARAM_SPIRITUALITY);
     }
 
     @SuppressWarnings("unchecked")
     private void initDatas() {
-        // 初始化搜索历史关键字数据
         mSearchHistoryKeyword = new ArrayList<String>();
         List<String> keyword = null;
         try {
-            keyword = (List<String>) PreferencesUtils.getObject(this,"keyword");
+            keyword = (List<String>) PreferencesUtils.getObject(this, "keyword");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -116,7 +114,6 @@ public class SearchSpiritualityActivity extends BaseActivity {
         TextView tv_name = findViewById(R.id.tv_name);
         tv_name.setText(mSpirituality.getShowName());
 
-        // 搜索历史
         mLayoutHistory = (LinearLayout) findViewById(R.id.layout_history);
         if (mSearchHistoryKeyword != null && mSearchHistoryKeyword.size() > 0) {
             ListView listview_history = (ListView) findViewById(R.id.listview_history);
@@ -133,7 +130,6 @@ public class SearchSpiritualityActivity extends BaseActivity {
         } else {
             mLayoutHistory.setVisibility(View.GONE);
         }
-        // 搜索结果
         mLayoutResult = findViewById(R.id.layout_result);
         mResultTextView = findViewById(R.id.tv_result);
         mSearchBookListAdapter = new SearchBookListAdapter(this);
@@ -179,7 +175,6 @@ public class SearchSpiritualityActivity extends BaseActivity {
             showToastMsg("请输入2个或以上关键字");
             return;
         }
-        // 保存搜索关键字
         if (mSearchHistoryKeyword.contains(mKeyword)) {
             mSearchHistoryKeyword.remove(mKeyword);
             mSearchHistoryKeyword.add(0, mKeyword);
@@ -189,7 +184,7 @@ public class SearchSpiritualityActivity extends BaseActivity {
                 mSearchHistoryKeyword.remove(5);
             }
             try {
-                PreferencesUtils.putObject(this,"keyword", mSearchHistoryKeyword);
+                PreferencesUtils.putObject(this, "keyword", mSearchHistoryKeyword);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -202,23 +197,32 @@ public class SearchSpiritualityActivity extends BaseActivity {
         ThreadPool.runOnNonUIThread(new Runnable() {
             @Override
             public void run() {
-                final List<Bookmark> bookmarkList = searchByKeyword(mSpirituality, mKeyword);
-
+                android.util.Log.d("SEARCH_DEBUG", "=== 开始搜索 ===");
+                android.util.Log.d("SEARCH_DEBUG", "keyword: " + mKeyword);
+                android.util.Log.d("SEARCH_DEBUG", "spirituality id: " + (mSpirituality != null ? mSpirituality.getId() : "null"));
+                android.util.Log.d("SEARCH_DEBUG", "spirituality book: " + (mSpirituality != null ? mSpirituality.getBook() : "null"));
+                android.util.Log.d("SEARCH_DEBUG", "spirituality daytime: " + (mSpirituality != null ? mSpirituality.getDaytime() : "null"));
+                android.util.Log.d("SEARCH_DEBUG", "spirituality content长度: " + (mSpirituality != null && mSpirituality.getContent() != null ? mSpirituality.getContent().length() : "null"));
+                List<Bookmark> bookmarkList = new ArrayList<>();
+                try {
+                    bookmarkList = searchByKeyword(mSpirituality, mKeyword);
+                    android.util.Log.d("SEARCH_DEBUG", "搜索完成，结果数量: " + bookmarkList.size());
+                } catch (Exception e) {
+                    android.util.Log.e("SEARCH_DEBUG", "搜索异常: " + e.getMessage(), e);
+                    e.printStackTrace();
+                }
+                final List<Bookmark> result = bookmarkList;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        showSearchResult(bookmarkList);
+                        android.util.Log.d("SEARCH_DEBUG", "回到主线程，显示结果");
+                        showSearchResult(result);
                     }
                 });
             }
         });
     }
 
-    /**
-     * 显示搜索结果
-     *
-     * @param bookmarkList
-     */
     private void showSearchResult(List<Bookmark> bookmarkList) {
         dismissProgressDialog();
         mBookmarkList = bookmarkList;
@@ -234,9 +238,7 @@ public class SearchSpiritualityActivity extends BaseActivity {
     }
 
     private List<Bookmark> searchByKeyword(Spirituality volumeff, String keyword) {
-        List<Bookmark> bookmarkResultPoints = SearchTextUtil.searchSpiritualityContentByKeyword(this, volumeff,
-                keyword);
-        return bookmarkResultPoints;
+        return SearchTextUtil.searchSpiritualityContentByKeyword(this, volumeff, keyword);
     }
 
     @Override
@@ -251,11 +253,9 @@ public class SearchSpiritualityActivity extends BaseActivity {
     }
 
     public boolean onContextItemSelected(MenuItem menuItem) {
-        // 获取当前被选择的菜单项的信息
         Bookmark bookmark = mBookmarkList.get(mListViewIndex);
         switch (menuItem.getItemId()) {
             case 1:
-                // 加入书签
                 Bundle bd = new Bundle();
                 ArrayList<Bookmark> list = new ArrayList<Bookmark>();
                 list.add(bookmark);
@@ -275,7 +275,6 @@ public class SearchSpiritualityActivity extends BaseActivity {
                 clickListItem(mListViewIndex);
                 break;
             case 5:
-                // 分享
                 StringBuffer shareSb = new StringBuffer();
                 shareSb.append("《" + bookmark.getVolumeName().substring(0, bookmark.getVolumeName().indexOf("(")).replaceAll("E", "") + "》");
                 shareSb.append("\n  " + bookmark.getReplaceContent());

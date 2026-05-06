@@ -33,8 +33,8 @@ import com.read.scriptures.util.LogUtil;
 import com.read.scriptures.util.PreferencesUtils;
 import com.read.scriptures.util.SearchTextUtil;
 import com.read.scriptures.util.StatusBarUtils;
-import com.read.scriptures.EIUtils.ThreadPool;
 import com.read.scriptures.util.UmShareUtils;
+import com.read.scriptures.util.ThreadUtil;
 import com.zxl.common.db.sqlite.DbException;
 import com.zxl.common.db.sqlite.DbUtils;
 import com.zxl.common.db.sqlite.Selector;
@@ -82,7 +82,6 @@ public class SearchVolumeActivity extends BaseActivity {
         initViews();
     }
 
-
     private void initIntentExtra() {
         mVolume = getIntent().getParcelableExtra(BundleConstants.PARAM_VOLUME);
     }
@@ -90,11 +89,10 @@ public class SearchVolumeActivity extends BaseActivity {
     private void initDatas() {
         mVolumeHepler = new VolumeDatabaseHepler(this);
         mChapterHepler = new ChapterDatabaseHepler(this);
-        // 初始化搜索历史关键字数据
         mSearchHistoryKeyword = new ArrayList<String>();
         List<String> keyword = null;
         try {
-            keyword = (List<String>) PreferencesUtils.getObject(this,"keyword");
+            keyword = (List<String>) PreferencesUtils.getObject(this, "keyword");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -121,7 +119,8 @@ public class SearchVolumeActivity extends BaseActivity {
         mSearchEditText = (EditText) findViewById(R.id.et_search);
         mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_SEND
                         || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                     clickSearch();
                     return true;
@@ -133,7 +132,7 @@ public class SearchVolumeActivity extends BaseActivity {
 
     private void initViews() {
         TextView tv_name = (TextView) findViewById(R.id.tv_name);
-        tv_name.setText(mVolume.getVolName().replaceAll("^\\d{1,}-",""));
+        tv_name.setText(mVolume.getVolName().replaceAll("^\\d{1,}-", ""));
 
         RadioGroup rradioGroup = (RadioGroup) findViewById(R.id.radio_group);
         rradioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -143,14 +142,14 @@ public class SearchVolumeActivity extends BaseActivity {
                     mSearchType = 3;
                 } else if (checkedId == R.id.rb_2) {
                     mSearchType = 4;
-                } else if (checkedId == R.id.rb_3){
+                } else if (checkedId == R.id.rb_3) {
                     mSearchType = 2;
                 }
             }
         });
         mSearchProgress = (ProgressBar) findViewById(R.id.search_progress);
         mSearchProgress.setVisibility(View.GONE);
-        // 搜索历史
+
         mLayoutHistory = (LinearLayout) findViewById(R.id.layout_history);
         if (mSearchHistoryKeyword != null && mSearchHistoryKeyword.size() > 0) {
             ListView listview_history = (ListView) findViewById(R.id.listview_history);
@@ -167,7 +166,7 @@ public class SearchVolumeActivity extends BaseActivity {
         } else {
             mLayoutHistory.setVisibility(View.GONE);
         }
-        // 搜索结果
+
         mLayoutResult = (LinearLayout) findViewById(R.id.layout_result);
         mResultTextView = (TextView) findViewById(R.id.tv_result);
         mSearchBookListAdapter = new SearchBookListAdapter(this);
@@ -214,43 +213,27 @@ public class SearchVolumeActivity extends BaseActivity {
             chapter.setVolumeName(bookmark.getVolumeName());
             chapter.setChapterCount(bookmark.getChapterCount());
             chapter.setVolumeId(bookmark.getVolumeId());
+            List<Chapter> list = new ChapterDatabaseHepler(this).getChapterList(bookmark.getVolumeId());
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).getName().equals(chapter.getName())) {
+                    chapter.setChapterIndex(list.get(i).getChapterIndex());
+                    break;
+                }
+            }
             Bundle bd = new Bundle();
             bd.putParcelable(BundleConstants.PARAM_CHAPTER, chapter);
             if (mSearchType == 2 || mSearchType == 4) {
                 bd.putInt(BundleConstants.PARAM_TIPS_POSTION, bookmark.getIndex());
                 bd.putString(BundleConstants.PARAM_TIPS_KEYWORD, mKeyword);
+                // 传原始内容（含 HTML 标签），findTargetPosition 内部会 normalize 处理
+                if (!TextUtils.isEmpty(bookmark.getContent())) {
+                    bd.putString(BundleConstants.PARAM_TIPS_CONTENT, bookmark.getContent());
+                }
             }
-            // mSearchBookmarkListAdapter.getList().clear();
+            bd.putString(BundleConstants.PARAM_CHAPTER_CONTENT, bookmark.getContent());
+            bd.putInt(BundleConstants.PARAM_SEARCH_TYPE, mSearchType);
             ActivityUtil.next(ATHIS, ChapterReaderActivity.class, bd, -1);
         }
-//        Bookmark bookmark = mBookmarkList.get(position);
-//        Chapter chapter = new Chapter();
-//        boolean delete = false;
-//        List<Chapter> list = new ChapterDatabaseHepler(this).getChapterList(mVolume.getId());
-//        Iterator<Chapter> iterator = list.iterator();
-//        while (iterator.hasNext()) {
-//            Chapter c = iterator.next();
-//            if (c.getShowName().contains("jieshao")) {
-//                delete = true;
-//            }
-//        }
-//        if (delete){
-//            chapter.setIndexId(bookmark.getChapterIndexId()-1);
-//        }else {
-//            chapter.setIndexId(bookmark.getChapterIndexId());
-//        }
-//        chapter.setName(bookmark.getChapterName());
-//        chapter.setVolumeName(bookmark.getVolumeName());
-//        chapter.setChapterCount(bookmark.getChapterCount());
-//        chapter.setVolumeId(bookmark.getVolumeId());
-//        Bundle bd = new Bundle();
-//        bd.putParcelable(BundleConstants.PARAM_CHAPTER, chapter);
-//        if (mSearchType == 3) {
-//            bd.putInt(BundleConstants.PARAM_TIPS_POSTION, bookmark.getIndex());
-//            bd.putString(BundleConstants.PARAM_TIPS_KEYWORD, mKeyword);
-//        }
-//        ActivityUtil.next(ATHIS, ChapterReaderActivity.class, bd, -1);
-////        ActivityUtil.backWithResult(ATHIS, Activity.RESULT_OK, bd);
     }
 
     private void clickSearch() {
@@ -259,12 +242,6 @@ public class SearchVolumeActivity extends BaseActivity {
             showToastMsg("请输入搜索关键字");
             return;
         }
-
-//        if (mSearchType != 1 && mKeyword.length() < 2) {
-//            showToastMsg("请输入2个或以上关键字");
-//            return;
-//        }
-        // 保存搜索关键字
         if (mSearchHistoryKeyword.contains(mKeyword)) {
             mSearchHistoryKeyword.remove(mKeyword);
             mSearchHistoryKeyword.add(0, mKeyword);
@@ -274,7 +251,7 @@ public class SearchVolumeActivity extends BaseActivity {
                 mSearchHistoryKeyword.remove(5);
             }
             try {
-                PreferencesUtils.putObject(this,"keyword", mSearchHistoryKeyword);
+                PreferencesUtils.putObject(this, "keyword", mSearchHistoryKeyword);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -284,15 +261,15 @@ public class SearchVolumeActivity extends BaseActivity {
         mLayoutHistory.setVisibility(View.GONE);
         mLayoutResult.setVisibility(View.VISIBLE);
         mSearchBookListAdapter.setSearchType(mSearchType);
-        ThreadPool.runOnNonUIThread(new Runnable() {
+        ThreadUtil.doOnOtherThread(new Runnable() {
             @Override
             public void run() {
                 final List<Bookmark> bookmarkList;
                 if (mSearchType == 3) {
                     bookmarkList = searchChapterByKeyword(mVolume, mKeyword);
-                } else if (mSearchType == 4){
+                } else if (mSearchType == 4) {
                     bookmarkList = searchContentByKeyword(mVolume, mKeyword);
-                }else {
+                } else {
                     bookmarkList = searchTitleByKeyword(mKeyword, mVolume);
                 }
                 runOnUiThread(new Runnable() {
@@ -305,11 +282,6 @@ public class SearchVolumeActivity extends BaseActivity {
         });
     }
 
-    /**
-     * 显示搜索结果
-     *
-     * @param bookmarkList
-     */
     private void showSearchResult(List<Bookmark> bookmarkList) {
         mSearchProgress.setVisibility(View.GONE);
         mCurrenType = mSearchType;
@@ -322,7 +294,6 @@ public class SearchVolumeActivity extends BaseActivity {
             StringBuilder sb = new StringBuilder();
             if (mVolume != null) {
                 sb.append("在《<font color='#ff0000'>");
-//                sb.append(mVolume.getVolName().replaceAll("^\\d{1,}-","").replaceAll("\\(.*?\\)",""));
                 sb.append(matchSearchText(mVolume.getVolName()));
                 sb.append("</font>》");
             }
@@ -340,12 +311,12 @@ public class SearchVolumeActivity extends BaseActivity {
         }
     }
 
-    private String matchSearchText(String str){
+    private String matchSearchText(String str) {
         String regex1 = "\\{([^}])*\\}";
         Pattern P1 = Pattern.compile(regex1);
         Matcher matcher1 = P1.matcher(str);
         while (matcher1.find()) {
-           str = str.replace(matcher1.group(), "");
+            str = str.replace(matcher1.group(), "");
         }
         String regex2 = "\\[([^}])*\\]";
         Pattern P2 = Pattern.compile(regex2);
@@ -362,48 +333,13 @@ public class SearchVolumeActivity extends BaseActivity {
         return str;
     }
 
-    /**
-     * 搜索章节
-     *
-     * @param volume
-     * @param keyWord
-     * @return
-     */
     private List<Bookmark> searchChapterByKeyword(Volume volume, String keyWord) {
         List<Chapter> volumeList = mChapterHepler.getChaptersByVolumeIdLikeName("" + volume.getId(), keyWord);
-        List<Bookmark> bookmarkResultPoints = SearchTextUtil.searchChapterByKeyword(volumeList, keyWord,
-                mSearchProgress);
-        return bookmarkResultPoints;
+        return SearchTextUtil.searchChapterByKeyword(volumeList, keyWord, mSearchProgress);
     }
 
-    /**
-     * 搜索内容
-     *
-     * @param volume
-     * @param keyword
-     * @return
-     */
     private List<Bookmark> searchContentByKeyword(Volume volume, String keyword) {
         List<Volume> volumeList = mVolumeHepler.getVolumeById(volume.getId());
-        List<Bookmark> bookmarkSearchPoint = new ArrayList<Bookmark>();
-        List<Chapter> chapterList = null;
-        int volumeLength = volumeList.size();
-        for (int i = 0; i < volumeLength; i++) {
-            Volume vol = volumeList.get(i);
-            chapterList = mChapterHepler.getChapterList(vol.getId());
-            for (int j = 0; j < chapterList.size(); j++) {
-                Chapter chapter = chapterList.get(j);
-                Bookmark bookmark = new Bookmark();
-                bookmark.setCategroyId(vol.getCategoryId() + "");
-                bookmark.setVolumeId(chapter.getVolumeId());
-                bookmark.setVolumeName(vol.getVolName());
-                bookmark.setChapterIndexId(chapter.getIndexId());
-                bookmark.setChapterName(chapter.getShowName());
-                bookmark.setChapterFileName(
-                        SearchTextUtil.getChapterTxtName("" + chapter.getVolumeId(), chapter.getIndexId() + ""));
-                bookmarkSearchPoint.add(bookmark);
-            }
-        }
         Map<String, Object> searchMap = new HashMap<String, Object>();
         searchMap.put("volumeList", volumeList);
         searchMap.put("volume", volume);
@@ -411,37 +347,21 @@ public class SearchVolumeActivity extends BaseActivity {
         searchMap.put("searchTitle", false);
         List<Bookmark> bookmarkResultPoints = SearchTextUtil.searchContentByKeyword(keyword, mSearchProgress, searchMap);
         Iterator<Bookmark> iterator = bookmarkResultPoints.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Bookmark bookmark = iterator.next();
-            if (bookmark.getChapterName().contains("jieshao") || bookmark.getChapterName().contains("注释")){
+            if (bookmark.getChapterName().contains("jieshao") || bookmark.getChapterName().contains("注释")) {
                 iterator.remove();
             }
         }
         return bookmarkResultPoints;
     }
 
-    /**
-     * 搜索标题
-     *
-     * @param
-     * @return
-     */
     private List<Bookmark> searchTitleByKeyword(String keyword, Volume volume) {
-        List<Bookmark> bookmarkResultPoints = searchContentByKeyword(keyword, volume, true);
-        return bookmarkResultPoints;
+        return searchContentByKeyword(keyword, volume, true);
     }
 
-    /**
-     * 搜索标题
-     *
-     * @param keyword
-     * @param volume
-     * @return
-     */
     private List<Bookmark> searchContentByKeyword(String keyword, Volume volume, boolean searchTitle) {
-        final long start = System.currentTimeMillis();
         List<Volume> volumeList = null;
-        List<Bookmark> bookmarkSearchList = new ArrayList<Bookmark>();
         DbUtils dbUtils = HuDongApplication.getInstance().getDbUtils();
         if (volume != null) {
             try {
@@ -451,33 +371,22 @@ public class SearchVolumeActivity extends BaseActivity {
                 LogUtil.error("DbException", e);
             }
         }
-        LogUtil.test("volume搜索耗时：" + (System.currentTimeMillis() - start));
-        for (Volume volumetemp : volumeList) {
-            Bookmark bookmark = new Bookmark();
-            bookmark.setVolumeId(volumetemp.getId());
-            bookmark.setVolumeName(volumetemp.getVolName().replaceAll("^\\d{1,}-",""));
-            bookmark.setChapterIndexId(0);
-            bookmark.setChapterName("");
-            bookmark.setChapterFileName("");
-            bookmarkSearchList.add(bookmark);
-        }
-        LogUtil.test("其他搜索耗时：" + (System.currentTimeMillis() - start));
         Map<String, Object> searchMap = new HashMap<String, Object>();
         searchMap.put("volumeList", volumeList);
         searchMap.put("volume", volume);
         searchMap.put("rootId", 1);
         searchMap.put("searchTitle", searchTitle);
-
         List<Bookmark> bookmarkResultList = SearchTextUtil.searchContentByKeyword(keyword, mSearchProgress, searchMap);
         Iterator<Bookmark> bookmarkIterator = bookmarkResultList.iterator();
-        while (bookmarkIterator.hasNext()){
+        while (bookmarkIterator.hasNext()) {
             Bookmark bookmark = bookmarkIterator.next();
-            if (bookmark.getChapterName().contains("jieshao")){
+            if (bookmark.getChapterName().contains("jieshao")) {
                 bookmarkIterator.remove();
             }
         }
         return bookmarkResultList;
     }
+
     @Override
     public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
         super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
@@ -490,42 +399,38 @@ public class SearchVolumeActivity extends BaseActivity {
     }
 
     public boolean onContextItemSelected(MenuItem menuItem) {
-        // 获取当前被选择的菜单项的信息
         Bookmark bookmark = mBookmarkList.get(mListViewIndex);
         if (mVolume != null) {
             bookmark.setCategroyId(mVolume.getCategoryId() + "");
         }
         switch (menuItem.getItemId()) {
-        case 1:
-            // 加入书签
-            Bundle bd = new Bundle();
-            ArrayList<Bookmark> list = new ArrayList<Bookmark>();
-            list.add(bookmark);
-            bd.putParcelableArrayList(BundleConstants.PARAM_BOOK_MARK_LIST, list);
-            ActivityUtil.next(ATHIS, BookmarkEditActivity.class, bd, -1);
-            break;
-        case 3:
-            StringBuffer copy = new StringBuffer();
-            copy.append("《" + bookmark.getVolumeName() + "》");
-            copy.append(bookmark.getChapterName());
-            copy.append("\n  " + bookmark.getReplaceContent());
-            CommonUtil.copy(ATHIS,copy.toString());
-            break;
-        case 4:
-            clickListItem(mListViewIndex);
-            break;
-        case 5:
-            // 分享
-            StringBuffer shareSb = new StringBuffer();
-            shareSb.append("《" + bookmark.getVolumeName() + "》");
-            shareSb.append(bookmark.getChapterName());
-            shareSb.append("\n  " + bookmark.getReplaceContent());
-            UmShareUtils.shareText(this,shareSb.toString());
-            break;
-        case 6:
-            break;
+            case 1:
+                Bundle bd = new Bundle();
+                ArrayList<Bookmark> list = new ArrayList<Bookmark>();
+                list.add(bookmark);
+                bd.putParcelableArrayList(BundleConstants.PARAM_BOOK_MARK_LIST, list);
+                ActivityUtil.next(ATHIS, BookmarkEditActivity.class, bd, -1);
+                break;
+            case 3:
+                StringBuffer copy = new StringBuffer();
+                copy.append("《" + bookmark.getVolumeName() + "》");
+                copy.append(bookmark.getChapterName());
+                copy.append("\n  " + bookmark.getReplaceContent());
+                CommonUtil.copy(ATHIS, copy.toString());
+                break;
+            case 4:
+                clickListItem(mListViewIndex);
+                break;
+            case 5:
+                StringBuffer shareSb = new StringBuffer();
+                shareSb.append("《" + bookmark.getVolumeName() + "》");
+                shareSb.append(bookmark.getChapterName());
+                shareSb.append("\n  " + bookmark.getReplaceContent());
+                UmShareUtils.shareText(this, shareSb.toString());
+                break;
+            case 6:
+                break;
         }
         return true;
     }
-
 }

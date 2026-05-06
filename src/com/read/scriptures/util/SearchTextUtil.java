@@ -46,15 +46,7 @@ import taobe.tec.jcc.JChineseConvertor;
  */
 public class SearchTextUtil {
 
-    /**
-     * 搜索目录关键字
-     *
-     * @param volumeList
-     * @param keyword
-     * @return
-     */
-    public static List<Bookmark> searchVolumeByKeyword(List<Volume> volumeList, String keyword,
-                                                       ProgressBar progressBar) {
+    public static List<Bookmark> searchVolumeByKeyword(List<Volume> volumeList, String keyword, ProgressBar progressBar) {
         int length = volumeList.size();
         progressBar.setMax(length);
         progressBar.setProgress(0);
@@ -79,13 +71,6 @@ public class SearchTextUtil {
         return bookmarkList;
     }
 
-    /**
-     * 搜索章节关键字
-     *
-     * @param chapterList
-     * @param keyword
-     * @return
-     */
     public static List<Bookmark> searchChapterByKeyword(List<Chapter> chapterList, String keyword, ProgressBar progressBar) {
         int length = chapterList.size();
         progressBar.setMax(length);
@@ -112,14 +97,6 @@ public class SearchTextUtil {
         return bookmarkList;
     }
 
-    /**
-     * 搜索关键字标题
-     *
-     * @param keyword
-     * @param progressBar
-     * @param searchMap
-     * @return
-     */
     @SuppressWarnings("unchecked")
     public static List<Bookmark> searchContentByKeyword(String keyword, ProgressBar progressBar, Map<String, Object> searchMap) {
         List<Volume> volumeList = (List<Volume>) searchMap.get("volumeList");
@@ -172,23 +149,18 @@ public class SearchTextUtil {
                                     volName = volumetemp.getVolName().replaceAll("^\\d{1,}-", "");
                                 }
                             }
-                            List<String> contentList = new ArrayList<String>(Arrays.asList
-                                    (content.split("\n")));
+                            List<String> contentList = new ArrayList<String>(Arrays.asList(content.split("\n")));
                             int remove = 0;
                             for (int j = 0; j < contentList.size(); j++) {
                                 String line = contentList.get(j);
-                                if (line.trim().equals("\n") || line.trim().equals("\n\r")
-                                        || StringUtil.isEmpty(line.trim())) {
+                                if (line.trim().equals("\n") || line.trim().equals("\n\r") || StringUtil.isEmpty(line.trim())) {
                                     remove++;
                                     continue;
                                 }
-
                                 boolean isBreak = false;
                                 isContains = false;
                                 for (int i = 0; i < keywords.length; i++) {
-                                    if (isBreak) {
-                                        break;
-                                    }
+                                    if (isBreak) break;
                                     if (line.contains(keywords[i])) {
                                         if (searchTitle) {
                                             if (line.contains("<b")) {
@@ -230,9 +202,7 @@ public class SearchTextUtil {
                                     point.setCategroyId(chapter.getCategoryId() + "");
                                     point.setType(0);
                                     String pointContent = textMacth(line, keyword);
-                                    if (StringUtil.isEmpty(pointContent)) {
-                                        continue;
-                                    }
+                                    if (StringUtil.isEmpty(pointContent)) continue;
                                     point.setContent(pointContent);
                                     boolean isHave = false;
                                     for (Bookmark bookmark : bookmarkResultList) {
@@ -241,13 +211,10 @@ public class SearchTextUtil {
                                             isHave = true;
                                         }
                                     }
-                                    if (!isHave)
-                                        bookmarkResultList.add(point);
+                                    if (!isHave) bookmarkResultList.add(point);
                                 }
                             }
-                            if (have.indexOf(chapter.getName()) >= 0) {
-                                continue;
-                            }
+                            if (have.indexOf(chapter.getName()) >= 0) continue;
                             have.add(chapter.getName());
                         }
                     } catch (Exception e) {
@@ -256,7 +223,6 @@ public class SearchTextUtil {
                         progress++;
                         progressBar.setProgress(progress);
                     }
-
                 }
             }
         } catch (DbException e) {
@@ -266,28 +232,16 @@ public class SearchTextUtil {
         return bookmarkResultList;
     }
 
-
-    /**
-     * 搜索关键字内容
-     *
-     * @param keyword
-     * @param progressBar
-     * @param searchMap
-     * @return
-     */
     public static boolean searchByKeywordLoadFinish = false;
     public static int searchLimit = 50;
-
 
     @SuppressWarnings("unchecked")
     public static long searchCountByKeyword(String keyword, Map<String, Object> searchMap) {
         Volume volume = (Volume) searchMap.get("volume");
         Category category = (Category) searchMap.get("category");
         int rootId = (Integer) searchMap.get("rootId");
-
         String instr = getSplitKeywordInstr(keyword, rootId);
-        String sql = null;
-//        SELECT id,indexId,name,volumeId,content,categoryId,parentId FROM chapter WHERE
+        String sql;
         if (volume != null) {
             sql = "SELECT COUNT(1) FROM chapter WHERE volumeId = " + volume.getId() + " and INSTR(content,'" + keyword + "')>0";
         } else if (category != null) {
@@ -303,21 +257,11 @@ public class SearchTextUtil {
         }
     }
 
-    /**
-     * @param volumeList   书籍列表
-     * @param nodeCategory 选中的分类
-     * @param volume       选中的书籍
-     * @param keyword      搜索关键字
-     * @param cateId       搜索的分类
-     * @param offset       偏移量
-     * @return
-     */
     public static List<Bookmark> searchContent(List<Volume> volumeList, Category nodeCategory, Volume volume, String keyword, int cateId, int offset, int count) {
         String[] keys = keyword.trim().split(" ");
         StringBuilder stringBuilder = new StringBuilder();
-
         if (volume != null) {
-            stringBuilder.append("select * from chapter where categoryId = " + volume.getCategoryId());
+            stringBuilder.append("select * from chapter where volumeId = " + volume.getId());
         } else if (nodeCategory != null) {
             stringBuilder.append("select * from chapter where categoryId = " + nodeCategory.getId());
         } else {
@@ -325,22 +269,23 @@ public class SearchTextUtil {
         }
         for (String key : keys) {
             if (!TextUtils.isEmpty(key)) {
-                stringBuilder.append(" and content like '%" + key + "%' ");
+                stringBuilder.append(" and content like '%" + escapeSqlValue(key.trim()) + "%' ");
             }
         }
-        stringBuilder.append(" and content NOT like '%【%' and content NOT like '%】%'  and  name  NOT like '%【%' and content NOT like '%】%' and  name  NOT like '%jieshao%'  limit " + offset + ",50");
+        stringBuilder.append(" and name NOT like '%jieshao%' and name NOT like '%注释%' order by id limit " + offset + "," + searchLimit);
         List<Bookmark> bookmarkResultList = new ArrayList<>();
         List<String> versions = new ArrayList<>();
         if (cateId == 1) {
-            //圣经 要筛选和合本、吕振中、思高本等版本
             versions = HuDongApplication.mVersions;
         } else if (cateId == 2) {
-            //怀著 要筛选中英文
             versions = HuDongApplication.mVersions_HZ;
         }
         try {
             List<SearchTemp> all = HuDongApplication.getInstance().getDbUtils().find1(stringBuilder.toString(), SearchTemp.class);
             searchByKeywordLoadFinish = all == null || all.size() < searchLimit;
+            if (all == null) {
+                return bookmarkResultList;
+            }
             for (int i = 0; i < all.size(); i++) {
                 SearchTemp chapter = all.get(i);
                 List<String> contentList = new ArrayList<>(Arrays.asList(chapter.getContent().split("\n")));
@@ -349,13 +294,17 @@ public class SearchTextUtil {
                     boolean isContainsVersion = true;
                     boolean isMatched = false;
                     if (str.contains("〖") || str.contains("〗")) {
-                        a:
-                        for (String version : versions) {
-                            String p = "〖(" + version + ")〗.*?〖(/" + version + ")〗";
-                            Pattern P = Pattern.compile(p);
-                            Matcher matcher = P.matcher(str);
-                            isMatched = matcher.find();
-                            if (isMatched) break a;
+                        if (versions.isEmpty()) {
+                            isMatched = true;
+                        } else {
+                            a:
+                            for (String version : versions) {
+                                String p = "〖(" + version + ")〗.*?〖(/" + version + ")〗";
+                                Pattern P = Pattern.compile(p);
+                                Matcher matcher = P.matcher(str);
+                                isMatched = matcher.find();
+                                if (isMatched) break a;
+                            }
                         }
                     } else {
                         isContainsVersion = false;
@@ -377,13 +326,10 @@ public class SearchTextUtil {
                             point.setChapterIndexId(chapter.getIndexId());
                             point.setChapterCount(chapter.getChapterCount());
                             point.setCategroyId(chapter.getCategoryId() + "");
-                            int size = versions.size();
-                            if (size != 0) {
-                                if (!isContainsVersion) {
-                                    point.setIndex(j + 1);
-                                } else {
-                                    point.setIndex(j / 2 + 1);
-                                }
+                            if (isContainsVersion && !versions.isEmpty()) {
+                                point.setIndex(j / 2 + 1);
+                            } else {
+                                point.setIndex(j + 1);
                             }
                             point.setType(0);
                             point.setContent(pointContent);
@@ -392,11 +338,14 @@ public class SearchTextUtil {
                     }
                 }
             }
-
         } catch (DbException e) {
             e.printStackTrace();
         }
         return bookmarkResultList;
+    }
+
+    private static String escapeSqlValue(String value) {
+        return value == null ? "" : value.replace("'", "''");
     }
 
     @SuppressWarnings("unchecked")
@@ -410,9 +359,7 @@ public class SearchTextUtil {
         boolean searchTitle = (Boolean) searchMap.get("searchTitle");
         List<Bookmark> bookmarkResultList = new ArrayList<Bookmark>();
         List<SearchTemp> list = null;
-
         String instr = getSplitKeywordInstr(keyword, rootId);
-
         try {
             if (volume != null) {
                 String sql = "SELECT id,indexId,name,volumeId,content,categoryId,parentId FROM chapter WHERE volumeId = " + volume.getId() + " and INSTR(content,'" + keyword + "')>0 LIMIT " + searchLimit + " OFFSET " + offset;
@@ -437,20 +384,15 @@ public class SearchTextUtil {
                     try {
                         int position = 0;
                         String content = chapter.getContent();
-                        if (content == null) {
-                            continue;
-                        }
+                        if (content == null) continue;
                         String[] keywords = keyword.split(" ");
                         List<String> strList = Arrays.asList(keywords);
                         List arrList = new ArrayList(strList);
                         Iterator<String> stringIterator = arrList.iterator();
                         while (stringIterator.hasNext()) {
                             String string = stringIterator.next();
-                            if (TextUtils.isEmpty(string)) {
-                                stringIterator.remove();
-                            }
+                            if (TextUtils.isEmpty(string)) stringIterator.remove();
                         }
-
                         keywords = new String[arrList.size()];
                         arrList.toArray(keywords);
                         boolean isContains = true;
@@ -468,13 +410,11 @@ public class SearchTextUtil {
                                 }
                             }
                             List<String> contentList = new ArrayList<>(Arrays.asList(content.split("\n")));
-                            //移除未选中的版本对照
                             List<String> removeContents = new ArrayList<>();
                             String location = "";
                             for (int j = 0; j < contentList.size(); j++) {
                                 String line = contentList.get(j);
                                 if (line.indexOf("〖") >= 0 && !TextUtils.isEmpty(line.substring(0, line.indexOf("〖"))) && !TextUtils.isEmpty(line.substring(0, line.indexOf("〖")).replaceAll("\t\t\t", ""))) {
-                                    //截取和合本前的章节出处
                                     location = line.substring(0, line.indexOf("〖"));
                                 } else {
                                     if (!TextUtils.isEmpty(location)) {
@@ -485,10 +425,8 @@ public class SearchTextUtil {
                                 if (line.indexOf("〖") >= 0) {
                                     List<String> versions = new ArrayList<>();
                                     if (rootId == 1) {
-                                        //圣经 要筛选和合本、吕振中、思高本等版本
                                         versions = HuDongApplication.mVersions;
                                     } else if (rootId == 2) {
-                                        //怀著 要筛选中英文
                                         versions = HuDongApplication.mVersions_HZ;
                                     }
                                     for (String version : versions) {
@@ -499,12 +437,9 @@ public class SearchTextUtil {
                                 } else {
                                     isReMove = false;
                                 }
-                                if (isReMove) {
-                                    removeContents.add(contentList.get(j));
-                                }
+                                if (isReMove) removeContents.add(contentList.get(j));
                             }
                             contentList.removeAll(removeContents);
-
                             int remove = 0;
                             for (int j = 0; j < contentList.size(); j++) {
                                 String line = contentList.get(j);
@@ -512,13 +447,10 @@ public class SearchTextUtil {
                                     remove++;
                                     continue;
                                 }
-
                                 boolean isBreak = false;
                                 isContains = false;
                                 for (int i = 0; i < keywords.length; i++) {
-                                    if (isBreak) {
-                                        break;
-                                    }
+                                    if (isBreak) break;
                                     if (line.contains(keywords[i])) {
                                         if (searchTitle) {
                                             if (line.contains("<b")) {
@@ -554,16 +486,12 @@ public class SearchTextUtil {
                                     point.setIndex(position);
                                     point.setType(0);
                                     String pointContent = textMacth(line, keyword);
-                                    if (StringUtil.isEmpty(pointContent)) {
-                                        continue;
-                                    }
+                                    if (StringUtil.isEmpty(pointContent)) continue;
                                     point.setContent(pointContent);
                                     bookmarkResultList.add(point);
                                 }
                             }
-                            if (have.indexOf(chapter.getName()) >= 0) {
-                                continue;
-                            }
+                            if (have.indexOf(chapter.getName()) >= 0) continue;
                             have.add(chapter.getName());
                         }
                     } catch (Exception e) {
@@ -572,7 +500,6 @@ public class SearchTextUtil {
                         progress++;
                         progressBar.setProgress(progress);
                     }
-
                 }
                 now = System.currentTimeMillis();
             }
@@ -595,13 +522,10 @@ public class SearchTextUtil {
         for (int i = 0; i < arrList.size(); i++) {
             sb.append(" and INSTR(content,'" + arrList.get(i) + "')>0 ");
         }
-
         List<String> versions = new ArrayList<>();
         if (rootId == 1) {
-            //圣经 要筛选和合本、吕振中、思高本等版本
             versions = HuDongApplication.mVersions;
         } else if (rootId == 2) {
-            //怀著 要筛选中英文
             versions = HuDongApplication.mVersions_HZ;
         }
         if (versions.size() > 0) {
@@ -622,16 +546,7 @@ public class SearchTextUtil {
         return sb.toString();
     }
 
-    /**
-     * 搜索关键字内容
-     *
-     * @param keyword
-     * @param progressBar
-     * @param volume
-     * @return
-     */
-    public static List<Bookmark> searchContentByKeyword(String keyword, ProgressBar progressBar,
-                                                        Volume volume) {
+    public static List<Bookmark> searchContentByKeyword(String keyword, ProgressBar progressBar, Volume volume) {
         long start = System.currentTimeMillis();
         progressBar.setMax(1000);
         progressBar.setProgress(0);
@@ -640,9 +555,8 @@ public class SearchTextUtil {
         ProgressThread progressThread = new ProgressThread(1000, progressBar);
         ThreadUtil.execute(progressThread);
         try {
-            list = HuDongApplication.getInstance().getDbUtils().findAll(Selector.from(Chapter.class)
-                            .where(WhereBuilder.getInstance("volumeId", "=", volume.getId()))
-                            .toString(),
+            list = HuDongApplication.getInstance().getDbUtils().findAll(
+                    Selector.from(Chapter.class).where(WhereBuilder.getInstance("volumeId", "=", volume.getId())).toString(),
                     SearchTemp.class);
             LogUtil.test("搜索关键字搜索耗时：" + (System.currentTimeMillis() - start));
             List<String> have = new ArrayList<String>();
@@ -657,15 +571,13 @@ public class SearchTextUtil {
                             int remove = 0;
                             for (int j = 0; j < contentList.size(); j++) {
                                 String line = contentList.get(j);
-                                if (line.trim().equals("\n") || line.trim().equals("\n\r")
-                                        || StringUtil.isEmpty(line.trim())) {
+                                if (line.trim().equals("\n") || line.trim().equals("\n\r") || StringUtil.isEmpty(line.trim())) {
                                     remove++;
                                     continue;
                                 }
                                 if (line.contains(keyword)) {
                                     position = j - remove + 1;
                                     Bookmark point = new Bookmark();
-                                    // point.setCategroyId(bookmark.getCategroyId());
                                     point.setVolumeId(chapter.getVolumeId());
                                     point.setVolumeName(volName);
                                     point.setChapterName(chapter.getName());
@@ -675,24 +587,16 @@ public class SearchTextUtil {
                                     point.setIndex(position);
                                     point.setType(0);
                                     String matchLine = textMacth(line, keyword);
-                                    if (StringUtil.isEmpty(matchLine)) {
-                                        continue;
-                                    }
+                                    if (StringUtil.isEmpty(matchLine)) continue;
                                     point.setContent(matchLine);
                                     bookmarkResultList.add(point);
                                 }
                             }
-                            if (have.indexOf(chapter.getName()) >= 0) {
-                                continue;
-                            }
+                            if (have.indexOf(chapter.getName()) >= 0) continue;
                             have.add(chapter.getName());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        String content = chapter.getContent();
-                        if (content != null) {
-                            String[] lines = content.split("\n");
-                        }
                     }
                 }
             }
@@ -711,24 +615,25 @@ public class SearchTextUtil {
 
     /**
      * 搜索内容关键字(灵修)
-     *
-     * @param context
-     * @param spirituality
-     * @param keyword
-     * @return
+     * 修复：改用 SpiritualityDatabaseHepler 查询正确的数据库
+     * 原来用 getDbUtils().findById 查的是主数据库 hudong.db
+     * 但 spirituality 表在 test 数据库里，永远查不到，导致一直加载
      */
-    public static List<Bookmark> searchSpiritualityContentByKeyword(Context context, Spirituality
-            spirituality,
-                                                                    String keyword) {
+    public static List<Bookmark> searchSpiritualityContentByKeyword(Context context, Spirituality spirituality, String keyword) {
         List<Bookmark> points = new ArrayList<Bookmark>();
         try {
-            int position = 0;
-            Spirituality selectSpirituality = HuDongApplication.getInstance().getDbUtils()
-                    .findById(spirituality.getClass(), spirituality.getId());
+            com.read.scriptures.db.SpiritualityDatabaseHepler helper =
+                    new com.read.scriptures.db.SpiritualityDatabaseHepler(context);
+            Spirituality selectSpirituality = helper.getSpiritualityById(
+                    spirituality.getBook(), spirituality.getDaytime());
+            if (selectSpirituality == null || TextUtils.isEmpty(selectSpirituality.getContent())) {
+                return points;
+            }
             String content = selectSpirituality.getContent();
+            int position = 0;
             List<String> contentList = new ArrayList<String>(Arrays.asList(content.split("\n")));
             for (String line : contentList) {
-                if (!TextUtils.isEmpty(line)) {
+                if (!TextUtils.isEmpty(line.trim())) {
                     position++;
                     String macthLine = textMacth(line, keyword);
                     if (macthLine != null) {
@@ -744,24 +649,14 @@ public class SearchTextUtil {
                         points.add(point);
                     }
                 }
-
             }
-        } catch (DbException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return points;
     }
 
-    /**
-     * 搜索百科关键字
-     *
-     * @param baikes
-     * @param keyword
-     * @param progressBar
-     * @return
-     */
-    public static List<Bookmark> searchBaikeByKeyword(List<Baike> baikes, String keyword,
-                                                      ProgressBar progressBar) {
+    public static List<Bookmark> searchBaikeByKeyword(List<Baike> baikes, String keyword, ProgressBar progressBar) {
         int length = baikes.size();
         progressBar.setMax(length);
         progressBar.setProgress(0);
@@ -769,11 +664,9 @@ public class SearchTextUtil {
         for (int i = 0; i < length; i++) {
             Baike baike = baikes.get(i);
             int position = 0;
-            List<String> contentList = new ArrayList<String>(Arrays.asList(baike.getContent()
-                    .split("\n")));
+            List<String> contentList = new ArrayList<String>(Arrays.asList(baike.getContent().split("\n")));
             for (String line : contentList) {
-                if (!line.trim().equals("\n") && !line.trim().equals("\n\r") &&
-                        StringUtil.isNotEmpty(line.trim())) {
+                if (!line.trim().equals("\n") && !line.trim().equals("\n\r") && StringUtil.isNotEmpty(line.trim())) {
                     position++;
                     String macthLine = textMacth(line, keyword);
                     if (macthLine != null) {
@@ -788,23 +681,13 @@ public class SearchTextUtil {
                         bookmarkList.add(point);
                     }
                 }
-
             }
             progressBar.setProgress(i);
         }
         return bookmarkList;
     }
 
-    /**
-     * 搜索百科标题关键字
-     *
-     * @param baikes
-     * @param keyword
-     * @param progressBar
-     * @return
-     */
-    public static List<Bookmark> searchBaikeTitleByKeyword(List<Baike> baikes, String keyword,
-                                                           ProgressBar progressBar) {
+    public static List<Bookmark> searchBaikeTitleByKeyword(List<Baike> baikes, String keyword, ProgressBar progressBar) {
         int length = baikes.size();
         progressBar.setMax(length);
         progressBar.setProgress(0);
@@ -835,7 +718,6 @@ public class SearchTextUtil {
     public static boolean isLuoJiShengJing(List<String> contents) {
         if (contents != null && !contents.isEmpty()) {
             int count = 0;
-
             for (String content : contents) {
                 if (!TextUtils.isEmpty(content) && content.length() > 12) {
                     String preTxt = content.substring(0, 12);
@@ -845,31 +727,17 @@ public class SearchTextUtil {
                     }
                 }
             }
-
-            if (count > 2) {
-                return true;
-            }
+            if (count > 2) return true;
         }
-
         return false;
     }
 
-    /**
-     * 获取章节内容
-     *
-     * @param context
-     * @param chapter
-     * @return
-     */
     public static List<String> queryChaptreContent(Context context, Chapter chapter, int textModel) {
         String contents = chapter.getContent();
         List<String> content = new ArrayList<>(Arrays.asList(contents.split("\n")));
         boolean isSheingJ = isLuoJiShengJing(content);
-
-        // int remove = 0;
         for (int i = 0; i < content.size(); i++) {
             String string = content.get(i);
-
             if (string.trim().equals("\n") || string.trim().equals("\n\r") || StringUtil.isEmpty(string.trim())) {
                 content.remove(i);
                 i--;
@@ -878,7 +746,6 @@ public class SearchTextUtil {
             if (textModel == SystemConfig.TEXT_MODEL_FANTI) {
                 content.set(i, jian2fan(string + "\n"));
             }
-
         }
         if (isSheingJ) {
             List<String> rContent = new ArrayList<>();
@@ -889,7 +756,6 @@ public class SearchTextUtil {
                     List<String> tags = HuDongApplication.mVersions;
                     String head = CharUtils.match("[\\u4e00-\\u9fa5]{1,2}\\d+:\\d+", con);
                     boolean isNoContains = false;
-                    // 剔除没有选中的
                     for (String tagName : allTags) {
                         if (!tags.contains(tagName)) {
                             if (con.contains("〖" + tagName + "〗") && con.contains("〖/" + tagName + "〗")) {
@@ -899,25 +765,15 @@ public class SearchTextUtil {
                     }
                     if (!isNoContains) {
                         if (!TextUtils.isEmpty(head)) {
-                            if (!con.contains(head)) {
-                                rContent.add(head + con);
-                            } else {
-                                rContent.add(con);
-                            }
+                            rContent.add(con.contains(head) ? con : head + con);
                         } else if (!TextUtils.isEmpty(saveHead)) {
-                            if (!con.contains(saveHead)) {
-                                rContent.add(saveHead + con);
-                            } else {
-                                rContent.add(con);
-                            }
+                            rContent.add(con.contains(saveHead) ? con : saveHead + con);
                             saveHead = "";
                         } else {
                             rContent.add(con);
                         }
                     } else {
-                        if (!TextUtils.isEmpty(head)) {
-                            saveHead = head;
-                        }
+                        if (!TextUtils.isEmpty(head)) saveHead = head;
                     }
                 }
             }
@@ -929,41 +785,24 @@ public class SearchTextUtil {
             if (tags.size() != allTags.size()) {
                 if (tags.get(0).contains("中文")) {
                     for (String entity : content) {
-                        if (entity.contains("中文")) {
-                            rContent.add(entity);
-                        }
+                        if (entity.contains("中文")) rContent.add(entity);
                     }
-                } else { //英文
+                } else {
                     for (String entity : content) {
-                        if (entity.contains("英文")) {
-                            rContent.add(entity);
-                        }
+                        if (entity.contains("英文")) rContent.add(entity);
                     }
                 }
-                if (rContent.size() > 0) {
-                    return rContent;
-                }
+                if (rContent.size() > 0) return rContent;
             }
-
             return content;
         }
     }
 
-
-    /**
-     * 获取章节内容
-     *
-     * @param context
-     */
-    public static List<String> queryChaptreContentByContent(Context context, String contents, int
-            textModel) {
-        List<String> content = new ArrayList<String>();
-        content = new ArrayList<>(Arrays.asList(contents.split("\n")));
-        // int remove = 0;
+    public static List<String> queryChaptreContentByContent(Context context, String contents, int textModel) {
+        List<String> content = new ArrayList<>(Arrays.asList(contents.split("\n")));
         for (int i = 0; i < content.size(); i++) {
             String string = content.get(i);
-            if (string.trim().equals("\n") || string.trim().equals("\n\r") || StringUtil.isEmpty
-                    (string.trim())) {
+            if (string.trim().equals("\n") || string.trim().equals("\n\r") || StringUtil.isEmpty(string.trim())) {
                 content.remove(i);
                 i--;
                 continue;
@@ -975,16 +814,7 @@ public class SearchTextUtil {
         return content;
     }
 
-
-    /**
-     * 获取每日灵修内容
-     *
-     * @param context
-     * @param spirituality
-     * @return
-     */
-    public static List<String> querySpiritualityContent(Context context, Spirituality
-            spirituality, int textModel) {
+    public static List<String> querySpiritualityContent(Context context, Spirituality spirituality, int textModel) {
         List<String> content = new ArrayList<String>();
         LogUtil.log("spirituality:" + spirituality.getId() + "-" + spirituality.toString());
         try {
@@ -992,21 +822,17 @@ public class SearchTextUtil {
                     .findById(spirituality.getClass(), spirituality.getId());
             if (selectSpirituality != null) {
                 String selectContent = selectSpirituality.getContent();
-                if (selectContent == null) {
-                    return content;
-                }
+                if (selectContent == null) return content;
                 if (textModel == SystemConfig.TEXT_MODEL_FANTI) {
                     selectContent = jian2fan(selectContent);
                 }
                 String[] arrays = selectContent.split("\n");
                 if (arrays.length == 0) {
-                    content.add(new String(""));
+                    content.add("");
                     return content;
                 }
                 for (int i = 0; i < arrays.length; i++) {
-                    if (StringUtil.isNotEmpty(arrays[i])) {
-                        content.add(arrays[i]);
-                    }
+                    if (StringUtil.isNotEmpty(arrays[i])) content.add(arrays[i]);
                 }
             }
         } catch (DbException e) {
@@ -1016,40 +842,25 @@ public class SearchTextUtil {
             LogUtil.log("querySpiritualityContent exception:" + result.toString());
             LogUtil.error("querySpiritualityContent", e);
         }
-
         return content;
     }
 
-
-    /**
-     * 获取百科内容
-     *
-     * @param context
-     * @param baike
-     * @param textModel
-     * @return
-     */
     public static List<String> queryBaikeContent(Context context, Baike baike, int textModel) {
         List<String> content = new ArrayList<String>();
         try {
-            Baike selectBaike = HuDongApplication.getInstance().getDbUtils()
-                    .findById(baike.getClass(), baike.getId());
+            Baike selectBaike = HuDongApplication.getInstance().getDbUtils().findById(baike.getClass(), baike.getId());
             if (selectBaike != null) {
                 String selectContent = selectBaike.getContent();
-                if (selectContent == null) {
-                    return content;
-                }
+                if (selectContent == null) return content;
                 if (textModel == SystemConfig.TEXT_MODEL_FANTI) {
                     selectContent = jian2fan(selectContent);
                 }
                 String[] arrays = selectContent.split("\n");
                 for (int i = 0; i < arrays.length; i++) {
-                    if (arrays[i].trim().equals("\n") || arrays[i].trim().equals("\n\r") ||
-                            StringUtil.isEmpty(arrays[i].trim())) {
+                    if (arrays[i].trim().equals("\n") || arrays[i].trim().equals("\n\r") || StringUtil.isEmpty(arrays[i].trim())) {
                         continue;
-                    } else {
-                        content.add(arrays[i]);
                     }
+                    content.add(arrays[i]);
                 }
             }
         } catch (DbException e) {
@@ -1062,26 +873,9 @@ public class SearchTextUtil {
         return content;
     }
 
-    /**
-     * 关键字匹配
-     *
-     * @param content
-     * @param keyword
-     * @return
-     */
-
     public static String textMacth(String content, String keyword) {
         return textMacth(content, keyword, false);
     }
-
-
-    /**
-     * 关键字匹配
-     *
-     * @param content
-     * @param keyword
-     * @return
-     */
 
     public static String textMacth(String content, String keyword, boolean searchTitle) {
         String[] keyWords = keyword.split(" ");
@@ -1090,9 +884,7 @@ public class SearchTextUtil {
         Iterator<String> stringIterator = arrList.iterator();
         while (stringIterator.hasNext()) {
             String string = stringIterator.next();
-            if (TextUtils.isEmpty(string)) {
-                stringIterator.remove();
-            }
+            if (TextUtils.isEmpty(string)) stringIterator.remove();
         }
         keyWords = new String[arrList.size()];
         arrList.toArray(keyWords);
@@ -1106,8 +898,7 @@ public class SearchTextUtil {
                     String kd = keyWords[i];
                     if (element.text().contains(kd)) {
                         result = result.replace(element.text(),
-                                element.text().replace(kd, "<font color='#ff0000'>" + kd +
-                                        "</font>"));
+                                element.text().replace(kd, "<font color='#ff0000'>" + kd + "</font>"));
                     }
                 }
             }
@@ -1118,7 +909,7 @@ public class SearchTextUtil {
             String kd = keyWords[i];
             if (content.contains(kd)) {
                 result = result.replace(kd, "<font color='#ff0000'>" + kd + "</font>");
-            } else if (content.toLowerCase().contains(kd)) {//内容小写才有适配
+            } else if (content.toLowerCase().contains(kd)) {
                 result = result.replace(kd.toUpperCase(), "<font color='#ff0000'>" + kd.toUpperCase() + "</font>");
             } else if (content.toUpperCase().contains(kd)) {
                 result = result.replace(kd.toLowerCase(), "<font color='#ff0000'>" + kd.toLowerCase() + "</font>");
@@ -1130,13 +921,6 @@ public class SearchTextUtil {
         return result;
     }
 
-
-    /**
-     * 简体转繁体
-     *
-     * @param content
-     * @return
-     */
     public static String jian2fan(String content) {
         if (TextUtils.isEmpty(content)) return "";
         String changeText = null;
@@ -1162,24 +946,11 @@ public class SearchTextUtil {
         return "spirituality/" + id + ".txt";
     }
 
-    /**
-     * @param mCcontext
-     * @param chapter
-     * @param mTextModel
-     * @param flag1      1是怀著带中文
-     * @return
-     */
     public static List<String> queryChaptreContent(Context mCcontext, Chapter chapter, int mTextModel, int flag1) {
-        List<String> content = new ArrayList<String>();
-        String contents = chapter.getContent();
-
-        content = new ArrayList<String>(Arrays.asList(contents.split("\n")));
-
-        // int remove = 0;
+        List<String> content = new ArrayList<String>(Arrays.asList(chapter.getContent().split("\n")));
         for (int i = 0; i < content.size(); i++) {
             String string = content.get(i);
-            if (string.trim().equals("\n") || string.trim().equals("\n\r") || StringUtil.isEmpty
-                    (string.trim())) {
+            if (string.trim().equals("\n") || string.trim().equals("\n\r") || StringUtil.isEmpty(string.trim())) {
                 content.remove(i);
                 i--;
                 continue;
@@ -1188,32 +959,23 @@ public class SearchTextUtil {
                 content.set(i, jian2fan(string + "\n"));
             }
         }
-
         LogUtil.debug("queryChaptreContent", "  content =  " + content);
-
         List<String> rContent = new ArrayList<String>();
         List<String> allTags = HuDongApplication.HZ_baseVersions;
         List<String> tags = HuDongApplication.mVersions_HZ;
         if (tags.size() != allTags.size()) {
             if (tags.get(0).contains("中文")) {
                 for (String entity : content) {
-                    if (entity.contains("中文")) {
-                        rContent.add(entity);
-                    }
+                    if (entity.contains("中文")) rContent.add(entity);
                 }
-            } else { //英文
+            } else {
                 for (String entity : content) {
-                    if (entity.contains("英文")) {
-                        rContent.add(entity);
-                    }
+                    if (entity.contains("英文")) rContent.add(entity);
                 }
             }
-            if(rContent.size() ==0){
-                return content;
-            }
+            if (rContent.size() == 0) return content;
             return rContent;
         }
-
         return content;
     }
 }
