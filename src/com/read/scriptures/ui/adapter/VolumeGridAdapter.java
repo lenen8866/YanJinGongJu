@@ -2,7 +2,6 @@ package com.read.scriptures.ui.adapter;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -20,15 +19,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Administrator.
- * Datetime: 2015/7/2.
- * Email: lgmshare@mgail.com
- * 主页下方的GridView展示
+ * 主页下方的 GridView 展示，支持列表和网格两种模式
  */
 public class VolumeGridAdapter extends EIBaseAdapter<Volume> {
 
-    private boolean mIsList;
-
+    private final boolean mIsList;
+    // 静态缓存正则，避免每次 getView 都重新编译
+    private static final Pattern CHINESE_PATTERN = Pattern.compile("[\u4e00-\u9fa5]");
+    // 用于删除书名中括号内容的正则，刘表/方括号、花括号
+    private static final Pattern BRACKET_PATTERN = Pattern.compile("\\(.*?\\)|\\[.*?\\]|\\{.*?\\}");
 
     public VolumeGridAdapter(Context context, List<Volume> volumeList, boolean isList) {
         super(context, volumeList);
@@ -37,14 +36,10 @@ public class VolumeGridAdapter extends EIBaseAdapter<Volume> {
 
     @Override
     public int getCount() {
-        if (mIsList) {
-            return super.getCount();
-        } else {
-            if (getList().size() % 3 == 0) {
-                return super.getCount();
-            }
-            return super.getCount() + (3 - getList().size() % 3);
-        }
+        int size = mList.size();
+        if (mIsList || size % 3 == 0) return size;
+        // 网格模式下补齐空白格子至 3 的倍数
+        return size + (3 - size % 3);
     }
 
     @Override
@@ -80,28 +75,20 @@ public class VolumeGridAdapter extends EIBaseAdapter<Volume> {
         Volume item = getItem(position);
         viewHolder.tvHead.setText(item.getHeader());
 
-        String content = item.getVolName()
-                .replaceAll("\\((.*?)\\)", "")
-                .replaceAll("\\[(.*?)\\]", "")
-                .replaceAll("\\{(.*?)\\}", "");
-
+        // 删除书名中括号内的内容（作者、备注等），用预编译的静态 Pattern
+        String content = BRACKET_PATTERN.matcher(item.getVolName()).replaceAll("").trim();
         viewHolder.tvTitle.setText(content);
-        if (viewHolder.tvTitle.getText() != null && !TextUtils.isEmpty(viewHolder.tvTitle.getText().toString())) {
-            String title = viewHolder.tvTitle.getText().toString();
-            if (title.contains("E") && isContainChinese(title)) {
-                title = title.replace(title.charAt(title.length() - 1) + "", "").trim();
-                viewHolder.tvTitle.setText(title);
-                if (mIsList) {
-                    if (title.length() > 15) {
-                        viewHolder.ze_icon_last.setVisibility(View.VISIBLE);
-                    } else {
-                        viewHolder.ze_icon.setVisibility(View.VISIBLE);
-                    }
-                    if (viewHolder.tvAuthor.getVisibility() != View.VISIBLE) {
-                        viewHolder.tvAuthor.setVisibility(View.GONE);
-                    }
-                }
+
+        // 如果书名包含英文字母 E 且有中文，表示末尾有特殊标记，删除并显示对应图标
+        if (mIsList && content.contains("E") && isContainChinese(content)) {
+            String title = content.substring(0, content.length() - 1).trim();
+            viewHolder.tvTitle.setText(title);
+            if (title.length() > 15) {
+                viewHolder.ze_icon_last.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.ze_icon.setVisibility(View.VISIBLE);
             }
+            viewHolder.tvAuthor.setVisibility(View.GONE);
         }
         String intro = item.getIntro();
         String author = CharUtils.match("\\((.*?)\\)", item.getVolName());
@@ -119,33 +106,38 @@ public class VolumeGridAdapter extends EIBaseAdapter<Volume> {
             intro = "暂无简介";
             viewHolder.tvIntro.setText(intro);
         }
-        viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null)
-                    listener.onItemClick((AdapterView<?>) parent, v, position);
-            }
-        });
-        String introduction1 = item.getIntro();
-        String introduction2 = item.getIntroVideoAdd();
-        viewHolder.linearLayout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (longClickListener != null)
-                    longClickListener.onItemLongClick((AdapterView<?>) parent, view, position, introduction1, introduction2);
-                return true;
-            }
-        });
+        // 只在第一次绑定时设置 listener，复用时无需重复 new 匿名类
+        if (viewHolder.linearLayout.getTag(R.id.linear_root) == null) {
+            viewHolder.linearLayout.setTag(R.id.linear_root, Boolean.TRUE);
+            viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = (int) v.getTag(R.id.tv_title);
+                    if (listener != null)
+                        listener.onItemClick((AdapterView<?>) parent, v, pos);
+                }
+            });
+            viewHolder.linearLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    int pos = (int) view.getTag(R.id.tv_title);
+                    if (pos < mList.size() && longClickListener != null) {
+                        Volume v2 = mList.get(pos);
+                        longClickListener.onItemLongClick((AdapterView<?>) parent, view, pos, v2.getIntro(), v2.getIntroVideoAdd());
+                    }
+                    return true;
+                }
+            });
+        }
+        // 每次更新 position tag，让 listener 拿到正确的位置
+        viewHolder.linearLayout.setTag(R.id.tv_title, position);
         return convertView;
     }
 
     public static boolean isContainChinese(String str) {
-        Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
-        Matcher m = p.matcher(str);
-        if (m.find()) {
-            return true;
-        }
-        return false;
+        // 使用静态缓存的 Pattern，避免重复编译
+        Matcher m = CHINESE_PATTERN.matcher(str);
+        return m.find();
     }
 
     private OnItemOnClickListener listener;

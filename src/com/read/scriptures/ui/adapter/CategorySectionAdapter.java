@@ -7,7 +7,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.FragmentActivity;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -15,6 +14,8 @@ import android.widget.GridView;
 import com.github.stuxuhai.jpinyin.ChineseHelper;
 import com.music.player.lib.util.XToast;
 import com.read.scriptures.EIUtils.EIBaseHolderAdapter;
+import com.read.scriptures.EIUtils.ExpandGridView;
+import com.read.scriptures.EIUtils.ViewHolder;
 import com.read.scriptures.R;
 import com.read.scriptures.config.PreferenceConfig;
 import com.read.scriptures.constants.BundleConstants;
@@ -25,7 +26,6 @@ import com.read.scriptures.ui.activity.ChaptersListActivity;
 import com.read.scriptures.ui.fragment.IntroDialogFragment;
 import com.read.scriptures.util.SharedUtil;
 import com.read.scriptures.util.StringUtil;
-import com.read.scriptures.EIUtils.ViewHolder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +48,6 @@ public class CategorySectionAdapter extends EIBaseHolderAdapter<Category> {
 
     public void setCurrenCategoryName(String currenCategoryName) {
         this.currenCategoryName = currenCategoryName;
-        System.out.println("-------------------------currenCategoryName-----------" + currenCategoryName);
     }
 
     private List<Category> mCategories;
@@ -71,62 +70,53 @@ public class CategorySectionAdapter extends EIBaseHolderAdapter<Category> {
 
     public boolean setNodeCategorys(List<Category> categories) {
         bookCount = 0;
-
-        boolean isSortNormal = SharedUtil.getBoolean(Preference_home_sort_type, true);
         if (!HomeDataManager.getInstance().isInitVolumeInfos()) {
-            //未初始化
             return false;
         }
         mVvolumeMaps.clear();
-        //数据已初始化
-        if (isSortNormal) {//按分类分组
-            for (int i = 0; i < categories.size(); i++) {
-                List<Volume> volumes = HomeDataManager.getInstance().getAllVolumesMap().get(String.valueOf(categories.get(i).getId()));
-                if (volumes == null) {
-                    volumes = new ArrayList<>();
-                }
+        mCategories.clear();
 
-                bookCount = bookCount + volumes.size();
-                categories.get(i).setVolCount(volumes.size());
-                mVvolumeMaps.put(categories.get(i), volumes);
+        boolean isSortNormal = SharedUtil.getBoolean(Preference_home_sort_type, true);
+        if (isSortNormal) {
+            // 按分类分组展示
+            for (Category category : categories) {
+                List<Volume> volumes = HomeDataManager.getInstance().getAllVolumesMap().get(String.valueOf(category.getId()));
+                if (volumes == null) volumes = new ArrayList<>();
+                bookCount += volumes.size();
+                category.setVolCount(volumes.size());
+                mVvolumeMaps.put(category, volumes);
             }
-            mCategories.clear();
             mCategories.addAll(categories);
         } else {
+            // 按拼音首字母分组展示
             List<Volume> allVolumeList = new ArrayList<>();
-            for (int i = 0; i < categories.size(); i++) {
-                List<Volume> volumes = HomeDataManager.getInstance().getAllVolumesMap().get(String.valueOf(categories.get(i).getId()));
-                if (volumes == null) {
-                    volumes = new ArrayList<>();
-                }
-                allVolumeList.addAll(volumes);
+            for (Category category : categories) {
+                List<Volume> volumes = HomeDataManager.getInstance().getAllVolumesMap().get(String.valueOf(category.getId()));
+                if (volumes != null) allVolumeList.addAll(volumes);
             }
-            //重新组数据
-            LinkedHashMap<String, List<Volume>> linkedHashMap = new LinkedHashMap<>();
             Collections.sort(allVolumeList, new Comparator<Volume>() {
                 @Override
                 public int compare(Volume o1, Volume o2) {
                     return o1.getPinyin().compareTo(o2.getPinyin());
                 }
             });
+            LinkedHashMap<String, List<Volume>> groupByLetter = new LinkedHashMap<>();
             for (Volume v : allVolumeList) {
-                if (linkedHashMap.containsKey(v.getFirstLetter())) {
-                    linkedHashMap.get(v.getFirstLetter()).add(v);
-                } else {
-                    List<Volume> volumePinyins = new ArrayList<>();
-                    volumePinyins.add(v);
-                    linkedHashMap.put(v.getFirstLetter(), volumePinyins);
+                List<Volume> group = groupByLetter.get(v.getFirstLetter());
+                if (group == null) {
+                    group = new ArrayList<>();
+                    groupByLetter.put(v.getFirstLetter(), group);
                 }
+                group.add(v);
             }
-            mCategories.clear();
             name = categories.get(0).getCateName();
-            for (String firstPinyin : linkedHashMap.keySet()) {
+            for (String firstLetter : groupByLetter.keySet()) {
+                List<Volume> group = groupByLetter.get(firstLetter);
                 Category category = new Category();
-                category.setCateName(firstPinyin);
-                List<Volume> volumePinyins = linkedHashMap.get(firstPinyin);
-                mVvolumeMaps.put(category, volumePinyins);
-                bookCount = bookCount + volumePinyins.size();
-                category.setVolCount(volumePinyins.size());
+                category.setCateName(firstLetter);
+                category.setVolCount(group.size());
+                bookCount += group.size();
+                mVvolumeMaps.put(category, group);
                 mCategories.add(category);
             }
         }
@@ -152,72 +142,64 @@ public class CategorySectionAdapter extends EIBaseHolderAdapter<Category> {
     @Override
     public void convert(ViewHolder helper, final Category item) {
         mIsList = SharedUtil.getBoolean(PreferenceConfig.Preference_home_list_type, true);
-        if (mVvolumeMaps == null) {
-            return;
-        }
         List<Volume> volumeList = mVvolumeMaps.get(item);
         if (volumeList == null) {
             return;
         }
-        int numColumn = 1;
-        int count = volumeList.size();
-        if (!mIsList) {
-            numColumn = 3;
+        int numColumn = mIsList ? 1 : 3;
+
+        final ExpandGridView gridView = helper.getView(R.id.view_list);
+
+        // 复用已有的 VolumeGridAdapter，避免每次滚动都重新 setAdapter
+        Object tagObj = gridView.getTag(R.id.view_list);
+        Integer cachedCategoryId = (Integer) gridView.getTag(R.id.tv_title);
+        boolean isSameCategoryAndMode = cachedCategoryId != null
+                && cachedCategoryId.equals(item.getId())
+                && gridView.getNumColumns() == numColumn;
+
+        final VolumeGridAdapter volumeGridAdapter;
+        if (isSameCategoryAndMode && tagObj instanceof VolumeGridAdapter) {
+            volumeGridAdapter = (VolumeGridAdapter) tagObj;
+        } else {
+            volumeGridAdapter = new VolumeGridAdapter(mContext, volumeList, mIsList);
+            gridView.setTag(R.id.view_list, volumeGridAdapter);
+            gridView.setTag(R.id.tv_title, item.getId());
+            gridView.setVerticalSpacing(1);
+            if (!mIsList) gridView.setHorizontalSpacing(1);
+            gridView.setNumColumns(numColumn);
+            gridView.invalidateMeasureCache();
+            gridView.setAdapter(volumeGridAdapter);
+
+            // adapter 首次绑定时设置两个 click事件
+            volumeGridAdapter.setOnItemLongClickListener(new VolumeGridAdapter.OnItemOnLongClickListener() {
+                @Override
+                public void onItemLongClick(AdapterView<?> parent, View v, int position, String intro, String introVideo) {
+                    showIntroDialog(mContext, intro, introVideo);
+                }
+            });
+            volumeGridAdapter.setOnItemClickListener(new VolumeGridAdapter.OnItemOnClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View v, int position) {
+                    Volume volume = volumeGridAdapter.getItem(position);
+                    String categoryName = ChineseHelper.containsChinese(item.getCateName())
+                            ? currenCategoryName + "-" + item.getCateName()
+                            : currenCategoryName + "-" + name;
+                    Bundle bd = new Bundle();
+                    bd.putParcelable(BundleConstants.PARAM_VOLUME, volume);
+                    bd.putString("categoryName", categoryName);
+                    Intent intent = new Intent(mContext, ChaptersListActivity.class);
+                    intent.putExtras(bd);
+                    ((Activity) mContext).startActivityForResult(intent, -1);
+                }
+            });
         }
-        final GridView gridView = helper.getView(R.id.view_list);
-        VolumeGridAdapter volumeGridAdapter;
-        volumeGridAdapter = new VolumeGridAdapter(mContext, volumeList, mIsList);
-        gridView.setTag(volumeGridAdapter);
-        gridView.setVerticalSpacing(1);
-        gridView.setAdapter(volumeGridAdapter);
-        gridView.setNumColumns(numColumn);
-        if (!mIsList) {
-            gridView.setHorizontalSpacing(1);
-        }
-        volumeGridAdapter.notifyDataSetChanged();
+
         helper.setText(R.id.tv_title, item.getCateName().replaceAll("^\\d{1,}-", ""));
-        helper.setText(R.id.tv_count, volumeList.isEmpty() ? "暂无书籍" : "共" + count + "本");
-
-        //设置每本书长按事件-弹出播放视频对话框
-        volumeGridAdapter.setOnItemLongClickListener(new VolumeGridAdapter.OnItemOnLongClickListener() {
-            @Override
-            public void onItemLongClick(AdapterView<?> parent, View v, int position, String intro, String introVideo) {
-                if (position >= volumeGridAdapter.getList().size()) {
-                    return;
-                }
-                showIntroDialog(mContext, intro, introVideo);
-            }
-        });
-        //设置每本书点击事件-跳转到章节
-        volumeGridAdapter.setOnItemClickListener(new VolumeGridAdapter.OnItemOnClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position) {
-                if (position >= volumeGridAdapter.getList().size()) {
-                    return;
-                }
-
-                VolumeGridAdapter adapter = (VolumeGridAdapter) parent.getAdapter();
-                Volume volume = adapter.getItem(position);
-                String categoryName;
-                if (ChineseHelper.containsChinese(item.getCateName())) {
-                    categoryName = currenCategoryName + "-" + item.getCateName();
-                } else {
-                    categoryName = currenCategoryName + "-" + name;
-                }
-                Bundle bd = new Bundle();
-                bd.putParcelable(BundleConstants.PARAM_VOLUME, volume);
-                bd.putString("categoryName", categoryName);
-                Intent intent=new Intent();
-                intent.setClass(mContext, ChaptersListActivity.class);
-                intent.putExtras(bd);
-                ((Activity) mContext).startActivityForResult(intent,-1);
-            }
-        });
-
+        helper.setText(R.id.tv_count, volumeList.isEmpty() ? "暂无书籍" : "共" + volumeList.size() + "本");
     }
 
     private void showIntroDialog(final Context context, String intro, String introVideo) {
-        if (StringUtil.isEmpty(intro) && StringUtil.isEmpty(intro)) {
+        if (StringUtil.isEmpty(intro) && StringUtil.isEmpty(introVideo)) {
             XToast.showToast(context, "暂无简介");
             return;
         }
@@ -226,9 +208,5 @@ public class CategorySectionAdapter extends EIBaseHolderAdapter<Category> {
 
     public List<Category> getCategories() {
         return mCategories;
-    }
-
-    public int getVolumes() {
-        return mVvolumeMaps.size();
     }
 }

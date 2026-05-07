@@ -592,6 +592,7 @@ public class HomeFragment extends BaseFragment implements View.OnClickListener, 
                 } else {
                     MOVE_MODEL = 1;
                 }
+
                 diffTagFlag = diffTop;
                 if (!flag) {
                     if (firstVisibleItem1 >= 1) {
